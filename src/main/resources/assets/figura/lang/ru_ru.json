@@ -182,6 +182,9 @@
   "figura.config.server_script": "Серверные скрипты",
   "figura.config.server_script.tooltip": "Переключает возможность загрузки и запуска скрипта из ресурс пака (серверного). \nДействует только на хоста",
 
+  "figura.config.allow_fp_hands": "Руки от первого лица",
+  "figura.config.allow_fp_hands.tooltip": "Может ли скрипт изменять положение, поворот, и размер рук от первого лица.",
+  
   "figura.config.actionwheel": "Колесо действий",
   "figura.config.actionwheel.tooltip": "Настройки колеса действий",
 
