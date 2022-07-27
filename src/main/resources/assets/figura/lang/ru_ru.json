@@ -334,7 +334,11 @@
   "figura.docs.globals.log_table": "Альтернатива для printTable().",
   "figura.docs.globals.print_json": "Принимает Minecraft JSON строку, после чего выводит её форматированно.",
   "figura.docs.globals.log_json": "Альтернатива для printJson().",
-
+  "figura.docs.globals.host": "Глобальный экземпляр типа HostAPI.",
+  "figura.docs.globals.meta": "Глобальный экземпляр типа MetaAPI.",
+  "figura.docs.globals.renderer": "Глобальный экземпляр типа RendererAPI.",
+  "figura.docs.globals.keybind": "Глобальный экземпляр типа KeybindAPI.",
+  
   "figura.docs.math": "Включает в себя функции которые Figura добавляет к стандартной таблице библиотеки \"math\".",
   "figura.docs.math.lerp": "Линейно интерполирует первое значение ко второму с помощью третьего значения. Работает как и с числами, так и с векторами.",
   "figura.docs.math.clamp": "Возвращает значение переданное в функцию, ограниченную параметрами min и max.",
@@ -612,6 +616,7 @@
   "figura.docs.vanilla_model.cape_model": "Ванильная часть плаща.",
   "figura.docs.vanilla_model.fake_cape": "Пользовательная копия плаща, является попыткой сохранить его позицию потому что ванильная математика плаща... странная.",
   "figura.docs.vanilla_model.helmet": "Мульти-часть: Модель шлема",
+  "figura.docs.vanilla_model.helmet_item": "Предмет в слоте шлема",
   "figura.docs.vanilla_model.helmet_head": "Первый слой шлема",
   "figura.docs.vanilla_model.helmet_hat": "Второй слой шлема.",
   "figura.docs.vanilla_model.chestplate": "Мульти-часть: Модель нагрудника.",
