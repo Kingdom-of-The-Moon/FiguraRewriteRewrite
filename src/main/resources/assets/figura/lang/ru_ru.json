@@ -20,13 +20,11 @@
 
   "figura.backend.upload_success": "Аватар загружен!",
   "figura.backend.upload_error": "Ошибка при загрузке",
-  "figura.backend.upload_invalid": "Данные повреждены",
   "figura.backend.upload_too_big": "Аватар слишком большой",
   "figura.backend.upload_too_many": "У вас слишком много аватаров",
 
   "figura.backend.delete_success": "Аватар удалён!",
   "figura.backend.delete_error": "Ошибка при удалении",
-  "figura.backend.delete_invalid": "Данные повреждены",
   "figura.backend.delete_not_found": "Аватар не найден",
 
 
