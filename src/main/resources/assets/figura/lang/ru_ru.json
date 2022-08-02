@@ -115,8 +115,6 @@
 
   "figura.gui.status.size": "Размер",
   "figura.gui.status.size.0": "нет",
-  "figura.gui.status.size.1": "100kb+",
-  "figura.gui.status.size.2": "75kb+",
   "figura.gui.status.size.3": "нормальный",
 
   "figura.gui.status.texture": "Текстура",
