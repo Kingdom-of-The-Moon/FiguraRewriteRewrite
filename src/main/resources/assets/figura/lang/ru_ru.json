@@ -81,14 +81,12 @@
   "figura.gui.error.no_keybinds": "У аватара нет горячих клавиш!",
   "figura.gui.error.no_wheel_page": "Не выбрана активная страница!",
 
-
   "figura.gui.context.set_trust": "Установить доверие",
   "figura.gui.context.reload": "Перезагрузить аватар",
   "figura.gui.context.copy_name": "Скопировать имя",
   "figura.gui.context.copy_uuid": "Скопировать UUID",
   "figura.gui.context.copy_path": "Скопировать путь",
   "figura.gui.context.open_folder": "Открыть папку",
-
 
   "figura.gui.panels.title.profile": "Профиль",
   "figura.gui.panels.title.browser": "Браузер",
@@ -100,7 +98,6 @@
   "figura.gui.panels.title.keybind": "Горячие клавиши аватара",
   "figura.gui.panels.title.avatar": "Предпросмотр аватара",
 
-
   "figura.gui.wardrobe.expand_wardrobe.tooltip": "Развернуть список гардероба",
   "figura.gui.wardrobe.minimize_wardrobe.tooltip": "Свернуть список гардероба",
   "figura.gui.wardrobe.upload.tooltip": "Загрузить аватар на сервера Figura",
@@ -111,12 +108,10 @@
   "figura.gui.wardrobe.folder.tooltip": "Открыть корневую папку аватара",
   "figura.gui.wardrobe.unselect": "Не выбран",
 
-
   "figura.gui.trust.reset": "Сбросить",
   "figura.gui.trust.expand_trust.tooltip": "Развернуть меню дополнительных настроек доверия",
   "figura.gui.trust.minimize_trust.tooltip": "Свернуть меню дополнительных настроек доверия",
   "figura.gui.trust.avatar_size": "Размер: %s",
-
 
   "figura.gui.status.size": "Размер",
   "figura.gui.status.size.0": "нет",
@@ -145,7 +140,6 @@
   "figura.config.input.float": "Дробное...",
   "figura.config.input.hex_color": "Цвет...",
   "figura.config.input.folder_path": "Путь...",
-
 
   "figura.config.nameplate": "Никнейм",
   "figura.config.nameplate.tooltip": "Настройки никнеймма",
@@ -258,6 +252,7 @@
   "figura.config.backend_ip": "IP сервера Figura",
   "figura.config.backend_ip.tooltip": "Устанавливает IP сервера Figura",
 
+
   "figura.command.click_to_open": "Нажмите здесь что-бы открыть",
   "figura.command.run.not_local_error": "Локальный аватар не выбран!",
   "figura.command.run.no_script_error": "Нету активного скрипта для вызова в нём кода!",
@@ -265,6 +260,7 @@
   "figura.command.load.invalid": "Неправильный путь \"%s\"",
   "figura.command.docs_export.success": "Документация Figura экспортирована в директорию Figura",
   "figura.command.docs_export.error": "Произошла ошибка при экспорте документации!",
+
 
   "figura.docs": "Команда \"/figura docs\" позволяет получить доступ ко всем типам и функциям которые Figura добавляет в стандартный Lua.",
 
@@ -614,6 +610,9 @@
   "figura.docs.vanilla_model.held_items": "Мульти-часть: Предметы в руках игрока.",
   "figura.docs.vanilla_model.left_item": "Левый предмет в руках игрока.",
   "figura.docs.vanilla_model.right_item": "Правой предмет в руках игрока.",
+  "figura.docs.vanilla_model.parrots": "Мульти-часть: Попугаи на плечах игрока.",
+  "figura.docs.vanilla_model.left_parrot": "Попугай на левом плече игрока.",
+  "figura.docs.vanilla_model.right_parrot": "Попугай на правом плече игрока.",
   "figura.docs.vanilla_model.all": "Мульти-часть: Вся модель игрока.",
   "figura.docs.vanilla_model.outer_layer": "Мульти-часть: Второй слой скина игрока.",
   "figura.docs.vanilla_model.inner_layer": "Мульти-часть: Главной слой скина игрока.",
