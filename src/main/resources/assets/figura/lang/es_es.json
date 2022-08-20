@@ -1,0 +1,375 @@
+{
+  "figura": "Figura",
+  "figura.tab": "  ",
+  "figura.ellipsis": "...",
+
+
+  "figura.backend.connected": "Conectado a Backend!",
+  "figura.backend.disconnected": "Desconectado de Backend!",
+  "figura.backend.banned": "Baneado :-)",
+
+  "figura.backend.error": "Error",
+  "figura.backend.invalid_uuid": "UUID Inválido",
+  "figura.backend.invalid_data": "Datos inválidos",
+
+  "figura.backend.rate_limited": "Rate Limited!",
+  "figura.backend.download": "Descargar",
+  "figura.backend.ping_rate": "Tasa de Pings",
+  "figura.backend.ping_size": "Tamaño de los Pings",
+  "figura.backend.upload": "Subir",
+
+  "figura.backend.upload_success": "Avatar subido!",
+  "figura.backend.upload_error": "Error en la subida",
+  "figura.backend.upload_too_big": "El Avatar es demasiado grande",
+  "figura.backend.upload_too_many": "Tienes demasiados avatares",
+
+ 
+  "figura.backend.delete_success": "Avatar borrado!",
+  "figura.backend.delete_error": "Error al borrar",
+  "figura.backend.delete_not_found": "Avatar no encontrado",
+
+
+  "figura.toast.reload": "Avatar recargado!",
+  "figura.toast.reload_all": "Todos los Avatares han sido recargados",
+  "figura.toast.panic_enabled": "Modo Pánico activado",
+  "figura.toast.panic_disabled": "Modo Pánico desactivado",
+  "figura.toast.clipboard": "Copiado al portapapeles!",
+  "figura.toast.load_error": "Error al cargar el avatar!",  "figura.toast.load_error_l2": "Often from avatar.json",
+  "figura.toast.load_error_l2": "Normalmente desde avatar.json",
+  "figura.toast.trust_change": "El nivel de confianza ahora es",
+
+
+  "figura.trust.group.blocked": "Bloqueado",
+  "figura.trust.group.untrusted": "No confiado",
+  "figura.trust.group.trusted": "De Confianza",
+  "figura.trust.group.friend": "Amigo",
+  "figura.trust.group.local": "Local",
+
+  "figura.trust.infinity": "INFINITO",
+  "figura.trust.enabled": "Permitir",
+  "figura.trust.disabled": "No Permitir",
+
+  "figura.trust.init_inst": "Instrucciones de Init",
+  "figura.trust.tick_inst": "Instrucciones de Tick",
+  "figura.trust.world_tick_inst": "Instrucciones de Tick del mundo",
+  "figura.trust.render_inst": "Instrucciones de Renderización",
+  "figura.trust.world_render_inst": "Instrucciones de Renderización del mundo",
+  "figura.trust.complexity": "Límite de Complejidad",
+  "figura.trust.particles": "Límite de Partículas",
+  "figura.trust.sounds": "Límite de Sonidos",
+  "figura.trust.bb_animations": "Límite de Complejidad de Animaciones",
+  "figura.trust.vanilla_model_edit": "Cambios al modelo original",
+  "figura.trust.nameplate_edit": "Cambios al Nameplate",
+  "figura.trust.offscreen_rendering": "Renderización fuera de vista",
+  "figura.trust.custom_render_layer": "Capas de Renderización personalizadas",
+  "figura.trust.custom_sounds": "Sonidos personalizados",
+  "figura.trust.custom_heads": "Cabezas de Jugador personalizadas",
+
+
+  "figura.popup_menu.cancel": "Cancelar",
+  "figura.popup_menu.reload": "Recargar Avatar",
+  "figura.popup_menu.increase_trust": "Incrementar Confianza",
+  "figura.popup_menu.decrease_trust": "Reducir Confianza",
+  "figura.popup_menu.trust_menu": "Abrir ajustes de confianza",
+
+
+  "figura.badges.standard.default": "Insignia por defecto",
+  "figura.badges.standard.cheese": "QUESOGRANDE!",
+  "figura.badges.standard.warning": "Este Avatar está diseñado para una versión de Figura más reciente, la compatibilidad será limitada",
+  "figura.badges.standard.error": "Error en el Script",
+
+  "figura.badges.pride.agender": "Insignia de Agénero",
+  "figura.badges.pride.aroace": "Insignia de Aroace",
+  "figura.badges.pride.aromantic": "Insignia de Aromantico/a",
+  "figura.badges.pride.asexual": "Insignia de Asexual",
+  "figura.badges.pride.bigender": "Insignia de Bigénero",
+  "figura.badges.pride.bisexual": "Insignia de Bisexual",
+  
+  "figura.badges.pride.demigender": "Insignia de Demigénero",
+
+  "figura.badges.pride.demiromantic": "Insignia de Demiromántico/a",
+  "figura.badges.pride.demisexual": "Insignia de Demisexual",
+  "figura.badges.pride.disability": "Insignia de Discapacidad",
+  "figura.badges.pride.finsexual": "Insignia de Finsexual",
+  "figura.badges.pride.gaymen": "Insignia de Hombre Gay",
+  
+  "figura.badges.pride.genderfluid": "Insignia de Género fluido",
+
+  "figura.badges.pride.intersex": "Insignia de Intersex",
+  "figura.badges.pride.lesbian": "Insignia de Lesbiana",
+  "figura.badges.pride.nonbinary": "Insignia de Genero no binario",
+  "figura.badges.pride.pansexual": "Insignia de Pansexual",
+  "figura.badges.pride.plural": "Insignia de Plural",
+  "figura.badges.pride.polysexual": "Insignia de Polysexual",
+  "figura.badges.pride.pride": "Insignia de Orgullo",
+  "figura.badges.pride.transgender": "Insignia de Transgénero",
+
+  "figura.badges.special.moon": "Reino de la Luna ☽",
+  "figura.badges.special.shadow": "...",
+  "figura.badges.special.translator": "Traductor",
+  "figura.badges.special.donator": "Gracias por donar para el mod de Figura!",
+  "figura.badges.special.contest": "GG!",
+  "figura.badges.special.discord_staff": "Moderador en el servidor de Discord de Figura",
+  "figura.badges.special.dev": "Creador de Figura",
+
+
+  "figura.gui.on": "Sí",
+  "figura.gui.off": "No",
+  "figura.gui.search": "Buscar...",
+  "figura.gui.name": "Nombre",
+  "figura.gui.authors": "Autor(es)",
+  "figura.gui.size": "Tamaño",
+  "figura.gui.complexity": "Complejidad",
+  "figura.gui.done": "Aceptar",
+  "figura.gui.cancel": "Cancelar",
+  "figura.gui.expand": "Expandir",
+  "figura.gui.minimise": "Minimizar",
+  "figura.gui.reset_all": "Resetear Todo",
+  "figura.gui.panic.1": "Modo Pánico activado, Se han desactivado las funciones de Figura",
+  "figura.gui.panic.2": "(Des)Activar el modo pánico con la tecla [%s]",
+  "figura.gui.help.tooltip": "Ayuda",
+
+  "figura.gui.error.no_avatar": "No se ha seleccionado ningún Avatar",
+  "figura.gui.error.no_keybinds": "El Avatar no tiene combinaciones de teclas",
+  "figura.gui.error.no_wheel_page": "El menú circular no tiene página activa!",
+
+
+  "figura.gui.context.set_trust": "Configurar Nivel de Confianza",
+  "figura.gui.context.reload": "Recargar Avatar",
+  "figura.gui.context.copy_name": "Copiar Nombre",
+  "figura.gui.context.copy_uuid": "Copiar UUID",
+  "figura.gui.context.copy_path": "Copiar Ruta",
+  "figura.gui.context.open_folder": "Abrir Carpeta",
+
+
+  "figura.gui.panels.title.profile": "Perfil",
+  "figura.gui.panels.title.browser": "Explorador",
+  "figura.gui.panels.title.wardrobe": "Armario",
+  "figura.gui.panels.title.trust": "Confianza",
+  "figura.gui.panels.title.settings": "Ajustes",
+
+  "figura.gui.panels.title.sound": "Sonidos",
+  "figura.gui.panels.title.keybind": "Combinaciones de teclas",
+  "figura.gui.panels.title.avatar": "Vista Previa",
+
+
+  "figura.gui.wardrobe.expand_wardrobe.tooltip": "Expandir lista del armario",
+  "figura.gui.wardrobe.minimize_wardrobe.tooltip": "Contraer lista del armario",
+  "figura.gui.wardrobe.upload.tooltip": "Subir avatar al servidor de Figura",
+  "figura.gui.wardrobe.reload.tooltip": "Recargar avatar",
+  "figura.gui.wardrobe.delete.tooltip": "Borrar avatar del servidor de Figura",
+  "figura.gui.wardrobe.sound.tooltip": "Sonidos del Avatar",
+  "figura.gui.wardrobe.keybind.tooltip": "Combinaciones de teclas del Avatar",
+  "figura.gui.wardrobe.folder.tooltip": "Abrir carpeta principal de avatares",
+  "figura.gui.wardrobe.unselect": "Deseleccionar",
+
+
+  "figura.gui.trust.reset": "Restablecer Todo",
+  "figura.gui.trust.reload_all": "Recargar todos",
+  "figura.gui.trust.expand_trust.tooltip": "Expandir menú avanzado de confianza",
+  "figura.gui.trust.minimize_trust.tooltip": "Minimizar menú avanzado de confianza",
+  "figura.gui.trust.avatar_size": "Tamaño: %s",
+  "figura.gui.trust.complexity": "Nivel de Complejidad: %s",
+  "figura.gui.trust.tick": "Tick W: %s E: %s",
+  "figura.gui.trust.render": "Render W: %s E: %s PE: %s PW: %s",
+
+
+  "figura.gui.status.size": "Tamaño",
+  "figura.gui.status.size.0": "Ninguno",
+  "figura.gui.status.size.1": "Más de 100kb",
+  "figura.gui.status.size.2": "Más de 75kb+",
+  "figura.gui.status.size.3": "OK",
+
+  "figura.gui.status.texture": "Textura",
+  "figura.gui.status.texture.0": "Ninguna",
+  "figura.gui.status.texture.3": "OK",
+
+  "figura.gui.status.script": "Script",
+  "figura.gui.status.script.0": "Ninguno",
+  "figura.gui.status.script.1": "Error encontrado",
+  "figura.gui.status.script.2": "Script para versión más reciente",
+  "figura.gui.status.script.3": "OK",
+
+  "figura.gui.status.backend": "Backend",
+  "figura.gui.status.backend.reason": "Razón",
+  "figura.gui.status.backend.1": "Desconectado",
+  "figura.gui.status.backend.2": "Conectando",
+  "figura.gui.status.backend.3": "Conectado",
+
+
+  "figura.config.input.any": "Texto...",
+  "figura.config.input.int": "Número Entero...",
+  "figura.config.input.positive_int": "Número Entero...",
+  "figura.config.input.float": "Número...",
+  "figura.config.input.hex_color": "Color...",
+  "figura.config.input.folder_path": "Ruta...",
+  "figura.config.input.ip": "Dirección IP...",
+
+
+  "figura.config.nameplate": "Nameplate",
+  "figura.config.nameplate.tooltip": "Ajustes de Nameplate",
+
+  "figura.config.self_nameplate": "Mostrar Nameplate propia",
+  "figura.config.self_nameplate.tooltip": "Permite ver tu Nameplate propia",
+
+  "figura.config.preview_nameplate": "Mostrar Nameplates en IU",
+  "figura.config.preview_nameplate.tooltip": "Mostrar Nameplates en la IU",
+
+  "figura.config.chat_nameplate": "Personalizaciones de Chat",
+  "figura.config.chat_nameplate.tooltip": "Configurar el nivel de personalizaciones de chat",
+  "figura.config.entity_nameplate": "Personalizaciones de Entidad",
+  "figura.config.entity_nameplate.tooltip": "Configurar el nivel de personalizaciones de entidad",
+  "figura.config.list_nameplate": "Personalizaciones de lista tab",
+  "figura.config.list_nameplate.tooltip": "Configurar el nivel de personalizaciones de lista tab",
+  "figura.config.nameplate_level.1": "No",
+  "figura.config.nameplate_level.2": "Script",
+  "figura.config.nameplate_level.3": "Script + Insígnias",
+
+  "figura.config.script": "Script",
+  "figura.config.script.tooltip": "Ajustes de Script",
+
+  "figura.config.log_location": "Salida de mensajes",
+  "figura.config.log_location.tooltip": "Donde mostrar la salida del script",
+  "figura.config.log_location.1": "Chat",
+  "figura.config.log_location.2": "Logger(Consola)",
+
+  "figura.config.allow_fp_hands": "Manos en primera persona",
+  "figura.config.allow_fp_hands.tooltip": "Permitir que los Scripts modifiquen las manos en primera persona",
+
+  "figura.config.log_number_length": "Número de decimales",
+  "figura.config.log_number_length.tooltip": "Cuantas cifras decimales mostrar al hacer print()",
+
+  "figura.config.actionwheel": "Menú circular",
+  "figura.config.actionwheel.tooltip": "Ajustes del Menú circular",
+
+  "figura.config.action_wheel_button": "Botón para abrir",
+  "figura.config.action_wheel_button.tooltip": "Combinación de teclas para abrir el Menú circular",
+
+  "figura.config.action_wheel_scale": "Tamaño",
+  "figura.config.action_wheel_scale.tooltip": "Cambiar el tamaño del Menú circular",
+
+  "figura.config.action_wheel_title": "Texto de acción seleccionada",
+  "figura.config.action_wheel_title.tooltip": "Donde mostrar el texto de la acción seleccionada",
+  "figura.config.action_wheel_title.1": "Ratón  (Tooltip)",
+  "figura.config.action_wheel_title.2": "Ratón",
+  "figura.config.action_wheel_title.3": "Arriba",
+  "figura.config.action_wheel_title.4": "Centro",
+  "figura.config.action_wheel_title.5": "Abajo",
+
+  "figura.config.action_wheel_decorations": "Decoraciones de items",
+  "figura.config.action_wheel_decorations.tooltip": "Mostrar decoraciones de ítems (Como la barra de duración o el número de items)",
+
+  "figura.config.ui": "Ajustes de IU",
+  "figura.config.ui.tooltip": "Ajustes de IU",
+
+  "figura.config.background_scroll_speed": "Velocidad del fondo",
+  "figura.config.background_scroll_speed.tooltip": "Multiplicador de la velocidad de movimiento del fondo.",
+
+  "figura.config.popup_scale": "Tamaño del menú de jugador",
+  "figura.config.popup_scale.tooltip": "Multiplicador de escala del menú de jugador",
+
+  "figura.config.popup_min_size": "Tamaño mínimo del menú de jugador",
+  "figura.config.popup_min_size.tooltip": "Tamaño mínimo del menú de jugador al alejarse de la persona",
+
+  "figura.config.popup_max_size": "Tamaño máximo del menú de jugador",
+  "figura.config.popup_max_size.tooltip": "Tamaño mínimo del menú de jugador al acercarse de la persona",
+
+
+  "figura.config.paperdoll": "Muñeca de papel",
+  "figura.config.paperdoll.tooltip": "Ajustes de la Muñeca de papel",
+
+  "figura.config.has_paperdoll": "Mostrar",
+  "figura.config.has_paperdoll.tooltip": "Mostrar Muñeca de papel",
+
+  "figura.config.paperdoll_always_on": "Siempre visible",
+  "figura.config.paperdoll_always_on.tooltip": "Siempre mostrar la Muñeca de papel",
+
+  "figura.config.first_person_paperdoll": "Solo en primera persona",
+  "figura.config.first_person_paperdoll.tooltip": "Mostrar la Muñeca de papel únicamente en el modo de primera persona",
+
+  "figura.config.paperdoll_scale": "Tamaño",
+  "figura.config.paperdoll_scale.tooltip": "Tamaño de la Muñeca de papel",
+
+  "figura.config.paperdoll_x": "Posición X",
+  "figura.config.paperdoll_x.tooltip": "Posición en el eje X de la Muñeca de papel",
+
+  "figura.config.paperdoll_y": "Posición Y",
+  "figura.config.paperdoll_y.tooltip": "Posición en el eje Y de la Muñeca de papel",
+
+  "figura.config.paperdoll_pitch": "Rotación sobre el eje Y(PITCH)",
+  "figura.config.paperdoll_pitch.tooltip": "Rotación sobre el eje X(PITCH) de la Muñeca de papel",
+
+  "figura.config.paperdoll_yaw": "Rotación sobre el eje Y(YAW)",
+  "figura.config.paperdoll_yaw.tooltip": "Rotación sobre el eje Y(YAW) de la Muñeca de papel",
+
+
+  "figura.config.misc": "Etc...",
+  "figura.config.misc.tooltip": "Ajustes no categorizados",
+
+  "figura.config.popup_button": "Tecla del menú de jugador",
+  "figura.config.popup_button.tooltip": "Tecla para abrir el menú de jugador para la persona a la que se está apuntando",
+
+  "figura.config.button_location": "Posición del botón de Figura",
+  "figura.config.button_location.tooltip": "Posición del botón de Figura",
+  "figura.config.button_location.1": "Icono",
+  "figura.config.button_location.2": "Esquina Superior izquierda",
+  "figura.config.button_location.3": "Esquina Superior derecha",
+  "figura.config.button_location.4": "Esquina Inferior izquierda",
+  "figura.config.button_location.5": "Esquina Inferior derecha",
+  "figura.config.button_location.6": "A la izquierda de la entidad",
+  "figura.config.button_location.7": "A la derecha de la entidad",
+
+  "figura.config.easter_eggs": "Huevos de pascua",
+  "figura.config.easter_eggs.tooltip": "Activar funciones divertidas y/o inesperadas de Figura",
+  "figura.config.dev": "Desarrollador",
+  "figura.config.dev.tooltip": "Ajustes Experimentales para Desarrolladores",
+
+  "figura.config.reload_button": "Tecla para recargar Avatar",
+  "figura.config.reload_button.tooltip": "Recargar el Avatar utilizado al pulsar esta tecla",
+
+  "figura.config.panic_button": "Botón del pánico",
+  "figura.config.panic_button.tooltip": "Ocultar todos los avatares al pulsar esta tecla",
+
+  "figura.config.render_debug_parts_pivot": "Mostrar punto de rotación",
+  "figura.config.render_debug_parts_pivot.tooltip": "Mostrar el punto de rotación de los %d y %d cuando se active la visibilidad de hitboxes",
+  "figura.config.render_debug_parts_pivot.tooltip.cubes": "cubos",
+  "figura.config.render_debug_parts_pivot.tooltip.groups": "grupos",
+  "figura.config.render_debug_parts_pivot.1": "No",
+  "figura.config.render_debug_parts_pivot.2": "Solo si es Visible",
+  "figura.config.render_debug_parts_pivot.3": "Todos",
+
+  "figura.config.log_others": "Ver registros de scripts no propios",
+  "figura.config.log_others.tooltip": "Mostrar registros de scripts de otros jugadores",
+
+  "figura.config.log_pings": "Registrar Pings",
+  "figura.config.log_pings.tooltip": "Registrar datos enviados a traves de pings",
+  "figura.config.log_pings.1": "No",
+  "figura.config.log_pings.2": "Mostrar en Chat",
+  "figura.config.log_pings.3": "Mostrar en Logger(consola)",
+
+  "figura.config.sync_pings": "No Sincronizar Pings",
+  "figura.config.sync_pings.tooltip.1": "Sólo ejecutar los pings locales cuando se reciben desde el backend",
+  "figura.config.sync_pings.tooltip.2": "Nota: Los pings no funcionarán si no hay conexión con el backend",
+
+  "figura.config.chat_messages": "Manipular Mensajes de Chat",
+  "figura.config.chat_messages.tooltip.1": "Permitir que los Scripts modifiquen el contenido y/o envien mensajes en chat por ti",
+  "figura.config.chat_messages.tooltip.2": "Esta opción es peligrosa ya que los mensajes de chat serán firmados",
+  "figura.config.chat_messages.tooltip.3": "Los desarrolladores de Figura no se harán responsables del mal uso de esta función",
+
+  "figura.config.main_dir": "Ubicación de la carpeta de Figura",
+  "figura.config.main_dir.tooltip": "Cambiar la ubicación de la carpeta de Figura",
+
+  "figura.config.auth_server_ip": "Dir. IP del servidor de autenticación",
+  "figura.config.auth_server_ip.tooltip": "Cambiar la dirección IP del servidor de autenticación",
+
+  "figura.config.backend_ip": "Dir. IP del Backend",
+  "figura.config.backend_ip.tooltip": "Cambiar la dirección IP del servidor de Backend",
+
+  "figura.command.click_to_open": "Haz clic para abrir",
+  "figura.command.run.not_local_error": "No se está usando un avatar local",
+  "figura.command.run.no_script_error": "No hay ningún script activo en el que ejecutar el código",
+  "figura.command.load.loading": "Cargando avatar...",
+  "figura.command.load.invalid": "La ruta \"%s\" es inválida",
+  "figura.command.docs_export.success": "La documentación se ha exportado al directorio de Figura",
+  "figura.command.docs_export.error": "Error al exportar la documentación"
+}
