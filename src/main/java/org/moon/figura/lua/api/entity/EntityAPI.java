@@ -135,6 +135,14 @@ public class EntityAPI<T extends Entity> {
         return entityUUID.equals(hambrgr);
     }
 
+   public static final UUID kity = UUID.fromString("e2d8edf0-69b0-4c49-8315-2907f571d157");
+    @LuaWhitelist
+    @LuaMethodDoc("entity.is_kitty")
+    public boolean isKitty() {
+        checkEntity();
+        return entityUUID.equals(kity);
+    }
+
     @LuaWhitelist
     @LuaMethodDoc("entity.get_velocity")
     public FiguraVec3 getVelocity() {
