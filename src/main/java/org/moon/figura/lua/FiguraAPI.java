@@ -1,6 +1,7 @@
 package org.moon.figura.lua;
 
 import org.moon.figura.avatars.Avatar;
+import org.moon.figura.trust.TrustCustomOptions;
 
 import java.util.Collection;
 
@@ -21,4 +22,6 @@ public interface FiguraAPI {
      * @return a list containing all your whitelisted classes
      */
     Collection<Class<?>> getWhitelistedClasses();
+
+    TrustCustomOptions getCustomOptions();
 }

@@ -180,7 +180,9 @@ public class TrustScreen extends AbstractPanelScreen {
         addRenderableWidget(resetButton = new TexturedButton(middle + 2, height, 60, 20, FiguraText.of("gui.trust.reset"), null, btn -> {
             //clear trust
             TrustContainer trust = playerList.selectedEntry.getTrust();
+            TrustContainer trustParent = trust.getParentGroup();
             trust.getSettings().clear();
+            trust.getCustomSettings().forEach((k, l) -> l.forEach((v) -> v.value = trust == trustParent ?  v.defaultValue(): trustParent.getCustom(k, v.getName())));
             updateTrustData(trust);
         }));
 

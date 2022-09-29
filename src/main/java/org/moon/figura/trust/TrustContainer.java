@@ -1,16 +1,17 @@
 package org.moon.figura.trust;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
+import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraText;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class TrustContainer {
@@ -22,6 +23,8 @@ public class TrustContainer {
 
     //trust -> value map
     private final Map<Trust, Integer> trustSettings;
+
+    private final Map<String, List<? extends TrustOption>> customTrustOptions;
 
     //the trust themselves
     public enum Trust {
@@ -80,6 +83,7 @@ public class TrustContainer {
         this.parentID = parentID;
 
         this.trustSettings = new HashMap<>();
+        this.customTrustOptions = new HashMap<>();
         setTrustFromNbt(nbt);
     }
 
@@ -87,6 +91,19 @@ public class TrustContainer {
         this.name = name;
         this.parentID = parentID;
         this.trustSettings = new HashMap<>(trust);
+        this.customTrustOptions = new HashMap<>();
+        TrustContainer parentContainer = getParentGroup();
+        TrustManager.CUSTOM_TRUST_OPTIONS.forEach((optsId, tco) -> {
+            List<TrustOption> optionMap = new LinkedList<>();
+            tco.getTrustOptions().forEach(opt -> {
+                optionMap.add(opt.getNewInstance(
+                        parentContainer == this ?
+                                opt.defaultValue() :
+                                parentContainer.getCustom(optsId, opt.getName())
+                ));
+            });
+            customTrustOptions.put(optsId, optionMap);
+        });
     }
 
     // functions //
@@ -98,6 +115,46 @@ public class TrustContainer {
 
             if (nbt.contains(trustName))
                 trustSettings.put(setting, nbt.getInt(trustName));
+        }
+        if (nbt.contains("customSettings")) {
+            CompoundTag customSettings = nbt.getCompound("customSettings");
+            TrustManager.CUSTOM_TRUST_OPTIONS.forEach((optionsId, options) -> {
+                List<TrustOption> optionList = new LinkedList<>();
+                if (customSettings.contains(optionsId)) {
+                    CompoundTag settingsSection = customSettings.getCompound(optionsId);
+                    options.getTrustOptions().forEach(opt -> {
+                        if (settingsSection.contains(opt.getName())) {
+                            if (opt instanceof TrustOption.Range r) {
+                                optionList.add(r.getNewInstance(settingsSection.getInt(r.getName())));
+                            } else if (opt instanceof TrustOption.Toggle t) {
+                                optionList.add(t.getNewInstance(settingsSection.getBoolean(t.getName())));
+                            }
+                        }
+                        else {
+                            optionList.add(opt.getNewInstance(opt.defaultValue()));
+                        }
+                    });
+                }
+                else {
+                    options.getTrustOptions().forEach(opt -> {
+                        optionList.add(opt.getNewInstance(opt.defaultValue()));
+                    });
+                }
+                customTrustOptions.put(optionsId, optionList);
+            });
+        }
+        else {
+            for (Map.Entry<String, TrustCustomOptions> optionsEntry:
+                    TrustManager.CUSTOM_TRUST_OPTIONS.entrySet()) {
+                List<TrustOption> optionList = new LinkedList<>();
+                TrustCustomOptions tco = optionsEntry.getValue();
+                for (TrustOption optionEntry:
+                        tco.getTrustOptions()) {
+                    TrustOption opt = optionEntry;
+                    optionList.add(opt.getNewInstance(opt.defaultValue()));
+                }
+                customTrustOptions.put(tco.getCustomTrustOptionsId(), optionList);
+            }
         }
     }
 
@@ -112,7 +169,24 @@ public class TrustContainer {
         //trust values
         CompoundTag trust = new CompoundTag();
         this.trustSettings.forEach((key, value) -> trust.put(key.name(), IntTag.valueOf(value)));
-
+        CompoundTag customSettings = new CompoundTag();
+        this.customTrustOptions.forEach((key, value) -> {
+            CompoundTag settingsSection = new CompoundTag();
+            value.forEach(ov -> {
+                Tag t;
+                if (!ov.value.equals(ov.defaultValue())) {
+                    if (ov instanceof TrustOption.Range r) {
+                        t = IntTag.valueOf(r.value);
+                    } else {
+                        TrustOption.Toggle tg = (TrustOption.Toggle) ov;
+                        t = ByteTag.valueOf(tg.value);
+                    }
+                    settingsSection.put(ov.getName(), t);
+                }
+            });
+            if (!settingsSection.isEmpty()) customSettings.put(key, settingsSection);
+        });
+        if(!customSettings.isEmpty()) trust.put("customSettings", customSettings);
         //add to nbt
         nbt.put("trust", trust);
     }
@@ -132,13 +206,32 @@ public class TrustContainer {
         return -1;
     }
 
+    public Object getCustom(String id, String name) {
+        for (TrustOption opt:
+                customTrustOptions.get(id)) {
+            if (opt.getName().equals(name)) return opt.value;
+        }
+        return null;
+    }
+
+    private boolean allCustomDefaults() {
+        for (Map.Entry<String, List<? extends TrustOption>> opts:
+             customTrustOptions.entrySet()) {
+            for (TrustOption opt:
+                 opts.getValue()) {
+                if (opt.value != opt.defaultValue()) return true;
+            }
+        }
+        return false;
+    }
+
     public MutableComponent getGroupName() {
         return getGroupName(false);
     }
 
     private MutableComponent getGroupName(boolean changed) {
         if (parentID != null)
-            return TrustManager.get(parentID).getGroupName(changed || !getSettings().isEmpty());
+            return TrustManager.get(parentID).getGroupName(changed || !getSettings().isEmpty() || allCustomDefaults());
 
         MutableComponent text = FiguraText.of("trust.group." + name).withStyle(Style.EMPTY.withColor(getGroupColor()));
         if (changed)
@@ -170,6 +263,8 @@ public class TrustContainer {
     public Map<Trust, Integer> getSettings() {
         return this.trustSettings;
     }
+
+    public Map<String, List<? extends TrustOption>> getCustomSettings() {return this.customTrustOptions;}
 
     public ResourceLocation getParentID() {
         return this.parentID;

@@ -9,15 +9,13 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import org.moon.figura.FiguraMod;
+import org.moon.figura.lua.FiguraAPI;
 import org.moon.figura.utils.IOUtils;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TrustManager {
 
@@ -26,8 +24,18 @@ public class TrustManager {
     public static final Map<ResourceLocation, TrustContainer> GROUPS = new LinkedHashMap<>();
     public static final Map<ResourceLocation, TrustContainer> PLAYERS = new HashMap<>();
 
+    public static final Map<String, TrustCustomOptions> CUSTOM_TRUST_OPTIONS = new HashMap<>();
+
     //main method for loading trust
     public static void init() {
+        // Loading custom trust options from entrypoints
+        Set<FiguraAPI> set = IOUtils.loadEntryPoints("figura_api", FiguraAPI.class);
+        for (FiguraAPI api : set) {
+            TrustCustomOptions options = api.getCustomOptions();
+            var opts = options.getTrustOptions();
+            CUSTOM_TRUST_OPTIONS.put(options.getCustomTrustOptionsId(), options);
+        }
+
         //load from presets file first then load from disk
         loadDefaultGroups();
         IOUtils.readCacheFile("trust_settings", TrustManager::readNbt);

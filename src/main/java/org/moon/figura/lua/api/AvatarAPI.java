@@ -256,6 +256,12 @@ public class AvatarAPI {
         return trust.asBoolean(avatar.trust.get(trust));
     }
 
+    @LuaWhitelist
+    @LuaMethodDoc("avatar.get_custom_option")
+    public Object getCustomOption(@LuaNotNil String id, @LuaNotNil String name) {
+        return avatar.trust.getCustom(id,name);
+    }
+
     @Override
     public String toString() {
         return "AvatarAPI";
