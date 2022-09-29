@@ -32,7 +32,7 @@ public class TrustManager {
         Set<FiguraAPI> set = IOUtils.loadEntryPoints("figura_api", FiguraAPI.class);
         for (FiguraAPI api : set) {
             TrustCustomOptions options = api.getCustomOptions();
-            var opts = options.getTrustOptions();
+            if (options == null) continue;
             CUSTOM_TRUST_OPTIONS.put(options.getCustomTrustOptionsId(), options);
         }
 

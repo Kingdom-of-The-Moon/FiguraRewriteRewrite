@@ -23,5 +23,7 @@ public interface FiguraAPI {
      */
     Collection<Class<?>> getWhitelistedClasses();
 
-    TrustCustomOptions getCustomOptions();
+    default TrustCustomOptions getCustomOptions() {
+        return null;
+    };
 }
