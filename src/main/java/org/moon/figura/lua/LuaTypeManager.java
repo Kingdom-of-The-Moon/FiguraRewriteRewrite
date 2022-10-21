@@ -8,10 +8,8 @@ import org.moon.figura.lua.docs.FiguraDocsManager;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * One LuaTypeManager per LuaRuntime, so that people can be allowed to edit the metatables within.
@@ -27,6 +25,9 @@ public class LuaTypeManager {
             throw new IllegalArgumentException("Tried to generate metatable for un-whitelisted class " + clazz.getName() + "!");
 
         //Ensure that all whitelisted superclasses are loaded before this one
+
+        Map<String, List<Method>> overloadedMethods = new HashMap<>();
+
         try {
             generateMetatableFor(clazz.getSuperclass());
         } catch (IllegalArgumentException ignored) {}
@@ -60,10 +61,17 @@ public class LuaTypeManager {
                         }
                     }
                 } else { //regular methods
-                    indexTable.set(name, getWrapper(method));
+                    if (!overloadedMethods.containsKey(name)) overloadedMethods.put(name, new LinkedList<>());
+                    overloadedMethods.get(name).add(method);
+                    //indexTable.set(name, getWrapper(method));
                 }
             }
             currentClass = currentClass.getSuperclass();
+        }
+
+        for (String methodName:
+             overloadedMethods.keySet()) {
+            indexTable.set(methodName, new OverloadedFunction(overloadedMethods.get(methodName), this));
         }
 
         if (metatable.rawget("__index") == LuaValue.NIL)
@@ -237,6 +245,15 @@ public class LuaTypeManager {
         return table;
     }
 
+    private LuaTable wrapCollection(Collection<?> collection) {
+        LuaTable vals = new LuaTable();
+        for (Object o:
+                collection) {
+            vals.add(javaToLua(o).arg1());
+        }
+        return vals;
+    }
+
     private Varargs wrapArray(Object array) {
         int len = Array.getLength(array);
         LuaValue[] args = new LuaValue[len];
@@ -296,35 +313,144 @@ public class LuaTypeManager {
     }
 
     public Varargs javaToLua(Object val) {
-        if (val == null)
-            return LuaValue.NIL;
-        else if (val instanceof LuaValue l)
-            return l;
-        else if (val instanceof Double d)
-            return LuaValue.valueOf(d);
-        else if (val instanceof String s)
-            return LuaValue.valueOf(s);
-        else if (val instanceof Boolean b)
-            return LuaValue.valueOf(b);
-        else if (val instanceof Integer i)
-            return LuaValue.valueOf(i);
-        else if (val instanceof Float f)
-            return LuaValue.valueOf(f);
-        else if (val instanceof Byte b)
-            return LuaValue.valueOf(b);
-        else if (val instanceof Long l)
-            return LuaValue.valueOf(l);
-        else if (val instanceof Character c)
-            return LuaValue.valueOf(c);
-        else if (val instanceof Short s)
-            return LuaValue.valueOf(s);
-        else if (val instanceof Map<?,?> map)
-            return wrapMap(map);
-        else if (val instanceof List<?> list)
-            return wrapList(list);
-        else if (val.getClass().isArray())
-            return wrapArray(val);
-        else
-            return wrap(val);
+        if (val == null) return LuaValue.NIL;
+        else if (val instanceof Varargs a) return a;
+        else if (val.getClass().isArray()) return wrapArray(val);
+        else if (val instanceof Collection<?> objs) return wrapCollection(objs);
+        else if (val instanceof Map<?,?> map) return wrapMap(map);
+        else if (val instanceof Double d) return LuaValue.valueOf(d);
+        else if (val instanceof String s) return LuaValue.valueOf(s);
+        else if (val instanceof Boolean b) return LuaValue.valueOf(b);
+        else if (val instanceof Integer i) return LuaValue.valueOf(i);
+        else if (val instanceof Float f) return LuaValue.valueOf(f);
+        else if (val instanceof Byte b) return LuaValue.valueOf(b);
+        else if (val instanceof Long l) return LuaValue.valueOf(l);
+        else if (val instanceof Character c) return LuaValue.valueOf(c);
+        else if (val instanceof Short s) return LuaValue.valueOf(s);
+        return wrap(val);
+    }
+
+    private enum LuaType {
+        STRING(l -> l.tojstring()),
+        BOOLEAN(l -> l.toboolean()),
+        BYTE(l -> l.tobyte()),
+        SHORT(l -> l.toshort()),
+        INTEGER(l -> l.toint()),
+        FLOAT(l -> l.tofloat()),
+        LONG(l -> l.tolong()),
+        DOUBLE(l -> l.todouble());
+
+        private final Function<LuaValue, Object> returnFunction;
+
+        LuaType(Function<LuaValue, Object> func) {
+            returnFunction = func;
+        }
+
+        public Object get(LuaValue val) {
+            return returnFunction.apply(val);
+        }
+    }
+
+    protected static Map<Class, LuaType> typesToLua = new HashMap<>() {{
+        put(String.class, LuaType.STRING);
+        put(Boolean.TYPE, LuaType.BOOLEAN);
+        put(Byte.TYPE, LuaType.BYTE);
+        put(Short.TYPE, LuaType.SHORT);
+        put(Integer.TYPE, LuaType.INTEGER);
+        put(Float.TYPE, LuaType.FLOAT);
+        put(Long.TYPE, LuaType.LONG);
+        put(Double.TYPE, LuaType.DOUBLE);
+    }};
+
+    public Object[] matchOverload(Method overload, Varargs args) throws LuaToJavaConversionError, MatchOverloadFailed {
+        Class<?>[] parameters = overload.getParameterTypes();
+        List<Object> params = new ArrayList<>();
+        boolean lastParameterVarargs = overload.isVarArgs();
+        if ((args.narg() != parameters.length && !lastParameterVarargs) ||
+                (args.narg() < parameters.length)) throw new MatchOverloadFailed(overload, args);
+        for (int i = 0; i < parameters.length; i++) {
+            Class parameter = parameters[i];
+            LuaValue lValue = args.arg(i+1);
+            Object v = null;
+            try {
+                v = fromLuaValue(lValue, parameter);
+            }
+            catch (LuaToJavaConversionError e) {
+                if (i == parameters.length - 1 && lastParameterVarargs) {
+                    int l = args.narg() - i;
+                    Class componentType = parameter.getComponentType();
+                    Object remainingVarArgs = Array.newInstance(componentType, l);
+                    for (int j = 0; j < l; j++) {
+                        LuaValue lV = args.arg(parameters.length+j);
+                        Object vA = fromLuaValue(lV, componentType);
+                        Array.set(remainingVarArgs, j, vA);
+                    }
+                    v = remainingVarArgs;
+                }
+            }
+            params.add(v);
+        }
+        return params.toArray();
+    }
+
+    public Object fromLuaValue(LuaValue val, Class type) throws LuaToJavaConversionError {
+        if (val.isnil()) return null;
+        try {
+            if (type.isInstance(val)) {
+                return val;
+            }
+            if (val.isuserdata()) {
+                Object ud = wrap(val);
+                if (type.isInstance(ud)) {
+                    return ud;
+                }
+            }
+            LuaType tp = typesToLua.get(type);
+            if (tp != null) {
+                return tp.get(val);
+            }
+            if (val.istable()) {
+                if (type.isArray()) {
+                    LuaTable table = val.checktable();
+                    Class objType = type.getComponentType();
+
+                    Object arr = Array.newInstance(objType, table.length());
+                    for (int i = 1; i <= table.length(); i++) {
+                        Object v = fromLuaValue(table.get(i), objType);
+                        Array.set(arr, i-1, v);
+                    }
+                    return arr;
+                }
+                if (Collection.class.isAssignableFrom(type)) {
+                    List<Object> list = new ArrayList<>();
+                    LuaTable table = val.checktable();
+
+                    Class objType = (Class)(((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments()[0]);
+                    for (int i = 1; i <= table.length(); i++) {
+                        Object v = fromLuaValue(table.get(i), objType);
+                        list.add(v);
+                    }
+                    return list;
+                }
+                if (Map.class.isAssignableFrom(type)) {
+                    Map<Object, Object> map = new HashMap<>();
+                    LuaTable table = val.checktable();
+                    Type[] genericTypes = ((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments();
+
+                    Class keyClass = (Class) genericTypes[0];
+                    Class objClass = (Class) genericTypes[1];
+
+                    for (LuaValue key:
+                            table.keys()) {
+                        Object k = fromLuaValue(key, keyClass);
+                        Object v = fromLuaValue(table.get(key), objClass);
+                        map.put(k,v);
+                    }
+                    return map;
+                }
+            }
+        }
+        catch (LuaError ignored) {}
+        throw new LuaToJavaConversionError(val.type(), val.typename(), type);
     }
 }
