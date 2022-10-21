@@ -91,12 +91,12 @@ public class FiguraLuaRuntime {
     }
 
     public void setGlobal(String name, Object obj) {
-        userGlobals.set(name, typeManager.javaToLua(obj).arg1());
+        userGlobals.set(name, typeManager.javaToLua(obj));
     }
 
     public void setUser(Entity user) {
         entityAPI = EntityAPI.wrap(user);
-        userGlobals.set("user", typeManager.javaToLua(entityAPI).arg1());
+        userGlobals.set("user", typeManager.javaToLua(entityAPI));
         userGlobals.set("player", userGlobals.get("user"));
     }
 

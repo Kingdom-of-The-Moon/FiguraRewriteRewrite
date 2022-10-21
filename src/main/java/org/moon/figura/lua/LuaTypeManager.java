@@ -26,7 +26,7 @@ public class LuaTypeManager {
 
         //Ensure that all whitelisted superclasses are loaded before this one
 
-        Map<String, List<Method>> overloadedMethods = new HashMap<>();
+        Map<String, List<Method>> overloads = new HashMap<>();
 
         try {
             generateMetatableFor(clazz.getSuperclass());
@@ -61,17 +61,15 @@ public class LuaTypeManager {
                         }
                     }
                 } else { //regular methods
-                    if (!overloadedMethods.containsKey(name)) overloadedMethods.put(name, new LinkedList<>());
-                    overloadedMethods.get(name).add(method);
-                    //indexTable.set(name, getWrapper(method));
+                    if (!overloads.containsKey(name)) overloads.put(name, new LinkedList<>());
+                    overloads.get(name).add(method);
                 }
             }
             currentClass = currentClass.getSuperclass();
         }
 
-        for (String methodName:
-             overloadedMethods.keySet()) {
-            indexTable.set(methodName, new OverloadedFunction(overloadedMethods.get(methodName), this));
+        for (String methodName: overloads.keySet()) {
+            indexTable.set(methodName, getWrapper(overloads.get(methodName).toArray(Method[]::new)));
         }
 
         if (metatable.rawget("__index") == LuaValue.NIL)
@@ -130,83 +128,13 @@ public class LuaTypeManager {
         return result;
     }
 
-    public VarArgFunction getWrapper(Method method) {
-        return new VarArgFunction() {
-
-            private final boolean isStatic = Modifier.isStatic(method.getModifiers());
-            private Object caller;
-
-
-            private final Class<?> clazz = method.getDeclaringClass();
-            private final Class<?>[] argumentTypes = method.getParameterTypes();
-            private final Object[] actualArgs = new Object[argumentTypes.length];
-            private final boolean[] requiredNotNil = getRequiredNotNil(method);
-
-            @Override
-            public Varargs invoke(Varargs args) {
-
-                if (!isStatic)
-                    caller = args.checkuserdata(1, clazz);
-
-                //Fill in actualArgs from args
-                for (int i = 0; i < argumentTypes.length; i++) {
-                    int argIndex = i + (isStatic ? 1 : 2);
-                    boolean nil = args.isnil(argIndex);
-                    if (nil && requiredNotNil[i])
-                        throw new LuaError("bad argument: " + method.getName() + " " + argIndex + " do not allow nil values, expected " + FiguraDocsManager.getNameFor(argumentTypes[i]));
-                    if (argIndex <= args.narg() && !nil) {
-                        try {
-                            actualArgs[i] = switch (argumentTypes[i].getName()) {
-                                case "java.lang.Number", "java.lang.Double", "double" -> args.checkdouble(argIndex);
-                                case "java.lang.String" -> args.checkjstring(argIndex);
-                                case "java.lang.Boolean", "boolean" -> args.toboolean(argIndex);
-                                case "java.lang.Float", "float" -> (float) args.checkdouble(argIndex);
-                                case "java.lang.Integer", "int" -> args.checkint(argIndex);
-                                case "java.lang.Long", "long" -> args.checklong(argIndex);
-                                case "org.luaj.vm2.LuaTable" -> args.checktable(argIndex);
-                                case "org.luaj.vm2.LuaFunction" -> args.checkfunction(argIndex);
-                                case "org.luaj.vm2.LuaValue" -> args.arg(argIndex);
-                                case "java.lang.Object" -> luaToJava(args.arg(argIndex));
-                                default -> argumentTypes[i].getName().startsWith("[") ? luaVarargToJava(args, argIndex, argumentTypes[i]) : args.checkuserdata(argIndex, argumentTypes[i]);
-                            };
-                        } catch (LuaError err) {
-                            String expectedType = FiguraDocsManager.getNameFor(argumentTypes[i]);
-                            String actualType;
-                            if (args.arg(argIndex).type() == LuaValue.TUSERDATA)
-                                actualType = FiguraDocsManager.getNameFor(args.arg(argIndex).checkuserdata().getClass());
-                            else
-                                actualType = args.arg(argIndex).typename();
-                            throw new LuaError("Invalid argument " + argIndex + " to function " + method.getName() + ". Expected " + expectedType + ", but got " + actualType);
-                        }
-                    } else {
-                        actualArgs[i] = switch (argumentTypes[i].getName()) {
-                            case "double" -> 0D;
-                            case "int" -> 0;
-                            case "long" -> 0L;
-                            case "float" -> 0f;
-                            case "boolean" -> false;
-                            default -> null;
-                        };
-                    }
-                }
-
-                //Invoke the wrapped method
-                Object result;
-                try {
-                    result = method.invoke(caller, actualArgs);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw e.getCause() instanceof LuaError l ? l : new LuaError(e.getCause());
-                }
-
-                //Convert the return value
-                return result instanceof Varargs v ? v : javaToLua(result);
-            }
-
-            @Override
-            public String tojstring() {
-                return "function: " + method.getName();
-            }
-        };
+    public VarArgFunction getWrapper(Method... methods) {
+        if(methods.length == 1)
+            return new SingleMethodFunction(methods[0]);
+        else if(methods.length != 0)
+            return new OverloadMethodFunction(methods);
+        else
+            throw new RuntimeException("trying to get method wrapper for NO methods?");
     }
 
     private LuaValue wrap(Object instance) {
@@ -228,8 +156,8 @@ public class LuaTypeManager {
         LuaTable table = new LuaTable();
 
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            LuaValue key = javaToLua(entry.getKey()).arg1();
-            LuaValue val = javaToLua(entry.getValue()).arg1();
+            LuaValue key = javaToLua(entry.getKey());
+            LuaValue val = javaToLua(entry.getValue());
             table.set(key, val);
         }
 
@@ -240,18 +168,18 @@ public class LuaTypeManager {
         LuaTable table = new LuaTable();
 
         for (int i = 0; i < list.size(); i++)
-            table.set(i + 1, javaToLua(list.get(i)).arg1());
+            table.set(i + 1, javaToLua(list.get(i)));
 
         return table;
     }
 
     private LuaTable wrapCollection(Collection<?> collection) {
-        LuaTable vals = new LuaTable();
-        for (Object o:
-                collection) {
-            vals.add(javaToLua(o).arg1());
-        }
-        return vals;
+        LuaTable values = new LuaTable();
+
+        for (Object o: collection)
+            values.add(javaToLua(o));
+
+        return values;
     }
 
     private Varargs wrapArray(Object array) {
@@ -259,7 +187,7 @@ public class LuaTypeManager {
         LuaValue[] args = new LuaValue[len];
 
         for (int i = 0; i < len; i++)
-            args[i] = javaToLua(Array.get(array, i)).arg1();
+            args[i] = javaToLua(Array.get(array, i));
 
         return LuaValue.varargsOf(args);
     }
@@ -290,55 +218,139 @@ public class LuaTypeManager {
 
     //we need to allow string being numbers here
     //however in places like pings and print we should keep strings as strings
-    public Object luaToJava(LuaValue val) {
-        if (val.istable())
-            return val.checktable();
-        else if (val.isnumber())
-            if (val instanceof LuaInteger i) //dumb
-                return i.checkint();
-            else if (val.isint() && val instanceof LuaString s) //very dumb
-                return s.checkint();
-            else
-                return val.checkdouble();
-        else if (val.isstring())
-            return val.checkjstring();
-        else if (val.isboolean())
-            return val.checkboolean();
-        else if (val.isfunction())
-            return val.checkfunction();
-        else if (val.isuserdata())
-            return val.checkuserdata(Object.class);
-        else
+    public Object luaToJava(LuaValue val){
+        try {
+            return luaToJava(val, null);
+        } catch (LuaToJavaConversionError e) {
             return null;
+        }
     }
 
-    public Varargs javaToLua(Object val) {
-        if (val == null) return LuaValue.NIL;
-        else if (val instanceof Varargs a) return a;
-        else if (val.getClass().isArray()) return wrapArray(val);
-        else if (val instanceof Collection<?> objs) return wrapCollection(objs);
-        else if (val instanceof Map<?,?> map) return wrapMap(map);
-        else if (val instanceof Double d) return LuaValue.valueOf(d);
-        else if (val instanceof String s) return LuaValue.valueOf(s);
-        else if (val instanceof Boolean b) return LuaValue.valueOf(b);
-        else if (val instanceof Integer i) return LuaValue.valueOf(i);
-        else if (val instanceof Float f) return LuaValue.valueOf(f);
-        else if (val instanceof Byte b) return LuaValue.valueOf(b);
-        else if (val instanceof Long l) return LuaValue.valueOf(l);
-        else if (val instanceof Character c) return LuaValue.valueOf(c);
-        else if (val instanceof Short s) return LuaValue.valueOf(s);
-        return wrap(val);
+    public Object luaToJava(LuaValue val, Class<?> clazz) throws LuaToJavaConversionError {
+        if(clazz == null) {
+            if (val.istable())
+                return val.checktable();
+            else if (val.isnumber())
+                if (val instanceof LuaInteger i) //dumb
+                    return i.checkint();
+                else if (val.isint() && val instanceof LuaString s) //very dumb
+                    return s.checkint();
+                else
+                    return val.checkdouble();
+            else if (val.isstring())
+                return val.checkjstring();
+            else if (val.isboolean())
+                return val.checkboolean();
+            else if (val.isfunction())
+                return val.checkfunction();
+            else if (val.isuserdata())
+                return val.checkuserdata(Object.class);
+            else
+                return null;
+        } else {
+            if (val.isnil()) return null;
+            try {
+                if (clazz.isInstance(val)) {
+                    return val;
+                }
+                if (val.isuserdata()) {
+                    Object ud = wrap(val);
+                    if (clazz.isInstance(ud)) {
+                        return ud;
+                    }
+                }
+                LuaType tp = typesToLua.get(clazz);
+                if (tp != null) {
+                    return tp.get(val);
+                }
+                if (val.istable()) {
+                    if (clazz.isArray()) {
+                        LuaTable table = val.checktable();
+                        Class<?> objType = clazz.getComponentType();
+
+                        Object arr = Array.newInstance(objType, table.length());
+                        for (int i = 1; i <= table.length(); i++) {
+                            Object v = luaToJava(table.get(i), objType);
+                            Array.set(arr, i-1, v);
+                        }
+                        return arr;
+                    }
+                    if (Collection.class.isAssignableFrom(clazz)) {
+                        List<Object> list = new ArrayList<>();
+                        LuaTable table = val.checktable();
+
+                        Class<?> objType = (Class<?>)(((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0]);
+                        for (int i = 1; i <= table.length(); i++) {
+                            Object v = luaToJava(table.get(i), objType);
+                            list.add(v);
+                        }
+                        return list;
+                    }
+                    if (Map.class.isAssignableFrom(clazz)) {
+                        Map<Object, Object> map = new HashMap<>();
+                        LuaTable table = val.checktable();
+                        Type[] genericTypes = ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments();
+
+                        Class<?> keyClass = (Class<?>) genericTypes[0];
+                        Class<?> objClass = (Class<?>) genericTypes[1];
+
+                        for (LuaValue key:
+                                table.keys()) {
+                            Object k = luaToJava(key, keyClass);
+                            Object v = luaToJava(table.get(key), objClass);
+                            map.put(k,v);
+                        }
+                        return map;
+                    }
+                }
+            }
+            catch (LuaError ignored) {}
+            throw new LuaToJavaConversionError(val.type(), val.typename(), clazz);
+        }
+    }
+
+    public LuaValue javaToLua(Object val) {
+        if (val == null)
+            return LuaValue.NIL;
+        else if (val instanceof LuaValue l)
+            return l;
+        else if (val instanceof Double d)
+            return LuaValue.valueOf(d);
+        else if (val instanceof String s)
+            return LuaValue.valueOf(s);
+        else if (val instanceof Boolean b)
+            return LuaValue.valueOf(b);
+        else if (val instanceof Integer i)
+            return LuaValue.valueOf(i);
+        else if (val instanceof Float f)
+            return LuaValue.valueOf(f);
+        else if (val instanceof Byte b)
+            return LuaValue.valueOf(b);
+        else if (val instanceof Long l)
+            return LuaValue.valueOf(l);
+        else if (val instanceof Character c)
+            return LuaValue.valueOf(c);
+        else if (val instanceof Short s)
+            return LuaValue.valueOf(s);
+        else if (val instanceof Map<?,?> map)
+            return wrapMap(map);
+        else if (val instanceof List<?> list)
+            return wrapList(list);
+        else if (val instanceof Collection<?> col)
+            return wrapCollection(col);
+        else
+            return wrap(val);
     }
 
     private enum LuaType {
-        STRING(l -> l.tojstring()),
-        BOOLEAN(l -> l.toboolean()),
-        BYTE(l -> l.tobyte()),
-        SHORT(l -> l.toshort()),
-        INTEGER(l -> l.toint()),
-        FLOAT(l -> l.tofloat()),
-        LONG(l -> l.tolong()),
-        DOUBLE(l -> l.todouble());
+        STRING(LuaValue::tojstring),
+        BOOLEAN(LuaValue::toboolean),
+        BYTE(LuaValue::tobyte),
+        SHORT(LuaValue::toshort),
+        INTEGER(LuaValue::toint),
+        FLOAT(LuaValue::tofloat),
+        LONG(LuaValue::tolong),
+        DOUBLE(LuaValue::todouble);
 
         private final Function<LuaValue, Object> returnFunction;
 
@@ -351,7 +363,7 @@ public class LuaTypeManager {
         }
     }
 
-    protected static Map<Class, LuaType> typesToLua = new HashMap<>() {{
+    protected static Map<Class<?>, LuaType> typesToLua = new HashMap<>() {{
         put(String.class, LuaType.STRING);
         put(Boolean.TYPE, LuaType.BOOLEAN);
         put(Byte.TYPE, LuaType.BYTE);
@@ -362,95 +374,137 @@ public class LuaTypeManager {
         put(Double.TYPE, LuaType.DOUBLE);
     }};
 
-    public Object[] matchOverload(Method overload, Varargs args) throws LuaToJavaConversionError, MatchOverloadFailed {
-        Class<?>[] parameters = overload.getParameterTypes();
-        List<Object> params = new ArrayList<>();
-        boolean lastParameterVarargs = overload.isVarArgs();
-        if ((args.narg() != parameters.length && !lastParameterVarargs) ||
-                (args.narg() < parameters.length)) throw new MatchOverloadFailed(overload, args);
-        for (int i = 0; i < parameters.length; i++) {
-            Class parameter = parameters[i];
-            LuaValue lValue = args.arg(i+1);
-            Object v = null;
-            try {
-                v = fromLuaValue(lValue, parameter);
-            }
-            catch (LuaToJavaConversionError e) {
-                if (i == parameters.length - 1 && lastParameterVarargs) {
-                    int l = args.narg() - i;
-                    Class componentType = parameter.getComponentType();
-                    Object remainingVarArgs = Array.newInstance(componentType, l);
-                    for (int j = 0; j < l; j++) {
-                        LuaValue lV = args.arg(parameters.length+j);
-                        Object vA = fromLuaValue(lV, componentType);
-                        Array.set(remainingVarArgs, j, vA);
+    private class SingleMethodFunction extends VarArgFunction {
+
+        private final boolean isStatic;
+        private final Method method;
+        private Object caller;
+
+
+        private final Class<?> clazz;
+        private final Class<?>[] argumentTypes;
+        private final Object[] actualArgs;
+        private final boolean[] requiredNotNil;
+
+        public SingleMethodFunction(Method method) {
+            this.method = method;
+            isStatic = Modifier.isStatic(method.getModifiers());
+            clazz = method.getDeclaringClass();
+            argumentTypes = method.getParameterTypes();
+            actualArgs = new Object[argumentTypes.length];
+            requiredNotNil = getRequiredNotNil(method);
+        }
+
+        @Override
+        public Varargs invoke(Varargs args) {
+
+            if (!isStatic)
+                caller = args.checkuserdata(1, clazz);
+
+            //Fill in actualArgs from args
+            for (int i = 0; i < argumentTypes.length; i++) {
+                int argIndex = i + (isStatic ? 1 : 2);
+                boolean nil = args.isnil(argIndex);
+                if (nil && requiredNotNil[i])
+                    throw new InvalidLuaArgError("bad argument: " + method.getName() + " " + argIndex + " do not allow nil values, expected " + FiguraDocsManager.getNameFor(argumentTypes[i]));
+                if (argIndex <= args.narg() && !nil) {
+                    try {
+                        actualArgs[i] = switch (argumentTypes[i].getName()) {
+                            case "java.lang.Number", "java.lang.Double", "double" -> args.checkdouble(argIndex);
+                            case "java.lang.String" -> args.checkjstring(argIndex);
+                            case "java.lang.Boolean", "boolean" -> args.toboolean(argIndex);
+                            case "java.lang.Float", "float" -> (float) args.checkdouble(argIndex);
+                            case "java.lang.Integer", "int" -> args.checkint(argIndex);
+                            case "java.lang.Long", "long" -> args.checklong(argIndex);
+                            case "org.luaj.vm2.LuaTable" -> args.checktable(argIndex);
+                            case "org.luaj.vm2.LuaFunction" -> args.checkfunction(argIndex);
+                            case "org.luaj.vm2.LuaValue" -> args.arg(argIndex);
+                            case "java.lang.Object" -> luaToJava(args.arg(argIndex));
+                            default -> argumentTypes[i].getName().startsWith("[") ? luaVarargToJava(args, argIndex, argumentTypes[i]) : args.checkuserdata(argIndex, argumentTypes[i]);
+                        };
+                    } catch (LuaError err) {
+                        String expectedType = FiguraDocsManager.getNameFor(argumentTypes[i]);
+                        String actualType;
+                        if (args.arg(argIndex).type() == LuaValue.TUSERDATA)
+                            actualType = FiguraDocsManager.getNameFor(args.arg(argIndex).checkuserdata().getClass());
+                        else
+                            actualType = args.arg(argIndex).typename();
+                        throw new InvalidLuaArgError("Invalid argument " + argIndex + " to function " + method.getName() + ". Expected " + expectedType + ", but got " + actualType);
                     }
-                    v = remainingVarArgs;
+                } else {
+                    actualArgs[i] = switch (argumentTypes[i].getName()) {
+                        case "double" -> 0D;
+                        case "int" -> 0;
+                        case "long" -> 0L;
+                        case "float" -> 0f;
+                        case "boolean" -> false;
+                        default -> null;
+                    };
                 }
             }
-            params.add(v);
+
+            //Invoke the wrapped method
+            Object result;
+            try {
+                result = method.invoke(caller, actualArgs);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw e.getCause() instanceof LuaError l ? l : new LuaError(e.getCause());
+            }
+
+            //Convert the return value
+            if(result instanceof Varargs v)
+                return v;
+            else if(result != null && result.getClass().isArray()){
+                return wrapArray(result);
+            }
+            return javaToLua(result);
         }
-        return params.toArray();
+
+        @Override
+        public String tojstring() {
+            return "function: " + method.getName();
+        }
     }
 
-    public Object fromLuaValue(LuaValue val, Class type) throws LuaToJavaConversionError {
-        if (val.isnil()) return null;
-        try {
-            if (type.isInstance(val)) {
-                return val;
-            }
-            if (val.isuserdata()) {
-                Object ud = wrap(val);
-                if (type.isInstance(ud)) {
-                    return ud;
-                }
-            }
-            LuaType tp = typesToLua.get(type);
-            if (tp != null) {
-                return tp.get(val);
-            }
-            if (val.istable()) {
-                if (type.isArray()) {
-                    LuaTable table = val.checktable();
-                    Class objType = type.getComponentType();
+    private class OverloadMethodFunction extends VarArgFunction {
+        private final Set<SingleMethodFunction> overloads;
 
-                    Object arr = Array.newInstance(objType, table.length());
-                    for (int i = 1; i <= table.length(); i++) {
-                        Object v = fromLuaValue(table.get(i), objType);
-                        Array.set(arr, i-1, v);
-                    }
-                    return arr;
-                }
-                if (Collection.class.isAssignableFrom(type)) {
-                    List<Object> list = new ArrayList<>();
-                    LuaTable table = val.checktable();
-
-                    Class objType = (Class)(((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments()[0]);
-                    for (int i = 1; i <= table.length(); i++) {
-                        Object v = fromLuaValue(table.get(i), objType);
-                        list.add(v);
-                    }
-                    return list;
-                }
-                if (Map.class.isAssignableFrom(type)) {
-                    Map<Object, Object> map = new HashMap<>();
-                    LuaTable table = val.checktable();
-                    Type[] genericTypes = ((ParameterizedType) type.getGenericSuperclass()).getActualTypeArguments();
-
-                    Class keyClass = (Class) genericTypes[0];
-                    Class objClass = (Class) genericTypes[1];
-
-                    for (LuaValue key:
-                            table.keys()) {
-                        Object k = fromLuaValue(key, keyClass);
-                        Object v = fromLuaValue(table.get(key), objClass);
-                        map.put(k,v);
-                    }
-                    return map;
-                }
+        public OverloadMethodFunction(Method[] methods) {
+            List<SingleMethodFunction> list = new ArrayList<>();
+            for (Method method : methods) {
+                SingleMethodFunction singleMethodFunction = new SingleMethodFunction(method);
+                list.add(singleMethodFunction);
             }
+            overloads = Set.of(list.toArray(new SingleMethodFunction[0]));
         }
-        catch (LuaError ignored) {}
-        throw new LuaToJavaConversionError(val.type(), val.typename(), type);
+
+        @Override
+        public Varargs invoke(Varargs args) {
+            Iterator<SingleMethodFunction> iter = overloads.iterator();
+            ArrayList<Exception> errors = new ArrayList<>();
+            while (iter.hasNext()){
+                try {
+                    return iter.next().invoke(args);
+                } catch (LuaError err){
+                    if (iter.hasNext()){
+                        errors.add(err);
+                    } else {
+                        if(errors.stream().anyMatch(it -> !(it instanceof InvalidLuaArgError))){
+                            Exception e = errors.stream().filter(it -> !(it instanceof InvalidLuaArgError)).findFirst().orElseGet(() -> new LuaError(""));
+                            throw e instanceof LuaError le ? le : new LuaError(e);
+                        } else {
+                            throw new LuaError("nya");
+                        }
+                    }
+                }
+            }
+            throw new LuaError("wtf?");
+        }
+    }
+
+    private static class InvalidLuaArgError extends LuaError {
+        public InvalidLuaArgError(String message) {
+            super(message);
+        }
     }
 }
