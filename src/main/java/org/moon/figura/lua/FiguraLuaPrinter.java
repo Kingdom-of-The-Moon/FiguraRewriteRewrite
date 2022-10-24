@@ -275,7 +275,7 @@ public class FiguraLuaPrinter {
             for (Method method : clazz.getMethods()) {
                 String name = method.getName();
                 if (method.isAnnotationPresent(LuaWhitelist.class) && !name.startsWith("__") && !methods.contains(name)) {
-                    text.append(getTableEntry(typeManager, spacing, LuaValue.valueOf(name), typeManager.getWrapper(method), hasTooltip, depth, indent));
+                    text.append(getTableEntry(typeManager, spacing, LuaValue.valueOf(name), MethodWrapper.of(typeManager, method), hasTooltip, depth, indent));
                     methods.add(name);
                 }
             }

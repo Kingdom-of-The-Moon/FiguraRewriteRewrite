@@ -21,48 +21,28 @@ public class VectorsAPI {
     public static final VectorsAPI INSTANCE = new VectorsAPI();
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class},
-                            argumentNames = {"x", "y"},
-                            returnType = FiguraVec2.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"},
-                            returnType = FiguraVec3.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"},
-                            returnType = FiguraVec4.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w", "t"},
-                            returnType = FiguraVec5.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w", "t", "h"},
-                            returnType = FiguraVec6.class
-                    )
-            },
-            value = "vectors.vec"
-    )
-    public static Object vec(Double x, Double y, Double z, Double w, Double t, Double h) {
-        if (h != null)
-            return vec6(x, y, z, w, t, h);
-        if (t != null)
-            return vec5(x, y, z, w, t);
-        if (w != null)
-            return vec4(x, y, z, w);
-        if (z != null)
-            return vec3(x, y, z);
-        if (y != null)
-            return vec2(x, y);
-        throw new LuaError("Invalid arguments to vec(), needs at least 2 numbers!");
+    public static FiguraVec6 vec(Double x, Double y, Double z, Double w, Double t, Double h) {
+        return vec6(x, y, z, w, t, h);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec5 vec(Double x, Double y, Double z, Double w, Double t) {
+        return vec5(x, y, z, w, t);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 vec(Double x, Double y, Double z, Double w) {
+        return vec4(x, y, z, w);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 vec(Double x, Double y, Double z) {
+        return vec3(x, y, z);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec2 vec(Double x, Double y) {
+        return vec2(x, y);
     }
 
     @LuaWhitelist
