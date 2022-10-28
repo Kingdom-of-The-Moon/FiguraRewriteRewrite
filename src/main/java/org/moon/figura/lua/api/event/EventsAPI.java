@@ -2,7 +2,6 @@ package org.moon.figura.lua.api.event;
 
 import org.luaj.vm2.LuaFunction;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
@@ -34,40 +33,28 @@ public class EventsAPI {
     //Maybe in the __index comment we give a docs list of the events?
 
     @LuaWhitelist
-    @LuaFieldDoc("events.entity_init")
     public final LuaEvent ENTITY_INIT;
     @LuaWhitelist
-    @LuaFieldDoc("events.tick")
     public final LuaEvent TICK;
     @LuaWhitelist
-    @LuaFieldDoc("events.world_tick")
     public final LuaEvent WORLD_TICK;
     @LuaWhitelist
-    @LuaFieldDoc("events.render")
     public final LuaEvent RENDER;
     @LuaWhitelist
-    @LuaFieldDoc("events.post_render")
     public final LuaEvent POST_RENDER;
     @LuaWhitelist
-    @LuaFieldDoc("events.world_render")
     public final LuaEvent WORLD_RENDER;
     @LuaWhitelist
-    @LuaFieldDoc("events.post_world_render")
     public final LuaEvent POST_WORLD_RENDER;
     @LuaWhitelist
-    @LuaFieldDoc("events.chat_send_message")
     public final LuaEvent CHAT_SEND_MESSAGE;
     @LuaWhitelist
-    @LuaFieldDoc("events.chat_receive_message")
     public final LuaEvent CHAT_RECEIVE_MESSAGE;
     @LuaWhitelist
-    @LuaFieldDoc("events.skull_render")
     public final LuaEvent SKULL_RENDER;
     @LuaWhitelist
-    @LuaFieldDoc("events.mouse_scroll")
     public final LuaEvent MOUSE_SCROLL;
     @LuaWhitelist
-    @LuaFieldDoc("events.use_item")
     public final LuaEvent USE_ITEM;
 
     @LuaWhitelist

@@ -5,10 +5,7 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,43 +42,39 @@ public class LuaTypeManager {
         while (currentClass.isAnnotationPresent(whitelist)) {
             woe:
             for (Method method : currentClass.getDeclaredMethods()) {
-                if (!method.isAnnotationPresent(whitelist))
+                if (!method.isAnnotationPresent(whitelist) || method.isSynthetic())
                     continue;
                 String name = method.getName();
-                if ("__index".equals(name) && metatable.rawget("__index") == LuaValue.NIL) {
-                    //Custom __index implementation. First checks the regular __index table, and if it gets NIL, then calls the custom-defined __index function.
-                    metatable.set("__index", new TwoArgFunction() {
-                        final LuaFunction indexer = MethodWrapper.of(LuaTypeManager.this, method);
-
-                        @Override
-                        public LuaValue call(LuaValue arg1, LuaValue arg2) {
-                            LuaValue result = indexTable.get(arg2);
-                            return result != LuaValue.NIL ? result : indexer.call(arg1, arg2);
-                        }
-                    });
-                } else {
-                    List<Method> methods = overloads.compute(name, (k, v) -> v == null ? new LinkedList<>() : v);
-                    for (int i = 0; i < methods.size(); i ++) {
-                        Method method1 = methods.get(i);
-                        if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {
-                            if (!method.getReturnType().isAssignableFrom(method1.getReturnType()))
-                                methods.set(i, method);
-                            continue woe;
-                        }
-                    }
-//                        try {
-//                            if (clazz.getDeclaredMethod(name, method.getParameterTypes()) != null)
-//                                continue;
-//                        } catch (NoSuchMethodException accepted) {
-//                        }
-                    methods.add(method);
-                }
+                List<Method> methods = overloads.compute(name, (k, v) -> v == null ? new LinkedList<>() : v);
+//                for (int i = 0; i < methods.size(); i ++) {
+//                    Method method1 = methods.get(i);
+//                    if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {
+//                        if (!method.getReturnType().isAssignableFrom(method1.getReturnType()))
+//                            methods.set(i, method);
+//                        continue woe;
+//                    }
+//                }
+                methods.add(method);
             }
             currentClass = currentClass.getSuperclass();
         }
 
         for (String methodName : overloads.keySet()) {
-            Method[] methods = overloads.get(methodName).toArray(Method[]::new);
+            Method[] methods = filterOverrides(overloads.get(methodName));
+
+            if("__index".equals(methodName)){
+                metatable.set("__index", new TwoArgFunction() {
+                    final LuaFunction indexer = MethodWrapper.of(LuaTypeManager.this, methods);
+
+                    @Override
+                    public LuaValue call(LuaValue arg1, LuaValue arg2) {
+                        if (!arg1.isuserdata(methods[0].getDeclaringClass())) return NIL;
+                        LuaValue result = indexTable.get(arg2);
+                        return result != LuaValue.NIL ? result : indexer.call(arg1, arg2);
+                    }
+                });
+                continue;
+            }
             (methodName.startsWith("__") ? metatable : indexTable).set(methodName, MethodWrapper.of(this, methods));
         }
 
@@ -113,6 +106,11 @@ public class LuaTypeManager {
         metatables.put(clazz, metatable);
     }
 
+    private static Method[] filterOverrides(List<Method> overloads) {
+
+        return overloads.toArray(Method[]::new);
+    }
+
     public void dumpMetatables(LuaTable table) {
         for (Map.Entry<Class<?>, LuaTable> entry : metatables.entrySet()) {
             if (!entry.getKey().isAnnotationPresent(LuaTypeDoc.class))
@@ -126,6 +124,8 @@ public class LuaTypeManager {
 
     public String getTypeName(Class<?> clazz) {
         return namesCache.computeIfAbsent(clazz, someClass -> {
+            if (someClass == null)
+                return LuaValue.NIL.typename();
             if (someClass.isAnnotationPresent(LuaTypeDoc.class))
                 return someClass.getAnnotation(LuaTypeDoc.class).name();
             return someClass.getSimpleName();
@@ -215,7 +215,7 @@ public class LuaTypeManager {
             return true;
         if(type.isAssignableFrom(value.getClass()))
             return true;
-        LuaType luaType = typesToLua.get(type);
+        LuaType luaType = luaToJavaTypes.get(type);
         if (luaType != null)
             return luaType.check(value);
         if (value.istable() && (type.isArray() || Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type))) {
@@ -255,15 +255,31 @@ public class LuaTypeManager {
     }
 
     public Object luaToJava(LuaValue value, Class<?> type) {
+        if (value == null)
+            return null;
+        Class<? extends LuaValue> valueClass = value.getClass();
         if (type == null)
             return luaToJava(value);
         if (value.isnil())
             return null;
-        if (type.isAssignableFrom(value.getClass()))
+        if (type == Object.class)
+            if (value.isuserdata())
+                return value.checkuserdata();
+            else if (LuaString.class.isAssignableFrom(valueClass))
+                return value.checkjstring();
+            else if (LuaInteger.class.isAssignableFrom(valueClass))
+                return value.checkint();
+            else if (LuaNumber.class.isAssignableFrom(valueClass))
+                return value.checkdouble();
+            else if (LuaBoolean.class.isAssignableFrom(valueClass))
+                return value.checkboolean();
+            else
+                return null;
+        if (type.isAssignableFrom(valueClass))
             return type.cast(value);
         if (value.isuserdata(type))
             return value.checkuserdata(type);
-        LuaType luaToJava = typesToLua.get(type);
+        LuaType luaToJava = luaToJavaTypes.get(type);
         if (luaToJava != null)
             return luaToJava.get(value);
         if (value.istable()) {
@@ -346,7 +362,15 @@ public class LuaTypeManager {
         return values;
     }
 
+    public boolean canInfer(Class<?> type) {
+        return luaToJavaTypes.containsKey(type) && !type.isPrimitive();
+    }
+
     private enum LuaType {
+        BYTE(LuaValue::tobyte, LuaValue::isint),
+        SHORT(LuaValue::toshort, LuaValue::isint),
+        LONG(LuaValue::tolong, LuaValue::isint),
+        FLOAT(value -> (float)value.checkdouble(), LuaValue::isnumber),
         BOOLEAN(LuaValue::checkboolean, LuaValue::isboolean),
         DOUBLE(LuaValue::checkdouble, LuaValue::isnumber),
         INTEGER(LuaValue::checkint, LuaValue::isint),
@@ -372,21 +396,21 @@ public class LuaTypeManager {
         }
     }
 
-    protected static Map<Class<?>, LuaType> typesToLua = new HashMap<>() {{
+    protected static Map<Class<?>, LuaType> luaToJavaTypes = new HashMap<>() {{
         put(String.class, LuaType.STRING);
         put(Boolean.TYPE, LuaType.BOOLEAN);
-        put(Byte.TYPE, LuaType.INTEGER);
-        put(Short.TYPE, LuaType.INTEGER);
+        put(Byte.TYPE, LuaType.BYTE);
+        put(Short.TYPE, LuaType.SHORT);
         put(Integer.TYPE, LuaType.INTEGER);
-        put(Float.TYPE, LuaType.DOUBLE);
-        put(Long.TYPE, LuaType.INTEGER);
+        put(Float.TYPE, LuaType.FLOAT);
+        put(Long.TYPE, LuaType.LONG);
         put(Double.TYPE, LuaType.DOUBLE);
         put(Boolean.class, LuaType.BOOLEAN);
-        put(Byte.class, LuaType.INTEGER);
-        put(Short.class, LuaType.INTEGER);
+        put(Byte.class, LuaType.BYTE);
+        put(Short.class, LuaType.SHORT);
         put(Integer.class, LuaType.INTEGER);
-        put(Float.class, LuaType.DOUBLE);
-        put(Long.class, LuaType.INTEGER);
+        put(Float.class, LuaType.FLOAT);
+        put(Long.class, LuaType.LONG);
         put(Double.class, LuaType.DOUBLE);
     }};
 

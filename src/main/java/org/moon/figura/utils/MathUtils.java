@@ -73,9 +73,9 @@ public class MathUtils {
         transformMatrix.invert();
 
         FiguraVec3 ret = vec.copy();
-        ret.subtract(pos.x, pos.y, pos.z);
+        ret.sub(pos.x, pos.y, pos.z);
         ret.transform(transformMatrix);
-        ret.multiply(-1, 1, 1);
+        ret.mul(-1, 1, 1);
 
         transformMatrix.free();
         return ret;

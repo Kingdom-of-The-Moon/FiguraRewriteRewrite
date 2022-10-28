@@ -301,7 +301,7 @@ public class FiguraModelPartReader {
 
         //Cache difference between from and to
         ftDiff.set(to);
-        ftDiff.subtract(from);
+        ftDiff.sub(from);
 
         //Iterate over faces, add them
         for (String direction : faceData.keySet())
@@ -326,7 +326,7 @@ public class FiguraModelPartReader {
             readVec4(uv, face, "uv");
             for (int i = 0; i < 4; i++) {
                 tempPos.set(ftDiff);
-                tempPos.multiply(faceData.get(direction)[i]);
+                tempPos.mul(faceData.get(direction)[i]);
                 tempPos.add(from);
 
                 FiguraVec2 normalizedUv = uvValues[(i + rotation)%4];
@@ -406,8 +406,8 @@ public class FiguraModelPartReader {
             p1.set(posArr[0], posArr[1], posArr[2]);
             p2.set(posArr[3], posArr[4], posArr[5]);
             p3.set(posArr[6], posArr[7], posArr[8]);
-            p3.subtract(p2);
-            p1.subtract(p2);
+            p3.sub(p2);
+            p1.sub(p2);
             p3.cross(p1);
             p3.normalize();
             //p3 now contains the normal vector

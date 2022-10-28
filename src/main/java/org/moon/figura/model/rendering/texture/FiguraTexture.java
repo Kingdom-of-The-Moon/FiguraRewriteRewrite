@@ -15,8 +15,6 @@ import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -143,24 +141,16 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("texture.get_name")
     public String getName() {
         return name;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("texture.get_dimensions")
     public FiguraVec2 getDimensions() {
         return FiguraVec2.of(getWidth(), getHeight());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Integer.class, Integer.class},
-                    argumentNames = {"x", "y"}
-            ),
-            value = "texture.get_pixel")
     public FiguraVec4 getPixel(int x, int y) {
         try {
             return ColorUtils.abgrToRGBA(texture.getPixelRGBA(x, y));
@@ -170,23 +160,17 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, FiguraVec3.class},
-                            argumentNames = {"x", "y", "rgb"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, FiguraVec4.class},
-                            argumentNames = {"x", "y", "rgba"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "r", "g", "b", "a"}
-                    )
-            },
-            value = "texture.set_pixel")
-    public void setPixel(int x, int y, Object r, Double g, Double b, Double a) {
+    public void setPixel(int x, int y, @LuaNotNil FiguraVec3 rgb){
+        setPixel(x, y, rgb.x, rgb.y, rgb.z, 0);
+    }
+
+    @LuaWhitelist
+    public void setPixel(int x, int y, @LuaNotNil FiguraVec4 rgba){
+        setPixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
+    }
+
+    @LuaWhitelist
+    public void setPixel(int x, int y, double r, double g, double b, double a) {
         try {
             backupImage();
             texture.setPixelRGBA(x, y, ColorUtils.rgbaToIntABGR(parseColor("setPixel", r, g, b, a)));
@@ -196,23 +180,17 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, Integer.class, Integer.class, FiguraVec3.class},
-                            argumentNames = {"x", "y", "width", "height", "rgb"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, Integer.class, Integer.class, FiguraVec4.class},
-                            argumentNames = {"x", "y", "width", "height", "rgba"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class, Integer.class, Integer.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "width", "height", "r", "g", "b", "a"}
-                    )
-            },
-            value = "texture.fill")
-    public void fill(int x, int y, int width, int height, Object r, Double g, Double b, Double a) {
+    public void fill(int x, int y, int width, int height, @LuaNotNil FiguraVec3 rgb){
+        fill(x, y, width, height, rgb.x, rgb.y, rgb.z, 0);
+    }
+
+    @LuaWhitelist
+    public void fill(int x, int y, int width, int height, @LuaNotNil FiguraVec4 rgba){
+        fill(x, y, width, height, rgba.x, rgba.y, rgba.z, rgba.w);
+    }
+
+    @LuaWhitelist
+    public void fill(int x, int y, int width, int height, double r, double g, double b, double a) {
         try {
             backupImage();
             texture.fillRect(x, y, width, height, ColorUtils.rgbaToIntABGR(parseColor("fill", r, g, b, a)));
@@ -222,13 +200,11 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("texture.update")
     public void update() {
         this.dirty = true;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("texture.restore")
     public void restore() {
         if (backup == null)
             return;
@@ -238,7 +214,6 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("texture.save")
     public String save() {
         try {
             return Base64.getEncoder().encodeToString(texture.asByteArray());
@@ -248,20 +223,13 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Integer.class, Integer.class, Integer.class, Integer.class, LuaFunction.class},
-                    argumentNames = {"x", "y", "width", "height", "func"}
-            ),
-            value = "texture.apply_func"
-    )
     public void applyFunc(int x, int y, int width, int height, @LuaNotNil LuaFunction function) {
         for (int i = y; i < y + height; i++) {
             for (int j = x; j < x + width; j++) {
                 FiguraVec4 color = getPixel(j, i);
                 LuaValue result = function.call(owner.luaRuntime.typeManager.javaToLua(color));
                 if (!result.isnil() && result.isuserdata(FiguraVec4.class))
-                    setPixel(j, i, result.checkuserdata(FiguraVec4.class), null, null, null);
+                    setPixel(j, i, (FiguraVec4) result.checkuserdata(FiguraVec4.class));
             }
         }
     }

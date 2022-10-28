@@ -17,13 +17,10 @@ import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.PlayerAPI;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.EntityUtils;
@@ -47,42 +44,24 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_biome"
-    )
-    public static BiomeAPI getBiome(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getBiome", x, y, z);
+    public static BiomeAPI getBiome(Double x, Double y, Double z){
+        return getBiome(LuaUtils.freeVec3("getBiome", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static BiomeAPI getBiome(FiguraVec3 pos) {
         BiomeAPI result = new BiomeAPI(getCurrentWorld().getBiome(pos.asBlockPos()).value(), pos.asBlockPos());
         pos.free();
         return result;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_blockstate"
-    )
-    public static BlockStateAPI getBlockState(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getBlockState", x, y, z);
+    public static BlockStateAPI getBlockState(Double x, Double y, Double z){
+        return getBlockState(LuaUtils.freeVec3("getBlockState", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static BlockStateAPI getBlockState(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
@@ -91,22 +70,12 @@ public class WorldAPI {
         return new BlockStateAPI(world.getBlockState(blockPos), blockPos);
     }
 
+    public static int getRedstonePower(Double x, Double y, Double z){
+        return getRedstonePower(LuaUtils.freeVec3("getRedstonePower", x, y, z));
+    }
+
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_redstone_power"
-    )
-    public static int getRedstonePower(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getRedstonePower", x, y, z);
+    public static int getRedstonePower(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         if (getCurrentWorld().getChunkAt(blockPos) == null)
@@ -115,21 +84,12 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_strong_redstone_power"
-    )
-    public static int getStrongRedstonePower(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getStrongRedstonePower", x, y, z);
+    public static int getStrongRedstonePower(Double x, Double y, Double z){
+        return getStrongRedstonePower(LuaUtils.freeVec3("getStrongRedstonePower", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static int getStrongRedstonePower(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         if (getCurrentWorld().getChunkAt(blockPos) == null)
@@ -138,165 +98,107 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Double.class,
-                            argumentNames = "delta"
-                    )
-            },
-            value = "world.get_time"
-    )
+    public static double getTime(){
+        return getTime(0);
+    }
+
+    @LuaWhitelist
     public static double getTime(double delta) {
         return getCurrentWorld().getGameTime() + delta;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Double.class,
-                            argumentNames = "delta"
-                    )
-            },
-            value = "world.get_time_of_day"
-    )
+    public static double getTimeOfDay(){
+        return getTimeOfDay(0);
+    }
+
+    @LuaWhitelist
     public static double getTimeOfDay(double delta) {
         return getCurrentWorld().getDayTime() + delta;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload,
-            value = "world.get_moon_phase"
-    )
     public static int getMoonPhase() {
         return getCurrentWorld().getMoonPhase();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Double.class,
-                            argumentNames = "delta"
-                    )
-            },
-            value = "world.get_rain_gradient"
-    )
-    public static double getRainGradient(Float delta) {
-        if (delta == null) delta = 1f;
+    public static double getRainGradient(){
+        return getRainGradient(1f);
+    }
+
+    @LuaWhitelist
+    public static double getRainGradient(float delta) {
         return getCurrentWorld().getRainLevel(delta);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("world.is_thundering")
     public static boolean isThundering() {
         return getCurrentWorld().isThundering();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_light_level"
-    )
-    public static Integer getLightLevel(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getLightLevel", x, y, z);
+    public static int getLightLevel(Double x, Double y, Double z){
+        return getLightLevel(LuaUtils.freeVec3("getLightLevel", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static int getLightLevel(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
         if (world.getChunkAt(blockPos) == null)
-            return null;
+            return 0;
         world.updateSkyBrightness();
         return world.getLightEngine().getRawBrightness(blockPos, world.getSkyDarken());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_sky_light_level"
-    )
-    public static Integer getSkyLightLevel(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getSkyLightLevel", x, y, z);
+    public static int getSkyLightLevel(Double x, Double y, Double z){
+        return getSkyLightLevel(LuaUtils.freeVec3("getSkyLightLevel", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static int getSkyLightLevel(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
         if (world.getChunkAt(blockPos) == null)
-            return null;
+            return 0;
         return world.getBrightness(LightLayer.SKY, blockPos);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.get_block_light_level"
-    )
-    public static Integer getBlockLightLevel(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("getBlockLightLevel", x, y, z);
+    public static int getBlockLightLevel(Double x, Double y, Double z){
+        return getBlockLightLevel(LuaUtils.freeVec3("getBlockLightLevel", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static int getBlockLightLevel(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
         if (world.getChunkAt(blockPos) == null)
-            return null;
+            return 0;
         return world.getBrightness(LightLayer.BLOCK, blockPos);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "world.is_open_sky"
-    )
-    public static Boolean isOpenSky(Object x, Double y, Double z) {
-        FiguraVec3 pos = LuaUtils.parseVec3("isOpenSky", x, y, z);
+    public static boolean isOpenSky(Double x, Double y, Double z){
+        return isOpenSky(LuaUtils.freeVec3("isOpenSky", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static boolean isOpenSky(FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
         if (world.getChunkAt(blockPos) == null)
-            return null;
+            return false;
         return world.canSeeSky(blockPos);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("world.get_players")
     public static Map<String, EntityAPI<?>> getPlayers() {
         HashMap<String, EntityAPI<?>> playerList = new HashMap<>();
         for (Player player : getCurrentWorld().players())
@@ -305,14 +207,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "UUID"
-            ),
-            value = "world.get_entity"
-    )
-    public static EntityAPI<?> getEntity(@LuaNotNil String uuid) {
+    public static EntityAPI<?> getEntity(String uuid) {
         try {
             return EntityAPI.wrap(EntityUtils.getEntityByUUID(UUID.fromString(uuid)));
         } catch (Exception ignored) {
@@ -321,7 +216,6 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("world.player_vars")
     public static Map<String, LuaTable> playerVars() {
         HashMap<String, LuaTable> playerList = new HashMap<>();
         for (Player player : getCurrentWorld().players()) {
@@ -333,66 +227,49 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "block"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class},
-                            argumentNames = {"block", "pos"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"block", "x", "y", "z"}
-                    )
-            },
-            value = "world.new_block"
-    )
-    public static BlockStateAPI newBlock(@LuaNotNil String string, Object x, Double y, Double z) {
-        BlockPos pos = LuaUtils.parseVec3("newBlock", x, y, z).asBlockPos();
+    public static BlockStateAPI newBlock(String block){
+        return newBlock(block, 0, 0, 0);
+    }
+
+    @LuaWhitelist
+    public static BlockStateAPI newBlock(String block, double x, double y, double z){
+        return newBlock(block, LuaUtils.freeVec3("newBlock", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static BlockStateAPI newBlock(String block, FiguraVec3 pos) {
+        BlockPos blockPos = pos.asBlockPos();
         try {
-            BlockState block = BlockStateArgument.block(new CommandBuildContext(RegistryAccess.BUILTIN.get())).parse(new StringReader(string)).getState();
-            return new BlockStateAPI(block, pos);
+            BlockState blockState = BlockStateArgument.block(new CommandBuildContext(RegistryAccess.BUILTIN.get())).parse(new StringReader(block)).getState();
+            return new BlockStateAPI(blockState, blockPos);
         } catch (Exception e) {
-            throw new LuaError("Could not parse block state from string: " + string);
+            throw new LuaError("Could not parse block state from string: " + block);
         }
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Integer.class},
-                            argumentNames = {"item", "count"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Integer.class, Integer.class},
-                            argumentNames = {"item", "count", "damage"}
-                    )
-            },
-            value = "world.new_item"
-    )
-    public static ItemStackAPI newItem(@LuaNotNil String string, Integer count, Integer damage) {
+    public static ItemStackAPI newItem(String item){
+        return newItem(item, 1);
+    }
+
+    @LuaWhitelist
+    public static ItemStackAPI newItem(String item, int count){
+        return newItem(item, count, 0);
+    }
+
+    @LuaWhitelist
+    public static ItemStackAPI newItem(String item, int count, int damage) {
         try {
-            ItemStack item = ItemArgument.item(new CommandBuildContext(RegistryAccess.BUILTIN.get())).parse(new StringReader(string)).createItemStack(1, false);
-            if (count != null)
-                item.setCount(count);
-            if (damage != null)
-                item.setDamageValue(damage);
-            return new ItemStackAPI(item);
+            ItemStack itemStack = ItemArgument.item(new CommandBuildContext(RegistryAccess.BUILTIN.get())).parse(new StringReader(item)).createItemStack(1, false);
+            itemStack.setCount(count);
+            itemStack.setDamageValue(damage);
+            return new ItemStackAPI(itemStack);
         } catch (Exception e) {
-            throw new LuaError("Could not parse item stack from string: " + string);
+            throw new LuaError("Could not parse item stack from string: " + item);
         }
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("world.exists")
     public static boolean exists() {
         return getCurrentWorld() != null;
     }

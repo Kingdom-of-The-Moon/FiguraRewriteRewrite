@@ -10,8 +10,6 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.List;
@@ -31,19 +29,15 @@ public class FiguraKeybind {
     private boolean isDown, override;
 
     @LuaWhitelist
-    @LuaFieldDoc("keybind.on_press")
     public LuaFunction onPress;
 
     @LuaWhitelist
-    @LuaFieldDoc("keybind.on_release")
     public LuaFunction onRelease;
 
     @LuaWhitelist
-    @LuaFieldDoc("keybind.enabled")
     public boolean enabled = true;
 
     @LuaWhitelist
-    @LuaFieldDoc("keybind.gui")
     public boolean gui;
 
     public FiguraKeybind(Avatar owner, String name, InputConstants.Key key) {
@@ -124,43 +118,31 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "key"
-            ),
-            value = "keybind.set_key"
-    )
     public void setKey(@LuaNotNil String key) {
         this.key = parseStringKey(key);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("keybind.is_default")
     public boolean isDefault() {
         return this.key.equals(this.defaultKey);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("keybind.get_key")
     public String getKey() {
         return this.key.getName();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("keybind.get_key_name")
     public String getKeyName() {
         return this.key.getDisplayName().getString();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("keybind.get_name")
     public String getName() {
         return this.name;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("keybind.is_pressed")
     public boolean isPressed() {
         return (this.gui || Minecraft.getInstance().screen == null) && this.isDown;
     }
@@ -178,15 +160,20 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public void __newindex(String key, Object value) {
+    public void __newindex(String key, LuaFunction function){
         if (key == null) return;
-        LuaFunction func = value instanceof LuaFunction f ? f : null;
-        boolean bool = value instanceof Boolean b ? b : false;
         switch (key) {
-            case "onPress" -> onPress = func;
-            case "onRelease" -> onRelease = func;
-            case "enabled" -> enabled = bool;
-            case "gui" -> gui = bool;
+            case "onPress" -> onPress = function;
+            case "onRelease" -> onRelease = function;
+        }
+    }
+
+    @LuaWhitelist
+    public void __newindex(String key, boolean value) {
+        if (key == null) return;
+        switch (key) {
+            case "enabled" -> enabled = value;
+            case "gui" -> gui = value;
         }
     }
 

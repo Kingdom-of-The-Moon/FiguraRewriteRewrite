@@ -6,10 +6,9 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.ColorUtils;
@@ -67,107 +66,64 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "text"
-                    )
-            },
-            value = "text_task.text"
-    )
-    public RenderTask text(String text) {
-        this.text = text == null ? null : TextUtils.splitText(TextUtils.noBadges4U(TextUtils.tryParseJson(text)), "\n");
-        if (text != null)
-            this.cachedComplexity = text.length() + 1;
+    public RenderTask text(){
+        text = null;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.is_centered")
+    public RenderTask text(String text) {
+        this.text = TextUtils.splitText(TextUtils.noBadges4U(TextUtils.tryParseJson(text)), "\n");
+        this.cachedComplexity = text.length() + 1;
+        return this;
+    }
+
+    @LuaWhitelist
     public boolean isCentered() {
         return this.centered;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "centered"
-                    )
-            },
-            value = "text_task.centered"
-    )
     public RenderTask centered(boolean centered) {
         this.centered = centered;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.has_shadow")
     public boolean hasShadow() {
         return this.shadow;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "shadow"
-                    )
-            },
-            value = "text_task.shadow"
-    )
     public RenderTask shadow(boolean shadow) {
         this.shadow = shadow;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.has_outline")
     public boolean hasOutline() {
         return this.outline;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "outline"
-                    )
-            },
-            value = "text_task.outline"
-    )
     public RenderTask outline(boolean outline) {
         this.outline = outline;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.get_outline_color")
     public FiguraVec3 getOutlineColor() {
         return this.outlineColor;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "color"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "text_task.outline_color"
-    )
-    public TextTask outlineColor(Object x, Double y, Double z) {
-        this.outlineColor = LuaUtils.parseVec3("outlineColor", x, y, z);
+    public TextTask outlineColor(Double r, Double g, Double b){
+        return outlineColor(LuaUtils.freeVec3("outlineColor", r, g, b));
+    }
+
+    @LuaWhitelist
+    public TextTask outlineColor(@LuaNotNil FiguraVec3 color) {
+        this.outlineColor = color;
         return this;
     }
 

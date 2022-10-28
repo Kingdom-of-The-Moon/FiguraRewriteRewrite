@@ -2,8 +2,6 @@ package org.moon.figura.lua.api.vanilla_model;
 
 import net.minecraft.client.model.EntityModel;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.Collection;
@@ -49,13 +47,6 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "visible"
-            ),
-            value = "vanilla_group.set_visible"
-    )
     public void setVisible(boolean visible) {
         this.visible = visible;
         for (VanillaPart part : cachedParts)
@@ -64,7 +55,6 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_group.get_visible")
     public boolean getVisible() {
         return this.visible;
     }

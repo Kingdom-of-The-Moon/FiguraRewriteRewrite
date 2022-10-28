@@ -1,9 +1,14 @@
 package org.moon.figura.math.vector;
 
+import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.FiguraLuaPrinter;
+import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.math.matrix.FiguraMatrix;
+import org.moon.figura.utils.MathUtils;
 import org.moon.figura.utils.caching.CachedType;
 
+@LuaWhitelist
 public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends FiguraMatrix<M, T>> implements CachedType<T> {
 
     public abstract double lengthSquared();
@@ -16,11 +21,11 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
     public abstract T set(T other);
     public abstract T add(T other);
-    public abstract T subtract(T other);
+    public abstract T sub(T other);
     public abstract T offset(double factor);
-    public abstract T multiply(T other);
+    public abstract T mul(T other);
     public abstract T transform(M mat);
-    public abstract T divide(T other);
+    public abstract T div(T other);
     public abstract T reduce(T other);
     public abstract T scale(double factor);
     public abstract double[] unpack();
@@ -56,7 +61,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
     }
 
     public T minus(T other) {
-        return copy().subtract(other);
+        return copy().sub(other);
     }
 
     public T offseted(double factor) {
@@ -64,11 +69,11 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
     }
 
     public T times(T other) {
-        return copy().multiply(other);
+        return copy().mul(other);
     }
 
     public T dividedBy(T other) {
-        return copy().divide(other);
+        return copy().div(other);
     }
 
     public T mod(T other) {
@@ -117,6 +122,11 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
     public abstract String toString();
 
+    @Override
+    protected void finalize() throws Throwable {
+        free();
+    }
+
     protected static String getString(Double... d) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -129,4 +139,60 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
         return sb.append("}").toString();
     }
+
+
+    @LuaWhitelist
+    public Double __index(int i){
+        return getSwizzleComponent(Integer.toString(i).charAt(0));
+    }
+
+    @LuaWhitelist
+    public Object __index(@LuaNotNil String arg) {
+        int len = arg.length();
+        if (len == 1) return getSwizzleComponent(arg.charAt(0));
+
+        if (len < 2 || len > 6)
+            return null;
+        double[] values = new double[len];
+        boolean fail = false;
+        for (int i = 0; i < len; i++) {
+            Double d = getSwizzleComponent(arg.charAt(i));
+            if(d == null){
+                fail = true;
+                break;
+            }
+            values[i] = d;
+        }
+        return fail ? null : MathUtils.sizedVector(values);
+    }
+
+    @LuaWhitelist
+    public void __newindex(int i, double v){
+        setSwizzleComponent(Integer.toString(i).charAt(0), v);
+    }
+
+    @LuaWhitelist
+    public void __newindex(@LuaNotNil String i, double v){
+        if(i.length() != 1){
+            throw new LuaError("Invalid call to __newindex - can only set one axis to a number");
+        }
+        setSwizzleComponent(i.charAt(0), v);
+    }
+
+    @LuaWhitelist
+    public void __newindex(@LuaNotNil String swizzle, @LuaNotNil FiguraVector<?, ?> vector){
+        if(swizzle.length() == vector.size()){
+            T copy = copy();
+            double[] vals = unpack();
+            for (int i = 0; i < swizzle.length(); i++) {
+                copy.setSwizzleComponent(swizzle.charAt(i), vals[i]);
+            }
+            set(copy);
+        }
+        throw new LuaError("Invalid call to __newindex - vector swizzles must be the same size.");
+    }
+
+    protected abstract Double getSwizzleComponent(char symbol);
+
+    protected abstract void setSwizzleComponent(char symbol, double value);
 }

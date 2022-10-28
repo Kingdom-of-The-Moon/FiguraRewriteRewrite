@@ -3,12 +3,9 @@ package org.moon.figura.math.vector;
 import org.luaj.vm2.LuaDouble;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.*;
-import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMat4;
-import org.moon.figura.utils.MathUtils;
 import org.moon.figura.utils.caching.CacheUtils;
 
 @LuaWhitelist
@@ -19,33 +16,33 @@ import org.moon.figura.utils.caching.CacheUtils;
 public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @LuaWhitelist
-    @LuaFieldDoc("vector_n.x")
     public double x;
     @LuaWhitelist
-    @LuaFieldDoc("vector_n.y")
     public double y;
     @LuaWhitelist
-    @LuaFieldDoc("vector_n.z")
     public double z;
     @LuaWhitelist
-    @LuaFieldDoc("vector_n.w")
     public double w;
 
     // -- cache -- //
 
     private final static CacheUtils.Cache<FiguraVec4> CACHE = CacheUtils.getCache(FiguraVec4::new, 300);
 
+    private final static CacheUtils.Cache<FiguraVec4> IMMEDIATE = CacheUtils.getIndifferent(FiguraVec4::new, 15);
+
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.reset"
-    )
     public FiguraVec4 reset() {
         x = y = z = w = 0;
         return this;
+    }
+
+    public static FiguraVec4 oneUse(){
+        return IMMEDIATE.getFresh();
+    }
+
+    public static FiguraVec4 oneUse(double x, double y, double z, double w){
+        return IMMEDIATE.getFresh().set(x, y, z, w);
     }
 
     @Override
@@ -64,10 +61,12 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     // -- basic math -- //
 
     @Override
+    @LuaWhitelist
     public FiguraVec4 set(FiguraVec4 other) {
         return set(other.x, other.y, other.z, other.w);
     }
 
+    @LuaWhitelist
     public FiguraVec4 set(double x, double y, double z, double w) {
         this.x = x;
         this.y = y;
@@ -76,33 +75,13 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.set"
-    )
-    public FiguraVec4 set(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return set(vec);
-        if (x instanceof Number n)
-            return set(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to set(): " + x.getClass().getSimpleName());
-    }
-
     @Override
+    @LuaWhitelist
     public FiguraVec4 add(FiguraVec4 other) {
         return add(other.x, other.y, other.z, other.w);
     }
 
+    @LuaWhitelist
     public FiguraVec4 add(double x, double y, double z, double w) {
         this.x += x;
         this.y += y;
@@ -111,34 +90,14 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.add"
-    )
-    public FiguraVec4 add(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return add(vec);
-        if (x instanceof Number n)
-            return add(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to add(): " + x.getClass().getSimpleName());
-    }
-
     @Override
-    public FiguraVec4 subtract(FiguraVec4 other) {
-        return subtract(other.x, other.y, other.z, other.w);
+    @LuaWhitelist
+    public FiguraVec4 sub(FiguraVec4 other) {
+        return sub(other.x, other.y, other.z, other.w);
     }
 
-    public FiguraVec4 subtract(double x, double y, double z, double w) {
+    @LuaWhitelist
+    public FiguraVec4 sub(double x, double y, double z, double w) {
         this.x -= x;
         this.y -= y;
         this.z -= z;
@@ -146,38 +105,8 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.sub"
-    )
-    public FiguraVec4 sub(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return subtract(vec);
-        if (x instanceof Number n)
-            return subtract(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to sub(): " + x.getClass().getSimpleName());
-    }
-
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Double.class,
-                    argumentNames = "factor",
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.offset"
-    )
     public FiguraVec4 offset(double factor) {
         this.x += factor;
         this.y += factor;
@@ -187,11 +116,13 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     }
 
     @Override
-    public FiguraVec4 multiply(FiguraVec4 other) {
-        return multiply(other.x, other.y, other.z, other.w);
+    @LuaWhitelist
+    public FiguraVec4 mul(FiguraVec4 other) {
+        return mul(other.x, other.y, other.z, other.w);
     }
 
-    public FiguraVec4 multiply(double x, double y, double z, double w) {
+    @LuaWhitelist
+    public FiguraVec4 mul(double x, double y, double z, double w) {
         this.x *= x;
         this.y *= y;
         this.z *= z;
@@ -199,34 +130,14 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.mul"
-    )
-    public FiguraVec4 mul(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return multiply(vec);
-        if (x instanceof Number n)
-            return multiply(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to mul(): " + x.getClass().getSimpleName());
-    }
-
     @Override
-    public FiguraVec4 divide(FiguraVec4 other) {
-        return divide(other.x, other.y, other.z, other.w);
+    @LuaWhitelist
+    public FiguraVec4 div(FiguraVec4 other) {
+        return div(other.x, other.y, other.z, other.w);
     }
 
-    public FiguraVec4 divide(double x, double y, double z, double w) {
+    @LuaWhitelist
+    public FiguraVec4 div(double x, double y, double z, double w) {
         this.x /= x;
         this.y /= y;
         this.z /= z;
@@ -234,33 +145,13 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.div"
-    )
-    public FiguraVec4 div(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return divide(vec);
-        if (x instanceof Number n)
-            return divide(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to div(): " + x.getClass().getSimpleName());
-    }
-
     @Override
+    @LuaWhitelist
     public FiguraVec4 reduce(FiguraVec4 other) {
         return reduce(other.x, other.y, other.z, other.w);
     }
 
+    @LuaWhitelist
     public FiguraVec4 reduce(double x, double y, double z, double w) {
         this.x = ((this.x % x) + x) % x;
         this.y = ((this.y % y) + y) % y;
@@ -269,38 +160,8 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return this;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"}
-                    )
-            },
-            value = "vector_n.reduce"
-    )
-    public FiguraVec4 reduce(@LuaNotNil Object x, double y, double z, double w) {
-        if (x instanceof FiguraVec4 vec)
-            return reduce(vec);
-        if (x instanceof Number n)
-            return reduce(n.doubleValue(), y, z, w);
-        throw new LuaError("Illegal type to reduce(): " + x.getClass().getSimpleName());
-    }
-
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Double.class,
-                    argumentNames = "factor",
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.scale"
-    )
     public FiguraVec4 scale(double factor) {
         this.x *= factor;
         this.y *= factor;
@@ -311,7 +172,6 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc("vector_n.unpack")
     public double[] unpack() {
         return new double[]{x, y, z, w};
     }
@@ -320,15 +180,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = FiguraMat4.class,
-                    argumentNames = "mat",
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.transform"
-    )
-    public FiguraVec4 transform(@LuaNotNil FiguraMat4 mat) {
+    public FiguraVec4 transform(FiguraMat4 mat) {
         return set(
                 mat.v11 * x + mat.v12 * y + mat.v13 * z + mat.v14 * w,
                 mat.v21 * x + mat.v22 * y + mat.v23 * z + mat.v24 * w,
@@ -339,140 +191,76 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc("vector_n.length_squared")
     public double lengthSquared() {
         return x * x + y * y + z * z + w * w;
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.copy"
-    )
     public FiguraVec4 copy() {
         return of(x, y, z, w);
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = FiguraVec4.class,
-                    argumentNames = "vec"
-            ),
-            value = "vector_n.dot"
-    )
-    public double dot(@LuaNotNil FiguraVec4 other) {
+    public double dot(FiguraVec4 other) {
         return x * other.x + y * other.y + z * other.z + w * other.w;
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.normalize"
-    )
     public FiguraVec4 normalize() {
         return super.normalize();
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.normalized"
-    )
     public FiguraVec4 normalized() {
         return super.normalized();
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Double.class, Double.class},
-                    argumentNames = {"minLength", "maxLength"},
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.clamp_length"
-    )
-    public FiguraVec4 clampLength(Double min, Double max) {
-        return super.clampLength(min, max);
+    public FiguraVec4 clampLength(Double minLength, Double maxLength) {
+        return super.clampLength(minLength, maxLength);
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Double.class, Double.class},
-                    argumentNames = {"minLength", "maxLength"},
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.clamped"
-    )
-    public FiguraVec4 clamped(Double min, Double max) {
-        return super.clamped(min, max);
+    public FiguraVec4 clamped(Double minLength, Double maxLength) {
+        return super.clamped(minLength, maxLength);
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc("vector_n.length")
     public double length() {
         return super.length();
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.to_rad"
-    )
     public FiguraVec4 toRad() {
         return super.toRad();
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    returnType = FiguraVec4.class
-            ),
-            value = "vector_n.to_deg"
-    )
     public FiguraVec4 toDeg() {
         return super.toDeg();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vector_n.floor")
     public FiguraVec4 floor() {
         return FiguraVec4.of(Math.floor(x), Math.floor(y), Math.floor(z), Math.floor(w));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vector_n.ceil")
     public FiguraVec4 ceil() {
         return FiguraVec4.of(Math.ceil(x), Math.ceil(y), Math.ceil(z), Math.ceil(w));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "func"
-            ),
-            value = "vector_n.apply_func"
-    )
-    public FiguraVec4 applyFunc(@LuaNotNil LuaFunction function) {
+    public FiguraVec4 applyFunc(LuaFunction function) {
         x = function.call(LuaDouble.valueOf(x)).todouble();
         y = function.call(LuaDouble.valueOf(y)).todouble();
         z = function.call(LuaDouble.valueOf(z)).todouble();
@@ -523,288 +311,126 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     // -- metamethods -- //
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraVec4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, Double.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, Double.class, FiguraVec4.class}
-                    )
-            }
-    )
-    public static FiguraVec4 __add(@LuaNotNil Object a, @LuaNotNil Object b) {
-        if (a instanceof FiguraVec4 vec) {
-            if (b instanceof FiguraVec4 vec2)
-                return vec.plus(vec2);
-            else if (b instanceof Number d)
-                return vec.offseted(d.doubleValue());
-        } else if (a instanceof Number d && b instanceof FiguraVec4 vec) {
-            return vec.offseted(d.doubleValue());
-        }
-        throw new LuaError("Invalid types to __add: " + a.getClass().getSimpleName() + ", " + b.getClass().getSimpleName());
+    public static FiguraVec4 __add(FiguraVec4 one, FiguraVec4 other) {
+        return one.plus(other);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraVec4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, Double.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, Double.class, FiguraVec4.class}
-                    )
-            }
-    )
-    public static FiguraVec4 __sub(@LuaNotNil Object a, @LuaNotNil Object b) {
-        if (a instanceof FiguraVec4 vec) {
-            if (b instanceof FiguraVec4 vec2)
-                return vec.minus(vec2);
-            else if (b instanceof Number d)
-                return vec.offseted(-d.doubleValue());
-        } else if (a instanceof Number d && b instanceof FiguraVec4 vec) {
-            return vec.scaled(-1).offset(d.doubleValue());
-        }
-        throw new LuaError("Invalid types to __sub: " + a.getClass().getSimpleName() + ", " + b.getClass().getSimpleName());
+    public static FiguraVec4 __add(FiguraVec4 one, Double other) {
+        return one.offseted(other);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraVec4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, Double.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraMat4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, Double.class, FiguraVec4.class}
-                    )
-            }
-    )
-    public static FiguraVec4 __mul(@LuaNotNil Object a, @LuaNotNil Object b) {
-        if (a instanceof FiguraVec4 vec) {
-            if (b instanceof FiguraVec4 vec2)
-                return vec.times(vec2);
-            else if (b instanceof Number d)
-                return vec.scaled(d.doubleValue());
-            else if (b instanceof FiguraMat4 mat)
-                return vec.transform(mat);
-        } else if (a instanceof Number d && b instanceof FiguraVec4 vec) {
-            return (vec.scaled(d.doubleValue()));
-        }
-        throw new LuaError("Invalid types to __mul: " + a.getClass().getSimpleName() + ", " + b.getClass().getSimpleName());
+    public static FiguraVec4 __add(Double one, FiguraVec4 other) {
+        return other.offseted(one);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraVec4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, Double.class}
-                    )
-            }
-    )
-    public FiguraVec4 __div(@LuaNotNil Object rhs) {
-        if (rhs instanceof Number n) {
-            double d = n.doubleValue();
-            if (d == 0)
-                throw new LuaError("Attempt to divide vector by 0");
-            return scaled(1 / d);
-        } else if (rhs instanceof FiguraVec4 vec) {
-            return dividedBy(vec);
-        }
-        throw new LuaError("Invalid types to __div: " + getClass().getSimpleName() + ", " + rhs.getClass().getSimpleName());
+    public static FiguraVec4 __sub(FiguraVec4 one, FiguraVec4 other) {
+        return one.minus(other);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, FiguraVec4.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVec4.class, FiguraVec4.class, Double.class}
-                    )
-            }
-    )
-    public FiguraVec4 __mod(@LuaNotNil Object rhs) {
-        if (rhs instanceof Number n) {
-            double d = n.doubleValue();
-            if (d == 0)
-                throw new LuaError("Attempt to reduce vector by 0");
-            FiguraVec4 modulus = of(d, d, d, d);
-            FiguraVec4 result = mod(modulus);
-            modulus.free();
-            return result;
-        } else if (rhs instanceof FiguraVec4 vec) {
-            return mod(vec);
-        }
-        throw new LuaError("Invalid types to __mod: " + getClass().getSimpleName() + ", " + rhs.getClass().getSimpleName());
+    public static FiguraVec4 __sub(FiguraVec4 one, Double other) {
+        return one.offseted(other);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {Boolean.class, FiguraVec4.class, FiguraVec4.class}
-            )
-    )
+    public static FiguraVec4 __sub(Double one, FiguraVec4 other) {
+        return other.scaled(-1).offset(one);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 __mul(FiguraVec4 one, FiguraVec4 other) {
+        return one.times(other);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 __mul(FiguraVec4 one, Double other) {
+        return one.scaled(other);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 __mul(Double one, FiguraVec4 other) {
+        return other.scaled(one);
+    }
+
+    @LuaWhitelist
+    public FiguraVec4 __div(FiguraVec4 other) {
+        return dividedBy(other);
+    }
+
+    @LuaWhitelist
+    public FiguraVec4 __div(Double other) {
+        if(other == 0)
+            throw new LuaError(new ArithmeticException("Division by zero"));
+        return scaled(1 / other);
+    }
+
+    @LuaWhitelist
+    public FiguraVec4 __mod(FiguraVec4 other) {
+        return mod(other);
+    }
+
+    @LuaWhitelist
+    public FiguraVec4 __mod(Double other) {
+        if (other == 0)
+            throw new LuaError("Attempt to reduce vector by 0");
+        return mod(oneUse(other, other, other, other));
+    }
+
+    @LuaWhitelist
     public boolean __eq(FiguraVec4 other) {
         return equals(other);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {FiguraVec4.class, FiguraVec4.class}
-            )
-    )
     public FiguraVec4 __unm() {
         return scaled(-1);
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {Integer.class, FiguraVec4.class}
-            )
-    )
     public int __len() {
         return size();
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {Boolean.class, FiguraVec4.class, FiguraVec4.class}
-            )
-    )
-    public boolean __lt(@LuaNotNil FiguraVec4 r) {
+    public boolean __lt(FiguraVec4 r) {
         return x < r.x && y < r.y && z < r.z && w < r.w;
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {Boolean.class, FiguraVec4.class, FiguraVec4.class}
-            )
-    )
-    public boolean __le(@LuaNotNil FiguraVec4 r) {
+    public boolean __le(FiguraVec4 r) {
         return x <= r.x && y <= r.y && z <= r.z && w <= r.w;
     }
 
     @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = @LuaMetamethodOverload(
-                    types = {String.class, FiguraVec4.class}
-            )
-    )
     public String __tostring() {
         return toString();
     }
 
-    @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {Double.class, FiguraVec4.class, Integer.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {Double.class, FiguraVec4.class, String.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {FiguraVector.class, FiguraVec4.class, String.class},
-                            comment = "vector_n.comments.swizzle"
-                    )
-            }
-    )
-    public Object __index(Object arg) {
-        if (arg == null)
-            return null;
-        String str = arg.toString();
-        int len = str.length();
-        if (len == 1) return switch(str.charAt(0)) {
+    @Override
+    protected Double getSwizzleComponent(char symbol) {
+        return switch (symbol) {
             case '1', 'x', 'r' -> x;
             case '2', 'y', 'g' -> y;
             case '3', 'z', 'b' -> z;
             case '4', 'w', 'a' -> w;
-            case '_' -> 0;
+            case '_' -> 0d;
             default -> null;
         };
-
-        if (len > 6)
-            return null;
-        double[] vals = new double[len];
-        boolean fail = false;
-        for (int i = 0; i < len; i++)
-            vals[i] = switch (str.charAt(i)) {
-                case '1', 'x', 'r' -> x;
-                case '2', 'y', 'g' -> y;
-                case '3', 'z', 'b' -> z;
-                case '4', 'w', 'a' -> w;
-                case '_' -> 0;
-                default -> {fail = true; yield 0;}
-            };
-        return fail ? null : MathUtils.sizedVector(vals);
     }
 
-    @LuaWhitelist
-    @LuaMetamethodDoc(
-            overloads = {
-                    @LuaMetamethodOverload(
-                            types = {void.class, FiguraVec4.class, Integer.class, Double.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {void.class, FiguraVec4.class, String.class, Double.class}
-                    ),
-                    @LuaMetamethodOverload(
-                            types = {void.class, FiguraVec4.class, String.class, FiguraVector.class}
-                    )
+    @Override
+    protected void setSwizzleComponent(char symbol, double value) {
+        switch (symbol) {
+            case '1', 'x', 'r' -> x = value;
+            case '2', 'y', 'g' -> y = value;
+            case '3', 'z', 'b' -> z = value;
+            case '4', 'w', 'a' -> w = value;
+            case '_' -> {
             }
-    )
-    public void __newindex(String key, Object value) {
-        if (key == null) return;
-        int len = key.length();
-        if (len == 1)  {
-            if (value instanceof Number n) {
-                double d = n.doubleValue();
-                switch(key) {
-                    case "1", "x", "r" -> x = d;
-                    case "2", "y", "g" -> y = d;
-                    case "3", "z", "b" -> z = d;
-                    case "4", "w", "a" -> w = d;
-                    case "_" -> {}
-                    default -> throw new LuaError("Invalid key to vector __newindex: " + key);
-                }
-                return;
-            }
-            throw new LuaError("Invalid call to __newindex - value assigned to key " + key + " must be number.");
+            default -> throw new LuaError("Invalid swizzle component: " + symbol);
         }
-        if (value instanceof FiguraVector<?,?> vecVal && len == vecVal.size()) {
-            double[] vals = new double[] {vecVal.x(), vecVal.y(), vecVal.z(), vecVal.w(), vecVal.t(), vecVal.h()};
-            for (int i = 0; i < len; i++) {
-                switch (key.charAt(i)) {
-                    case '1', 'x', 'r' -> x = vals[i];
-                    case '2', 'y', 'g' -> y = vals[i];
-                    case '3', 'z', 'b' -> z = vals[i];
-                    case '4', 'w', 'a' -> w = vals[i];
-                    case '_' -> {}
-                    default -> throw new LuaError("Invalid key to __newindex: invalid swizzle character: " + key.charAt(i));
-                }
-            }
-            return;
-        }
-        throw new LuaError("Invalid call to __newindex - vector swizzles must be the same size.");
     }
 }

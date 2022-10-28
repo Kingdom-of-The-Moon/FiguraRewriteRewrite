@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A stack which caches values as it grows, modifying them instead of allocating new ones.
  */
-public abstract class CacheStack<T extends CachedType, S> {
+public abstract class CacheStack<T extends CachedType<T>, S> {
 
     private int index = -1;
     private final T defaultVal;

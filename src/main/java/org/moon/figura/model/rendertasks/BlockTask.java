@@ -8,11 +8,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.BlockStateAPI;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.utils.LuaUtils;
 
@@ -46,21 +45,17 @@ public class BlockTask extends RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "block"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = BlockStateAPI.class,
-                            argumentNames = "block"
-                    )
-            },
-            value = "block_task.block"
-    )
-    public RenderTask block(Object block) {
-        this.block = LuaUtils.parseBlockState("block", block);
+    public RenderTask block(String block){
+        return block(LuaUtils.parseBlockState("block", block));
+    }
+
+    @LuaWhitelist
+    public RenderTask block(@LuaNotNil BlockStateAPI block){
+        return block(LuaUtils.parseBlockState("block", block));
+    }
+
+    public RenderTask block(BlockState block) {
+        this.block = block;
         Minecraft client = Minecraft.getInstance();
         RandomSource random = client.level != null ? client.level.random : RandomSource.create();
 

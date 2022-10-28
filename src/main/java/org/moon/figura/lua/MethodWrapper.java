@@ -2,16 +2,14 @@ package org.moon.figura.lua;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.NotImplementedException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.VarArgFunction;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -105,32 +103,10 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             public Varargs invoke(Varargs args) {
                 Queue<LuaValue> v = new ArrayDeque<>(manager.varargToList(args));
                 Object caller = getCaller(v);
-                if (v.size() != parameters.length) {
-                    List<Parameter> parList = Lists.newArrayList(parameters).subList(v.size(), parameters.length);
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("Unfilled parameters ");
-                    for (Parameter param : parList)
-                        builder.append(param.getName()).append(" ");
-                    builder.append("for function ");
-                    builder.append(manager.getTypeName(clazz));
-                    builder.append(isStatic ? "." : ":").append(name);
-                    throw new LuaError(builder.toString());
-                }
-                Object[] params = new Object[parameters.length];
-                for (int i = 0; i < parameters.length; i++) {
-                    Parameter param = parameters[i];
-                    if (!manager.checkType(v.peek(), param.getType()))
-                        throw new LuaError("Invalid parameter %s for function %s expected %s, got %s (%s)".formatted(
-                                param.getName(),
-                                name,
-                                manager.getTypeName(param.getType()),
-                                v.peek(),
-                                v.peek() == null ? "null" : manager.getTypeName(v.poll().getClass())
-                        ));
-                    params[i] = manager.luaToJava(v.poll(), param.getType());
-                }
+                Object[] params = getParams(v, parameters.length);
                 return wrapCall(caller, params);
             }
+
         }
 
         private static final class VarArg extends Single {
@@ -142,44 +118,29 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             public Varargs invoke(Varargs args) {
                 Queue<LuaValue> v = new ArrayDeque<>(manager.varargToList(args));
                 Object caller = getCaller(v);
-                if (v.size() < parameters.length - 1) {
-                    List<Parameter> parList = Lists.newArrayList(parameters).subList(v.size(), parameters.length);
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("Unfilled parameters ");
-                    for (Parameter param : parList)
-                        builder.append(param.getName()).append(" ");
-                    builder.append("for function ");
-                    builder.append(name);
-                    throw new LuaError(builder.toString());
-                }
-                Object[] params = new Object[parameters.length];
-                for (int i = 0; i < parameters.length - 1; i++) {
-                    Parameter param = parameters[i];
-                    if (!manager.checkType(v.peek(), param.getType()))
-                        throw new LuaError("Invalid parameter %s for function %s expected %s, got %s (%s)".formatted(
-                                param.getName(),
-                                name,
-                                manager.getTypeName(param.getType()),
-                                v.peek(),
-                                v.peek() == null ? "null" : manager.getTypeName(v.poll().getClass())
-                        ));
-                    params[i] = manager.luaToJava(v.poll(), param.getType());
-                }
+                Object[] params = getParams(v, parameters.length - 1);
                 if (!v.isEmpty()) {
-                    LuaValue extra = LuaValue.listOf(v.toArray(new LuaValue[]{}));
+                    LuaValue value = LuaValue.listOf(v.toArray(new LuaValue[]{}));
                     Parameter param = parameters[parameters.length - 1];
-                    if (!manager.checkType(extra, param.getType()))
-                        throw new LuaError("Invalid parameter %s for function %s expected %s, got %s (%s)".formatted(
-                                param.getName(),
-                                name,
-                                manager.getTypeName(param.getType()),
-                                extra,
-                                manager.getTypeName(extra.getClass())
-                        ));
-                    params[params.length - 1] = manager.luaToJava(extra, param.getType());
-                }
+                    if (!manager.checkType(value, param.getType()) || value.isnil() && param.isAnnotationPresent(LuaNotNil.class))
+                        throw new LuaError("Invalid parameter %s for function %s expected: %s, got %s (%s)".formatted(param.getName(), name, manager.getTypeName(param.getType()), value, manager.getTypeName(value.getClass())));
+                    params[parameters.length - 1] = manager.luaToJava(value, param.getType());
+                } else
+                    params[parameters.length - 1] = Array.newInstance(parameters[parameters.length - 1].getType().arrayType(), 0);
                 return wrapCall(caller, params);
             }
+        }
+
+        protected Object[] getParams(Queue<LuaValue> v, int num) {
+            Object[] params = new Object[parameters.length];
+            for (int i = 0; i < num; i++) {
+                Parameter param = parameters[i];
+                @NotNull LuaValue value = v.peek() == null ? NIL : v.poll();
+                if (!manager.checkType(value, param.getType()) || value.isnil() && param.isAnnotationPresent(LuaNotNil.class))
+                    throw new LuaError("Invalid parameter %s for function %s: expected %s, got %s (%s)".formatted(param.getName(), name, manager.getTypeName(param.getType()), value, manager.getTypeName(value.getClass())));
+                params[i] = manager.luaToJava(NIL.equals(value) ? getDefault(param.getType()) : value, param.getType());
+            }
+            return params;
         }
 
         private static final class MySadStub extends Single {
@@ -205,16 +166,9 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             for (Method method : methods) {
                 if (isStatic != Modifier.isStatic(method.getModifiers()))
                     throw new IllegalStateException("Overloads must all have same STATIC attribute, found %s %s.%s and %s overload".formatted(
-                            isStatic ? "static" : "non-static",
-                            clazz.getSimpleName(),
-                            method.getName(),
-                            isStatic ? "non-static" : "static"
-                    ));
+                            isStatic ? "static" : "non-static", clazz.getSimpleName(), method.getName(), isStatic ? "non-static" : "static"));
                 if (method.isVarArgs())
-                    throw new IllegalStateException("Vararg method detected as one of overloads in %s.%s".formatted(
-                            clazz.getSimpleName(),
-                            method.getName()
-                    ));
+                    throw new IllegalStateException("Vararg method detected as one of overloads in %s.%s".formatted(clazz.getSimpleName(), method.getName()));
             }
             tree = new MethodTree(methods);
         }
@@ -235,11 +189,18 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
                 LuaValue value = v.poll();
                 for (MethodTree.Node branch : nodes)
                     for (Parameter param : branch.children.keySet())
-                        if (manager.checkType(value, param.getType()))
+                        if (manager.checkType(value, param.getType()) && !((value == null || value.isnil()) && param.isAnnotationPresent(LuaNotNil.class)))
                             nextNodes.add(branch.children.get(param));
                 if(!nextNodes.isEmpty())
                     values.add(value);
                 nodes = nextNodes;
+            }
+            while (nodes.size() == 1 && nodes.get(0).method == null && nodes.get(0).children.size() == 1){
+                Parameter p = nodes.get(0).children.keySet().toArray(Parameter[]::new)[0];
+                if(p.isAnnotationPresent(LuaNotNil.class))
+                    throw new LuaError("attempt to call " + name + " with nil as Non-Nil parameter " + p.getName());
+                values.add(getDefault(p.getType()));
+                nodes.set(0, nodes.get(0).children.get(p));
             }
             MethodTree.Node match = null;
             for (MethodTree.Node node : nodes)
@@ -249,11 +210,9 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
                     else
                         match = node;
             if (match == null) {
-                StringBuilder builder = new StringBuilder("No viable alternative found, argument").append(args.narg() == 1 ? " " : "s ");
+                StringBuilder builder = new StringBuilder("No viable alternative found for argument").append(args.narg() == 1 ? " " : "s ");
                 for (LuaValue val : manager.varargToList(args))
                     builder.append(val).append(" ");
-                builder.append("do not match any of the");
-                builder.append(this);
                 throw new LuaError(builder.toString());
             }
             Method method = match.method;
@@ -279,6 +238,17 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
 
     }
 
+    protected LuaValue getDefault(Class<?> type) {
+        if(type.isPrimitive())
+            return switch (type.getName()){
+                case "float", "double" -> LuaValue.valueOf(0d);
+                case "int", "byte", "long", "short" -> LuaValue.valueOf(0);
+                case "boolean" -> LuaValue.valueOf(false);
+                default -> throw new RuntimeException("Unregistered Primitive type: " + type.getName());
+            };
+        return NIL;
+    }
+
     protected Varargs wrapCall(Method method, Object caller, Object... args) {
         final Object result;
         try {
@@ -301,7 +271,7 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
         if (isStatic)
             caller = null;
         else {
-            LuaValue v = queue.isEmpty() ? LuaValue.NIL : queue.poll();
+            LuaValue v = queue.isEmpty() ? NIL : queue.poll();
             if (!manager.checkType(v, clazz) || v == null) {
                 throw new LuaError("function %s expected %s as it's caller, got %s (%s)".formatted(
                         name,

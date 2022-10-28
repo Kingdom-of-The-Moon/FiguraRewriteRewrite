@@ -1,10 +1,9 @@
 package org.moon.figura.model.rendertasks;
 
 import net.minecraft.client.renderer.MultiBufferSource;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.LuaUtils;
@@ -35,121 +34,72 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("render_task.is_enabled")
     public boolean isEnabled() {
         return this.enabled;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "bool"
-            ),
-            value = "render_task.enabled"
-    )
     public RenderTask enabled(boolean enabled) {
         this.enabled = enabled;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("render_task.is_emissive")
     public boolean isEmissive() {
         return this.emissive;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "bool"
-            ),
-            value = "render_task.emissive"
-    )
     public RenderTask emissive(boolean emissive) {
         this.emissive = emissive;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("render_task.get_pos")
     public FiguraVec3 getPos() {
         return this.pos;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "render_task.pos"
-    )
-    public RenderTask pos(Object x, Double y, Double z) {
-        FiguraVec3 vec = LuaUtils.parseVec3("pos", x, y, z);
-        pos.set(vec);
-        vec.free();
+    public RenderTask pos(Double x, Double y, Double z){
+        return pos(LuaUtils.freeVec3("pos", x, y, z));
+    }
+
+    @LuaWhitelist
+    public RenderTask pos(@LuaNotNil FiguraVec3 pos) {
+        this.pos.set(pos);
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("render_task.get_rot")
     public FiguraVec3 getRot() {
         return this.rot;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rot"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "render_task.rot"
-    )
-    public RenderTask rot(Object x, Double y, Double z) {
-        FiguraVec3 vec = LuaUtils.parseVec3("rot", x, y, z);
-        rot.set(vec);
-        vec.free();
+    public RenderTask rot(Double x, Double y, Double z){
+        return rot(LuaUtils.freeVec3("rot", x, y, z));
+    }
+
+    @LuaWhitelist
+    public RenderTask rot(@LuaNotNil FiguraVec3 rot) {
+        this.rot.set(rot);
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("render_task.get_scale")
     public FiguraVec3 getScale() {
         return this.scale;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "scale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "render_task.scale"
-    )
-    public RenderTask scale(Object x, Double y, Double z) {
-        FiguraVec3 vec = LuaUtils.parseVec3("scale", x, y, z, 1, 1, 1);
-        scale.set(vec);
-        vec.free();
+    public RenderTask scale(Double x, Double y, Double z){
+        return scale(LuaUtils.freeVec3("scale", x, y, z, 1, 1, 1));
+    }
+
+    @LuaWhitelist
+    public RenderTask scale(@LuaNotNil FiguraVec3 scale) {
+        this.scale.set(scale);
         return this;
     }
 

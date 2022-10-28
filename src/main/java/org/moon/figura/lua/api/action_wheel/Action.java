@@ -4,10 +4,7 @@ import net.minecraft.world.item.ItemStack;
 import org.luaj.vm2.LuaFunction;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.LuaUtils;
@@ -101,112 +98,72 @@ public class Action {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.get_title")
     public String getTitle() {
         return toggled ? toggleTitle == null ? title : toggleTitle : title;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "title"
-                    )
-            },
-            value = "wheel_action.title"
-    )
+    public Action title(){
+        return title(null);
+    }
+
+    @LuaWhitelist
     public Action title(String title) {
         this.title = title;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.get_color")
     public FiguraVec3 getColor() {
         return this.color;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "color"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "wheel_action.color"
-    )
-    public Action color(Object x, Double y, Double z) {
-        this.color = x == null ? null : LuaUtils.parseVec3("color", x, y, z);
+    public Action color(Double r, Double g, Double b){
+        return color(LuaUtils.freeVec3("hoverColor", r, g, b));
+    }
+
+    @LuaWhitelist
+    public Action color(FiguraVec3 color) {
+        this.color = color.copy();
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.get_hover_color")
     public FiguraVec3 getHoverColor() {
         return this.hoverColor;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "color"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "wheel_action.hover_color"
-    )
-    public Action hoverColor(Object x, Double y, Double z) {
-        this.hoverColor = x == null ? null : LuaUtils.parseVec3("hoverColor", x, y, z);
+    public Action hoverColor(Double r, Double g, Double b){
+        return hoverColor(LuaUtils.freeVec3("hoverColor", r, g, b));
+    }
+
+    @LuaWhitelist
+    public Action hoverColor(FiguraVec3 color) {
+        this.hoverColor = color.copy();
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = ItemStackAPI.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    )
-            },
-            value = "wheel_action.item"
-    )
-    public Action item(Object item) {
-        this.item = LuaUtils.parseItemStack("item", item);
+    public Action item(String itemId){
+        return item(LuaUtils.parseItemStack("item", itemId));
+    }
+
+    @LuaWhitelist
+    public Action item(ItemStack item) {
+        this.item = item;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = ItemStackAPI.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    )
-            },
-            value = "wheel_action.hover_item"
-    )
-    public Action hoverItem(Object item) {
-        this.hoverItem = LuaUtils.parseItemStack("hoverItem", item);
+    public Action hoverItem(String itemId){
+        return hoverItem(LuaUtils.parseItemStack("hoverItem", itemId));
+    }
+
+    @LuaWhitelist
+    public Action hoverItem(ItemStack item) {
+        this.item = item;
         return this;
     }
 
@@ -215,67 +172,32 @@ public class Action {
 
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "leftFunction"
-            ),
-            value = "wheel_action.on_left_click"
-    )
-    public Action onLeftClick(LuaFunction function) {
-        this.leftClick = function;
+    public Action onLeftClick(LuaFunction leftFunction) {
+        this.leftClick = leftFunction;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "rightFunction"
-            ),
-            value = "wheel_action.on_right_click"
-    )
-    public Action onRightClick(LuaFunction function) {
-        this.rightClick = function;
+    public Action onRightClick(LuaFunction rightFunction) {
+        this.rightClick = rightFunction;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "leftFunction"
-            ),
-            value = "wheel_action.on_toggle"
-    )
-    public Action onToggle(LuaFunction function) {
-        this.toggle = function;
+    public Action onToggle(LuaFunction toggleFunction) {
+        this.toggle = toggleFunction;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "rightFunction"
-            ),
-            value = "wheel_action.on_untoggle"
-    )
-    public Action onUntoggle(LuaFunction function) {
-        this.untoggle = function;
+    public Action onUntoggle(LuaFunction untoggleFunction) {
+        this.untoggle = untoggleFunction;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = LuaFunction.class,
-                    argumentNames = "scrollFunction"
-            ),
-            value = "wheel_action.on_scroll"
-    )
-    public Action onScroll(LuaFunction function) {
-        this.scroll = function;
+    public Action onScroll(LuaFunction scrollFunction) {
+        this.scroll = scrollFunction;
         return this;
     }
 
@@ -284,82 +206,49 @@ public class Action {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.get_toggle_title")
     public String getToggleTitle() {
         return this.toggleTitle;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            value = "wheel_action.toggle_title",
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "title"
-            )
-    )
     public Action toggleTitle(String title) {
         this.toggleTitle = title;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.get_toggle_color")
     public FiguraVec3 getToggleColor() {
         return this.toggleColor;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "color"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "wheel_action.toggle_color"
-    )
-    public Action toggleColor(Object x, Double y, Double z) {
-        this.toggleColor = x == null ? null : LuaUtils.parseVec3("toggleColor", x, y, z);
+    public Action toggleColor(Double r, Double g, Double b){
+        return toggleColor(LuaUtils.parseVec3("toggleColor", r, g, b));
+    }
+
+    @LuaWhitelist
+    public Action toggleColor(FiguraVec3 color) {
+        this.toggleColor = color;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = ItemStackAPI.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    )
-            },
-            value = "wheel_action.toggle_item"
-    )
-    public Action toggleItem(Object item) {
-        this.toggleItem = LuaUtils.parseItemStack("toggleItem", item);
+    public Action toggleItem(String itemId) {
+        return toggleItem(LuaUtils.parseItemStack("toggleItem", itemId));
+    }
+
+    @LuaWhitelist
+    public Action toggleItem(ItemStack item) {
+        this.toggleItem = item;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_action.is_toggled")
     public boolean isToggled() {
         return this.toggled;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "bool"
-            ),
-            value = "wheel_action.toggled"
-    )
     public Action toggled(boolean bool) {
         this.toggled = bool;
         return this;

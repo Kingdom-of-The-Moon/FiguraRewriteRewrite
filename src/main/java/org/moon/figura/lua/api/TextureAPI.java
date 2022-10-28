@@ -3,10 +3,7 @@ package org.moon.figura.lua.api;
 import com.mojang.blaze3d.platform.NativeImage;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.utils.ColorUtils;
@@ -53,13 +50,7 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {String.class, Integer.class, Integer.class},
-                    argumentNames = {"name", "width", "height"}
-            ),
-            value = "textures.register")
-    public FiguraTexture register(@LuaNotNil String name, int width, int height) {
+    public FiguraTexture register(String name, int width, int height) {
         NativeImage image;
         try {
             image = new NativeImage(width, height, true);
@@ -68,18 +59,12 @@ public class TextureAPI {
         }
 
         FiguraTexture texture = register(name, image);
-        texture.fill(0, 0, width, height, ColorUtils.Colors.FRAN_PINK.vec.augmented(), null, null, null);
+        texture.fill(0, 0, width, height, ColorUtils.Colors.FRAN_PINK.vec.augmented());
         return texture;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {String.class, String.class},
-                    argumentNames = {"name", "data"}
-            ),
-            value = "textures.read")
-    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil String data) {
+    public FiguraTexture read(String name, String data) {
         NativeImage image;
         try {
             image = NativeImage.fromBase64(data);
@@ -91,26 +76,19 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "name"
-            ),
-            value = "textures.get")
-    public FiguraTexture get(@LuaNotNil String name) {
+    public FiguraTexture get(String name) {
         check();
         return owner.renderer.customTextures.get(name);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("textures.get_textures")
     public List<FiguraTexture> getTextures() {
         check();
         return new ArrayList<>(owner.renderer.textures.values());
     }
 
     @LuaWhitelist
-    public FiguraTexture __index(@LuaNotNil String name) {
+    public FiguraTexture __index(String name) {
         check();
 
         FiguraTexture texture = get(name);

@@ -380,7 +380,7 @@ public class PartCustomization implements CachedType<PartCustomization> {
                 alpha = other.alpha;
         }
 
-        color.multiply(other.color);
+        color.mul(other.color);
 
         if (other.primaryTexture != null)
             primaryTexture = other.primaryTexture;

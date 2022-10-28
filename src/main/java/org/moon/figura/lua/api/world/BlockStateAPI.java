@@ -18,9 +18,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec6;
@@ -42,10 +39,8 @@ public class BlockStateAPI {
     private BlockPos pos;
 
     @LuaWhitelist
-    @LuaFieldDoc("blockstate.id")
     public final String id;
     @LuaWhitelist
-    @LuaFieldDoc("blockstate.properties")
     public final LuaTable properties;
 
     public BlockStateAPI(BlockState blockstate, BlockPos pos) {
@@ -69,135 +64,107 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_pos")
     public FiguraVec3 getPos() {
         return FiguraVec3.fromBlockPos(getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "blockstate.set_pos"
-    )
-    public void setPos(Object x, Double y, Double z) {
-        FiguraVec3 newPos = LuaUtils.parseVec3("setPos", x, y, z);
-        pos = newPos.asBlockPos();
-        newPos.free();
+    public void setPos(Double x, Double y, Double z){
+        setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.is_translucent")
+    public void setPos(FiguraVec3 pos) {
+        this.pos = pos.asBlockPos();
+        pos.free();
+    }
+
+    @LuaWhitelist
     public boolean isTranslucent() {
         return blockState.propagatesSkylightDown(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_opacity")
     public int getOpacity() {
         return blockState.getLightBlock(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_map_color")
     public FiguraVec3 getMapColor() {
         return ColorUtils.intToRGB(blockState.getMapColor(WorldAPI.getCurrentWorld(), getBlockPos()).col);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.is_solid_block")
     public boolean isSolidBlock() {
         return blockState.isRedstoneConductor(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.is_full_cube")
     public boolean isFullCube() {
         return blockState.isCollisionShapeFullBlock(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.has_emissive_lightning")
     public boolean hasEmissiveLighting() {
         return blockState.emissiveRendering(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_hardness")
     public float getHardness() {
         return blockState.getDestroySpeed(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_comparator_output")
     public int getComparatorOutput() {
         return blockState.getAnalogOutputSignal(WorldAPI.getCurrentWorld(), getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.has_block_entity")
     public boolean hasBlockEntity() {
         return blockState.hasBlockEntity();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.is_opaque")
     public boolean isOpaque() {
         return blockState.canOcclude();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.emits_redstone_power")
     public boolean emitsRedstonePower() {
         return blockState.isSignalSource();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_luminance")
     public int getLuminance() {
         return blockState.getLightEmission();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_friction")
     public float getFriction() {
         return blockState.getBlock().getFriction();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_velocity_multiplier")
     public float getVelocityMultiplier() {
         return blockState.getBlock().getSpeedFactor();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_jump_velocity_multiplier")
     public float getJumpVelocityMultiplier() {
         return blockState.getBlock().getJumpFactor();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_blast_resistance")
     public float getBlastResistance() {
         return blockState.getBlock().getExplosionResistance();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.as_item")
     public ItemStackAPI asItem() {
         return ItemStackAPI.verify(blockState.getBlock().asItem().getDefaultInstance());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_tags")
     public List<String> getTags() {
         List<String> list = new ArrayList<>();
 
@@ -214,7 +181,6 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_material")
     public String getMaterial() {
         for (Field field : Material.class.getFields()) {
             try {
@@ -227,25 +193,21 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_has_collision")
     public boolean hasCollision() {
         return ((BlockBehaviourAccessor) blockState.getBlock()).hasCollision();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_collision_shape")
     public List<FiguraVec6> getCollisionShape() {
         return voxelShapeToTable(blockState.getCollisionShape(WorldAPI.getCurrentWorld(), getBlockPos()));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_outline_shape")
     public List<FiguraVec6> getOutlineShape() {
         return voxelShapeToTable(blockState.getShape(WorldAPI.getCurrentWorld(), getBlockPos()));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_sounds")
     public Map<String, Object> getSounds() {
         Map<String, Object> sounds = new HashMap<>();
         SoundType snd = blockState.getSoundType();
@@ -262,7 +224,6 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_fluid_tags")
     public List<String> getFluidTags() {
         List<String> list = new ArrayList<>();
         for (TagKey<Fluid> fluidTagKey : blockState.getFluidState().getTags().toList())
@@ -271,14 +232,12 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.get_entity_data")
     public LuaTable getEntityData() {
         BlockEntity entity = WorldAPI.getCurrentWorld().getBlockEntity(getBlockPos());
         return (LuaTable) NbtToLua.convert(entity != null ? entity.saveWithoutMetadata() : null);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("blockstate.to_state_string")
     public String toStateString() {
         BlockEntity entity = WorldAPI.getCurrentWorld().getBlockEntity(getBlockPos());
         CompoundTag tag = entity != null ? entity.saveWithoutMetadata() : new CompoundTag();

@@ -6,9 +6,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.ColorUtils;
@@ -29,7 +26,6 @@ public class BiomeAPI {
     private BlockPos pos;
 
     @LuaWhitelist
-    @LuaFieldDoc("biome.name")
     public final String name;
 
     public BiomeAPI(Biome biome, BlockPos pos) {
@@ -43,33 +39,22 @@ public class BiomeAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_pos")
     public FiguraVec3 getPos() {
         return FiguraVec3.fromBlockPos(getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "biome.set_pos"
-    )
-    public void setPos(Object x, Double y, Double z) {
-        FiguraVec3 newPos = LuaUtils.parseVec3("setPos", x, y, z);
-        pos = newPos.asBlockPos();
-        newPos.free();
+    public void setPos(Double x, Double y, Double z) {
+        setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_tags")
+    public void setPos(FiguraVec3 pos) {
+        this.pos = pos.asBlockPos();
+        pos.free();
+    }
+
+    @LuaWhitelist
     public List<String> getTags() {
         List<String> list = new ArrayList<>();
 
@@ -86,68 +71,57 @@ public class BiomeAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_temperature")
     public float getTemperature() {
         return biome.getBaseTemperature();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_precipitation")
     public String getPrecipitation() {
         return biome.getPrecipitation().name();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_sky_color")
     public FiguraVec3 getSkyColor() {
         return ColorUtils.intToRGB(biome.getSkyColor());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_foliage_color")
     public FiguraVec3 getFoliageColor() {
         return ColorUtils.intToRGB(biome.getFoliageColor());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_grass_color")
     public FiguraVec3 getGrassColor() {
         BlockPos pos = getBlockPos();
         return ColorUtils.intToRGB(biome.getGrassColor(pos.getX(), pos.getY()));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_fog_color")
     public FiguraVec3 getFogColor() {
         return ColorUtils.intToRGB(biome.getFogColor());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_water_color")
     public FiguraVec3 getWaterColor() {
         return ColorUtils.intToRGB(biome.getWaterColor());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_water_fog_color")
     public FiguraVec3 getWaterFogColor() {
         return ColorUtils.intToRGB(biome.getWaterFogColor());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.get_downfall")
     public float getDownfall() {
         return biome.getDownfall();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.is_hot")
     public boolean isHot() {
         return biome.shouldSnowGolemBurn(getBlockPos());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("biome.is_cold")
     public boolean isCold() {
         return biome.coldEnoughToSnow(getBlockPos());
     }

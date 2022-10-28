@@ -1,9 +1,6 @@
 package org.moon.figura.lua.api.nameplate;
 
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec4;
@@ -23,104 +20,83 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     public Double alpha;
 
     @LuaWhitelist
-    @LuaFieldDoc("nameplate_entity.visible")
     public boolean visible = true;
     @LuaWhitelist
-    @LuaFieldDoc("nameplate_entity.shadow")
     public boolean shadow;
     @LuaWhitelist
-    @LuaFieldDoc("nameplate_entity.outline")
     public boolean outline;
 
     @LuaWhitelist
-    @LuaMethodDoc("nameplate_entity.get_pos")
     public FiguraVec3 getPos() {
         return this.position;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "nameplate_entity.set_pos"
-    )
-    public void setPos(Object x, Double y, Double z) {
-        this.position = x == null ? null : LuaUtils.parseVec3("setPos", x, y, z);
+    public void setPos() {
+        this.position = null;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("nameplate_entity.get_scale")
+    public void setPos(Double x, Double y, Double z) {
+        setPos(LuaUtils.freeVec3("setPos", x, y, z));
+    }
+
+    @LuaWhitelist
+    public void setPos(FiguraVec3 pos) {
+        this.position = pos.copy();
+    }
+
+    @LuaWhitelist
     public FiguraVec3 getScale() {
         return this.scale;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "scale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "nameplate_entity.set_scale"
-    )
-    public void setScale(Object x, Double y, Double z) {
-        this.scale = x == null ? null : LuaUtils.parseVec3("setScale", x, y, z, 1, 1, 1);
+    public void setScale() {
+        this.scale = null;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rgb"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "rgba"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {FiguraVec3.class, Double.class},
-                            argumentNames = {"rgb", "a"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b", "a"}
-                    )
-            },
-            value = "nameplate_entity.set_background_color"
-    )
-    public void setBackgroundColor(Object r, Double g, Double b, Double a) {
-        if (r == null) {
-            this.background = null;
-            this.alpha = null;
-        } else if (r instanceof FiguraVec3 vec) {
-            this.background = ColorUtils.rgbToInt(vec);
-            this.alpha = g;
-        } else if (r instanceof FiguraVec4 vec) {
-            this.background = ColorUtils.rgbToInt(FiguraVec3.of(vec.x, vec.y, vec.z));
-            this.alpha = vec.w;
-        } else {
-            FiguraVec3 vec = LuaUtils.parseVec3("setBackgroundColor", r, g, b);
-            this.background = ColorUtils.rgbToInt(vec);
-            this.alpha = a;
-        }
+    public void setScale(Double x, Double y, Double z) {
+        setScale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
+    }
+
+    @LuaWhitelist
+    public void setScale(FiguraVec3 scale) {
+        this.scale = scale.copy();
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor() {
+        this.background = null;
+        this.alpha = null;
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor(Double r, Double g, Double b) {
+        setBackgroundColor(LuaUtils.freeVec3("setBackgroundColor", r, g, b));
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor(FiguraVec3 rgb) {
+        this.background = ColorUtils.rgbToInt(rgb);
+        this.alpha = null;
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor(Double r, Double g, Double b, Double a) {
+        setBackgroundColor(LuaUtils.freeVec3("setBackgroundColor", r, g, b), a);
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor(FiguraVec4 rgba) {
+        setBackgroundColor(FiguraVec3.oneUse(rgba.x, rgba.y, rgba.z), rgba.w);
+    }
+
+    @LuaWhitelist
+    public void setBackgroundColor(FiguraVec3 rgb, Double a) {
+        this.background = ColorUtils.rgbToInt(rgb);
+        this.alpha = a;
     }
 
     @LuaWhitelist

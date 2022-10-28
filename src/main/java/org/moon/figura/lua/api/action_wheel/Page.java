@@ -2,8 +2,6 @@ package org.moon.figura.lua.api.action_wheel;
 
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 @LuaWhitelist
@@ -49,16 +47,11 @@ public class Page {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Integer.class,
-                            argumentNames = "index"
-                    )
-            },
-            value = "wheel_page.new_action"
-    )
+    public Action newAction(){
+        return newAction(null);
+    }
+
+    @LuaWhitelist
     public Action newAction(Integer index) {
         //set the action
         Action action = new Action();
@@ -69,13 +62,6 @@ public class Page {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Integer.class,
-                    argumentNames = "index"
-            ),
-            value = "wheel_page.get_action"
-    )
     public Action getAction(int index) {
         if (index < 1 || index > 8)
             throw new LuaError("Index must be between 1 and 8!");
@@ -83,13 +69,6 @@ public class Page {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Integer.class, Action.class},
-                    argumentNames = {"index", "action"}
-            ),
-            value = "wheel_page.set_action"
-    )
     public void setAction(int index, Action action) {
         if (index < 1 || index > 8)
             throw new LuaError("Index must be between 1 and 8!");

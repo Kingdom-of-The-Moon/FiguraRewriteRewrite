@@ -8,12 +8,10 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.luaj.vm2.LuaError;
-import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.utils.LuaUtils;
 
@@ -53,21 +51,17 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = ItemStackAPI.class,
-                            argumentNames = "item"
-                    )
-            },
-            value = "item_task.item"
-    )
-    public RenderTask item(Object item) {
-        this.item = LuaUtils.parseItemStack("item", item);
+    public RenderTask item(String itemId){
+        return item(LuaUtils.parseItemStack("item", itemId));
+    }
+
+    @LuaWhitelist
+    public RenderTask item(@LuaNotNil ItemStackAPI item){
+        return item(LuaUtils.parseItemStack("item", item));
+    }
+
+    public RenderTask item(ItemStack item) {
+        this.item = item;
         Minecraft client = Minecraft.getInstance();
         RandomSource random = client.level != null ? client.level.random : RandomSource.create();
         cachedComplexity = client.getItemRenderer().getModel(this.item, null, null, 0).getQuads(null, null, random).size();
@@ -75,26 +69,18 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("item_task.get_render_type")
     public String getRenderType() {
         return this.renderType.name();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                        argumentTypes = String.class,
-                        argumentNames = "renderType"
-            ),
-            value = "item_task.render_type"
-    )
-    public RenderTask renderType(@LuaNotNil String type) {
+    public RenderTask renderType(@LuaNotNil String renderType) {
         try {
-            this.renderType = ItemTransforms.TransformType.valueOf(type.toUpperCase());
+            this.renderType = ItemTransforms.TransformType.valueOf(renderType.toUpperCase());
             this.left = this.renderType == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND || this.renderType == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
             return this;
         } catch (Exception ignored) {
-            throw new LuaError("Illegal RenderType: \"" + type + "\".");
+            throw new LuaError("Illegal RenderType: \"" + renderType + "\".");
         }
     }
 

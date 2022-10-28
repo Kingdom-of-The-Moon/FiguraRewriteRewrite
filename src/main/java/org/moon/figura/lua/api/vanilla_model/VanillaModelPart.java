@@ -4,8 +4,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import org.moon.figura.model.ParentType;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 
@@ -53,8 +51,8 @@ public class VanillaModelPart extends VanillaPart {
         savedOriginRot.scale(180 / Math.PI);
 
         FiguraVec3 pivot = parentType.offset.copy();
-        pivot.subtract(part.x, part.y, part.z);
-        pivot.multiply(1, -1, -1);
+        pivot.sub(part.x, part.y, part.z);
+        pivot.mul(1, -1, -1);
         savedOriginPos.set(pivot);
         pivot.free();
     }
@@ -67,38 +65,27 @@ public class VanillaModelPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "visible"
-            ),
-            value = "vanilla_part.set_visible"
-    )
     public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_visible")
     public boolean getVisible() {
         return this.visible;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_origin_visible")
     public boolean getOriginVisible() {
         return this.storedVisibility;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_origin_rot")
     public FiguraVec3 getOriginRot() {
         return this.savedOriginRot.copy();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_origin_pos")
     public FiguraVec3 getOriginPos() {
         return this.savedOriginPos.copy();
     }

@@ -9,8 +9,6 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMetamethodDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.mixin.sound.SoundManagerAccessor;
@@ -49,74 +47,44 @@ public class SoundAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class},
-                            argumentNames = {"sound", "pos"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"sound", "posX", "posY", "posZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class, Double.class, Double.class, Boolean.class},
-                            argumentNames = {"sound", "pos", "volume", "pitch", "loop"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class, Double.class, Double.class, Boolean.class},
-                            argumentNames = {"sound", "posX", "posY", "posZ", "volume", "pitch", "loop"}
-                    )
-            },
-            value = "sounds.play_sound"
-    )
-    public void playSound(@LuaNotNil String id, Object x, Double y, Double z, Object w, Double t, Boolean bl) {
-        __index(id).play(x, y, z, w, t, bl);
+    public void playSound(String id, double x, double y, double z){
+        playSound(id, x, y, z, 1, 1, false);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "id"
-                    )
-            },
-            value = "sounds.stop_sound"
-    )
+    public void playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos){
+        playSound(id, pos.x, pos.y, pos.z, 1, 1, false);
+    }
+
+    @LuaWhitelist
+    public void playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos, float volume, float pitch, Boolean loop){
+        playSound(id, pos.x, pos.y, pos.z, volume, pitch, loop);
+    }
+
+    @LuaWhitelist
+    public void playSound(@LuaNotNil String id, double x, double y, double z, float volume, float pitch, boolean loop) {
+        __index(id).play(x, y, z, volume, pitch, loop);
+    }
+
+    @LuaWhitelist
+    public void stopSound(){
+        getSoundEngine().figura$stopSound(owner.owner, null);
+    }
+
+    @LuaWhitelist
     public void stopSound(String id) {
         getSoundEngine().figura$stopSound(owner.owner, id);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, LuaTable.class},
-                            argumentNames = {"name", "byteArray"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, String.class},
-                            argumentNames = {"name", "base64Text"}
-                    )
-            },
-            value = "sounds.add_sound"
-    )
-    public void addSound(@LuaNotNil String name, @LuaNotNil Object object) {
-        byte[] bytes;
-        if (object instanceof LuaTable table) {
-            bytes = new byte[table.length()];
-            for(int i = 0; i < bytes.length; i++)
-                bytes[i] = (byte) table.get(i + 1).checkint();
-        } else if (object instanceof String s) {
-            bytes = Base64.getDecoder().decode(s);
-        } else {
-            throw new LuaError("Invalid type for addSound \"" + object.getClass().getSimpleName() + "\"");
-        }
+    public void addSound(String name, String base64Text){
+        addSound(name, Base64.getDecoder().decode(base64Text));
+    }
 
+    @LuaWhitelist
+    public void addSound(String name, byte[] byteArray){
         try {
-            owner.loadSound(name, bytes);
+            owner.loadSound(name, byteArray);
         } catch (Exception e) {
             throw new LuaError("Failed to add custom sound \"" + name + "\"");
         }

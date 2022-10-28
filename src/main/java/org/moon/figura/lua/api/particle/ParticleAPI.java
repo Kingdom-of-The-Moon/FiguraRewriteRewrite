@@ -8,14 +8,12 @@ import net.minecraft.core.particles.ParticleOptions;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.ducks.ParticleEngineAccessor;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec6;
 import org.moon.figura.utils.LuaUtils;
+import org.moon.figura.utils.MathUtils;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -46,83 +44,39 @@ public class ParticleAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec6.class},
-                            argumentNames = {"name", "posVel"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class},
-                            argumentNames = {"name", "pos"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class, FiguraVec3.class},
-                            argumentNames = {"name", "pos", "vel"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "posX", "posY", "posZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "pos", "velX", "velY", "velZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class, FiguraVec3.class},
-                            argumentNames = {"name", "posX", "posY", "posZ", "vel"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "posX", "posY", "posZ", "velX", "velY", "velZ"}
-                    )
-            },
-            value = "particles.add_particle"
-    )
-    public void addParticle(@LuaNotNil String id, Object x, Object y, Double z, Object w, Double t, Double h) {
-        FiguraVec3 pos, vel;
-
-        //Parse pos and vel
-        if (x instanceof FiguraVec6 posVel) {
-            pos = FiguraVec3.of(posVel.x, posVel.y, posVel.z);
-            vel = FiguraVec3.of(posVel.w, posVel.t, posVel.h);
-        } else if (x instanceof FiguraVec3 vec1) {
-            pos = vec1.copy();
-            if (y instanceof FiguraVec3 vec2) {
-                vel = vec2.copy();
-            } else if (y == null || y instanceof Number) {
-                if (w == null || w instanceof Number) {
-                    //Intellij says: y should probably not be passed as parameter x
-                    //It really doesn't like the kind of programming that happens in this function lol
-                    vel = LuaUtils.parseVec3("addParticle", y, z, (Number) w);
-                } else {
-                    throw new LuaError("Illegal argument to addParticle(): " + w);
-                }
-            } else {
-                throw new LuaError("Illegal argument to addParticle(): " + y);
-            }
-        } else if (x == null || x instanceof Number && y == null || y instanceof Number) {
-            pos = LuaUtils.parseVec3("addParticle", x, (Number) y, z);
-            if (w instanceof FiguraVec3 vec1) {
-                vel = vec1.copy();
-            } else if (w == null || w instanceof Number) {
-                vel = LuaUtils.parseVec3("addParticle", w, t, h);
-            } else {
-                throw new LuaError("Illegal argument to addParticle(): " + w);
-            }
-        } else {
-            throw new LuaError("Illegal argument to addParticle(): " + x);
-        }
-
-        LuaParticle particle = generate(id, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
-        particle.spawn();
-
-        pos.free();
-        vel.free();
+    public void addParticle(String name, Double x, Double y, Double z){
+        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("particles.remove_particles")
+    public void addParticle(String name, FiguraVec3 vec){
+        addParticle(name, vec, FiguraVec3.oneUse());
+    }
+
+    @LuaWhitelist
+    public void addParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public void addParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+        addParticle(name, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public void addParticle(String name, Double x, Double y, Double z, FiguraVec3 axis){
+        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), axis);
+    }
+
+    @LuaWhitelist
+    public void addParticle(String name, FiguraVec3 pos, FiguraVec3 vel){
+
+        LuaParticle particle = generate(name, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
+        particle.spawn();
+
+    }
+
+    @LuaWhitelist
     public void removeParticles() {
         getParticleEngine().figura$clearParticles(owner.owner);
     }

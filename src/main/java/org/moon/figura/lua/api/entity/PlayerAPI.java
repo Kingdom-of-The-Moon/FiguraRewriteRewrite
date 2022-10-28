@@ -5,10 +5,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.luaj.vm2.LuaError;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 @LuaWhitelist
@@ -24,42 +21,36 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     private String cachedModelType;
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_food")
     public int getFood() {
         checkEntity();
         return entity.getFoodData().getFoodLevel();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_saturation")
     public float getSaturation() {
         checkEntity();
         return entity.getFoodData().getSaturationLevel();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_experience_progress")
     public float getExperienceProgress() {
         checkEntity();
         return entity.experienceProgress;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_experience_level")
     public float getExperienceLevel() {
         checkEntity();
         return entity.experienceLevel;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.is_flying")
     public boolean isFlying() {
         checkEntity();
         return entity.getAbilities().flying;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_model_type")
     public String getModelType() {
         checkEntity();
         if (cachedModelType == null) {
@@ -76,7 +67,6 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_gamemode")
     public String getGamemode() {
         checkEntity();
         if (Minecraft.getInstance().player == null)
@@ -90,14 +80,7 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "part"
-            ),
-            value = "player.is_skin_layer_visible"
-    )
-    public boolean isSkinLayerVisible(@LuaNotNil String part) {
+    public boolean isSkinLayerVisible(String part) {
         checkEntity();
         try {
             if (part.equalsIgnoreCase("left_pants") || part.equalsIgnoreCase("right_pants"))

@@ -8,8 +8,6 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMetamethodDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.Deque;
@@ -62,19 +60,6 @@ public class LuaEvent {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = LuaFunction.class,
-                            argumentNames = "func"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {LuaFunction.class, String.class},
-                            argumentNames = {"func", "name"}
-                    )
-            },
-            value = "event.register"
-    )
     public void register(@LuaNotNil LuaFunction func, String name) {
         if (__len() >= MAX_FUNCTIONS)
             throw new LuaError("Reached maximum limit of " + MAX_FUNCTIONS + " functions in one event!");
@@ -84,7 +69,6 @@ public class LuaEvent {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("event.clear")
     public void clear() {
         functions.clear();
         queue.clear();
@@ -93,14 +77,7 @@ public class LuaEvent {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "name"
-            ),
-            value = "event.remove"
-    )
-    public int remove(@LuaNotNil String name) {
+    public int remove(String name) {
         flushQueue();
 
         int removed = 0;
