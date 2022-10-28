@@ -1,19 +1,19 @@
 package org.moon.figura.lua.api;
 
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.brigadier.StringReader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.SlotArgument;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.Badges;
-import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.config.Config;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -25,6 +25,7 @@ import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.mixin.gui.ChatScreenAccessor;
+import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.TextUtils;
@@ -152,7 +153,7 @@ public class HostAPI {
     public void sendChatMessage(@LuaNotNil String message) {
         if (!isHost() || !Config.CHAT_MESSAGES.asBool()) return;
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null) player.chatSigned(message, Component.literal(message));
+        if (player != null) player.chatSigned(message, null);
     }
 
     @LuaWhitelist
@@ -166,7 +167,7 @@ public class HostAPI {
     public void sendChatCommand(@LuaNotNil String command) {
         if (!isHost() || !Config.CHAT_MESSAGES.asBool()) return;
         LocalPlayer player = Minecraft.getInstance().player;
-        if (player != null) player.commandUnsigned(command.startsWith("/") ? command.substring(1) : command);
+        if (player != null) player.commandSigned(command.startsWith("/") ? command.substring(1) : command, null);
     }
 
     @LuaWhitelist
@@ -295,7 +296,7 @@ public class HostAPI {
     public String getScreen() {
         if (!isHost() || Minecraft.getInstance().screen == null)
             return null;
-        return Minecraft.getInstance().screen.getClass().getSimpleName();
+        return Minecraft.getInstance().screen.getClass().getName();
     }
 
     @LuaWhitelist
@@ -325,6 +326,19 @@ public class HostAPI {
                 throw new LuaError(e.getMessage());
             }
         }
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("host.screenshot")
+    public FiguraTexture screenshot() {
+        if (!isHost())
+            return null;
+
+        String name = "screenshot";
+        NativeImage img = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
+        FiguraTexture texture = new FiguraTexture(owner, name, img);
+        owner.renderer.customTextures.put(name, texture);
+        return texture;
     }
 
     @LuaWhitelist

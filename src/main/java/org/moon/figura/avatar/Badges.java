@@ -25,7 +25,7 @@ public class Badges {
         if (avatar == null)
             return Component.empty();
 
-        MutableComponent badges = Component.literal(" ").withStyle(Style.EMPTY.withFont(TextUtils.FIGURA_FONT).withColor(ChatFormatting.WHITE));
+        MutableComponent badges = Component.empty().withStyle(Style.EMPTY.withFont(TextUtils.FIGURA_FONT).withColor(ChatFormatting.WHITE));
 
         UUID id = avatar.owner;
         Pair<BitSet, BitSet> pair = badgesMap.get(id);
@@ -69,7 +69,7 @@ public class Badges {
                     }
 
                     //mark fallback
-                    badges.append(System.DEFAULT.badge.copy().withStyle(Style.EMPTY.withColor(ColorUtils.userInputHex(avatar.color))));
+                    badges.append(System.DEFAULT.badge.copy().withStyle(Style.EMPTY.withColor(ColorUtils.rgbToInt(ColorUtils.userInputHex(avatar.color)))));
                 }
             }
         }
@@ -85,7 +85,7 @@ public class Badges {
                 badges.append(special[i].badge);
         }
 
-        return badges.getString().isBlank() ? Component.empty() : badges;
+        return badges;
     }
 
     public static void load(UUID id, BitSet pride, BitSet special) {

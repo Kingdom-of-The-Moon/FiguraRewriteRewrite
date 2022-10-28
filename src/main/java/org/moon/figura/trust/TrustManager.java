@@ -6,19 +6,23 @@ import net.minecraft.nbt.Tag;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.utils.IOUtils;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TrustManager {
 
-    //trust maps
+    //container maps
     public static final Map<Trust.Group, TrustContainer.GroupContainer> GROUPS = new LinkedHashMap<>();
-    public static final Map<UUID, TrustContainer.PlayerContainer> PLAYERS = new HashMap<>();
+    private static final Map<UUID, TrustContainer.PlayerContainer> PLAYERS = new HashMap<>();
+
+    //custom trusts
+    public static final Map<String, Collection<Trust>> CUSTOM_TRUST = new HashMap<>();
 
     //main method for loading trust
     public static void init() {
+        //custom trust
+        for (FiguraTrust figuraTrust : IOUtils.loadEntryPoints("figura_trust", FiguraTrust.class))
+            CUSTOM_TRUST.put(figuraTrust.getTitle(), figuraTrust.getTrusts());
+
         //load groups
         for (Trust.Group group : Trust.Group.values()) {
             TrustContainer.GroupContainer container = new TrustContainer.GroupContainer(group);
@@ -45,9 +49,8 @@ public class TrustManager {
             try {
                 Trust.Group group = Trust.Group.valueOf(name);
                 TrustContainer trust = GROUPS.get(group);
-                trust.loadNbt(compound.getCompound("trust"));
+                trust.loadNbt(compound);
             } catch (Exception ignored) {
-                ignored.printStackTrace();
                 FiguraMod.LOGGER.warn("Failed to load trust for \"{}\"", name);
             }
         }
@@ -69,11 +72,10 @@ public class TrustManager {
 
                 TrustContainer.GroupContainer parentTrust = GROUPS.get(group);
                 TrustContainer.PlayerContainer trust = new TrustContainer.PlayerContainer(parentTrust, name);
-                trust.loadNbt(compound.getCompound("trust"));
+                trust.loadNbt(compound);
 
                 PLAYERS.put(uuid, trust);
             } catch (Exception ignored) {
-                ignored.printStackTrace();
                 FiguraMod.LOGGER.warn("Failed to load trust for \"{}\"", name);
             }
         }
@@ -88,7 +90,7 @@ public class TrustManager {
 
             //get groups nbt
             for (TrustContainer group : GROUPS.values()) {
-                if (group.getGroup() == Trust.Group.LOCAL || !group.hasChanges())
+                if (group.getGroup() == Trust.Group.LOCAL || group.getGroup() == Trust.Group.BLOCKED || !group.hasChanges())
                     continue;
 
                 CompoundTag container = new CompoundTag();
@@ -97,12 +99,9 @@ public class TrustManager {
             }
 
             //get players nbt
-            for (Map.Entry<UUID, TrustContainer.PlayerContainer> entry : PLAYERS.entrySet()) {
-                UUID uuid = entry.getKey();
-                TrustContainer trust = entry.getValue();
-
+            for (TrustContainer.PlayerContainer trust : PLAYERS.values()) {
                 //dont save local or unchanged trusts
-                if (FiguraMod.isLocal(uuid) || trust.getGroup() == Trust.Group.LOCAL || !trust.hasChanges())
+                if (isLocal(trust) || (!trust.hasChanges() && trust.getGroup() == Trust.Group.UNTRUSTED))
                     continue;
 
                 CompoundTag container = new CompoundTag();

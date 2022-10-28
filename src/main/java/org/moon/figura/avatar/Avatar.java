@@ -273,7 +273,7 @@ public class Avatar {
 
                 limit.use(luaRuntime.getInstructions());
                 return ret;
-            } catch (Exception e) {
+            } catch (Exception | StackOverflowError e) {
                 if (luaRuntime != null)
                     luaRuntime.error(e);
             }
@@ -717,10 +717,8 @@ public class Avatar {
         runtime.setInstructionLimit(init.remaining);
 
         events.offer(() -> {
-            if (runtime.init(autoScripts)) {
+            if (runtime.init(autoScripts))
                 init.use(runtime.getInstructions());
-                this.luaRuntime = runtime;
-            }
             return null;
         });
     }

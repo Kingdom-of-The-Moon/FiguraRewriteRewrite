@@ -9,6 +9,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.Component;
 import org.moon.figura.FiguraMod;
+import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.backend.NetworkManager;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.utils.ColorUtils;
@@ -65,12 +66,18 @@ public enum Config {
             FiguraLuaPrinter.updateDecimalFormatting();
         }
     },
-    FORMAT_SCRIPT(1, 3){{
+    FORMAT_SCRIPT(1, 3) {{
       String tooltip = "config.format_script.tooltip.";
       this.tooltip = FiguraText.of(tooltip + "1")
               .append("\n")
               .append(FiguraText.of(tooltip + "2").withStyle(ChatFormatting.RED));
-    }},
+    }
+        @Override
+        public void onChange() {
+            if (!AvatarManager.localUploaded)
+                AvatarManager.reloadAvatar(FiguraMod.getLocalPlayerUUID());
+        }
+    },
 
     ActionWheel,
     ACTION_WHEEL_BUTTON("key.keyboard.b"),
@@ -296,10 +303,31 @@ public enum Config {
 
     public enum InputType {
         ANY(s -> true),
-        INT(s -> s.matches("^[-+]?\\d*$")),
-        POSITIVE_INT(s -> s.matches("^\\+?\\d*$")),
-        FLOAT(s -> s.matches("^[-+]?\\d*(\\.(\\d*)?)?$")),
-        HEX_COLOR(s -> s.matches("^#?(?i)[\\da-f]{0,6}$") || ColorUtils.Colors.getColor(s) != null),
+        INT(s -> {
+            try {
+                Integer.parseInt(s);
+                return true;
+            } catch (Exception ignored) {
+                return false;
+            }
+        }),
+        POSITIVE_INT(s -> {
+            try {
+                Integer i = Integer.parseInt(s);
+                return i >= 0;
+            } catch (Exception ignored) {
+                return false;
+            }
+        }),
+        FLOAT(s -> {
+            try {
+                Float f = Float.parseFloat(s);
+                return !f.isInfinite();
+            } catch (Exception ignored) {
+                return false;
+            }
+        }),
+        HEX_COLOR(s -> ColorUtils.userInputHex(s, null) != null),
         FOLDER_PATH(s -> {
             try {
                 return s.isBlank() || Path.of(s.trim()).toFile().isDirectory();

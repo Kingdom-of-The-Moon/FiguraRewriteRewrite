@@ -14,8 +14,8 @@ public abstract class TrustContainer {
     private boolean visible = true; //used on UI
 
     //trust -> value map
-    public final Map<Trust, Integer> trustSettings = new HashMap<>();
-    public final Map<String, Map<Trust, Integer>> customTrusts = new HashMap<>();
+    private final Map<Trust, Integer> trustSettings = new HashMap<>();
+    private final Map<String, Map<Trust, Integer>> customTrusts = new HashMap<>();
 
     // constructors //
 
@@ -33,27 +33,23 @@ public abstract class TrustContainer {
     //read nbt
     public void loadNbt(CompoundTag nbt) {
         //default trust
+        CompoundTag trust = nbt.getCompound("trust");
         for (Trust setting : Trust.DEFAULT) {
-            if (nbt.contains(setting.name))
-                trustSettings.put(setting, nbt.getInt(setting.name));
+            if (trust.contains(setting.name))
+                trustSettings.put(setting, trust.getInt(setting.name));
         }
 
         //custom trust
-        if (!nbt.contains("custom"))
-            return;
-
         CompoundTag custom = nbt.getCompound("custom");
-        for (Map.Entry<String, Collection<Trust>> entry : Trust.CUSTOM_TRUST.entrySet()) {
+        for (Map.Entry<String, Collection<Trust>> entry : TrustManager.CUSTOM_TRUST.entrySet()) {
             String key = entry.getKey();
-            if (!custom.contains(key))
-                continue;
 
             Map<Trust, Integer> map = new HashMap<>();
             CompoundTag customNbt = custom.getCompound(key);
 
-            for (Trust trust : entry.getValue()) {
-                if (customNbt.contains(trust.name))
-                    map.put(trust, nbt.getInt(trust.name));
+            for (Trust setting : entry.getValue()) {
+                if (customNbt.contains(setting.name))
+                    map.put(setting, customNbt.getInt(setting.name));
             }
 
             customTrusts.put(key, map);
@@ -70,21 +66,20 @@ public abstract class TrustContainer {
         for (Map.Entry<Trust, Integer> entry : this.trustSettings.entrySet())
             trust.putInt(entry.getKey().name, entry.getValue());
 
+        nbt.put("trust", trust);
+
         //custom trust
         CompoundTag custom = new CompoundTag();
         for (Map.Entry<String, Map<Trust, Integer>> entry : this.customTrusts.entrySet()) {
             CompoundTag customNbt = new CompoundTag();
 
             for (Map.Entry<Trust, Integer> entry2 : entry.getValue().entrySet())
-                trust.putInt(entry2.getKey().name, entry2.getValue());
+                customNbt.putInt(entry2.getKey().name, entry2.getValue());
 
             custom.put(entry.getKey(), customNbt);
         }
 
-        trust.put("custom", custom);
-
-        //add to nbt
-        nbt.put("trust", trust);
+        nbt.put("custom", custom);
     }
 
     //get value from trust
@@ -102,6 +97,17 @@ public abstract class TrustContainer {
 
         //if no trust found, return -1
         return -1;
+    }
+
+    public void insert(Trust trust, Integer value, String id) {
+        if (Trust.DEFAULT.contains(trust)) {
+            trustSettings.put(trust, value);
+            return;
+        }
+
+        Map<Trust, Integer> map = customTrusts.getOrDefault(id, new HashMap<>());
+        map.put(trust, value);
+        customTrusts.put(id, map);
     }
 
     public boolean hasChanges() {
@@ -147,6 +153,14 @@ public abstract class TrustContainer {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public Map<Trust, Integer> getTrustSettings() {
+        return trustSettings;
+    }
+
+    public Map<String, Map<Trust, Integer>> getCustomTrusts() {
+        return customTrusts;
     }
 
     // -- types -- //
@@ -218,7 +232,12 @@ public abstract class TrustContainer {
 
         @Override
         public void writeNbt(CompoundTag nbt) {
-            super.writeNbt(nbt);
+            if (this.getGroup() != Trust.Group.BLOCKED) {
+                super.writeNbt(nbt);
+            } else {
+                nbt.putString("name", this.name);
+            }
+
             //parent
             nbt.putString("parent", parent.name);
         }

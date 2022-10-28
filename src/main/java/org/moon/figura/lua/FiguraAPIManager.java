@@ -7,6 +7,7 @@ import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
 import org.moon.figura.lua.api.action_wheel.Page;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.LivingEntityAPI;
+import org.moon.figura.lua.api.entity.NullEntity;
 import org.moon.figura.lua.api.entity.PlayerAPI;
 import org.moon.figura.lua.api.event.EventsAPI;
 import org.moon.figura.lua.api.event.LuaEvent;
@@ -41,7 +42,6 @@ import org.moon.figura.model.rendertasks.BlockTask;
 import org.moon.figura.model.rendertasks.ItemTask;
 import org.moon.figura.model.rendertasks.RenderTask;
 import org.moon.figura.model.rendertasks.TextTask;
-import org.moon.figura.trust.Trust;
 import org.moon.figura.utils.IOUtils;
 
 import java.util.HashSet;
@@ -71,6 +71,7 @@ public class FiguraAPIManager {
         add(FiguraMat3.class);
         add(FiguraMat4.class);
 
+        add(NullEntity.class);
         add(EntityAPI.class);
         add(LivingEntityAPI.class);
         add(PlayerAPI.class);
@@ -154,11 +155,9 @@ public class FiguraAPIManager {
     private static final Set<FiguraAPI> ENTRYPOINTS = new HashSet<>();
 
     public static void init() {
-        Set<FiguraAPI> set = IOUtils.loadEntryPoints("figura_api", FiguraAPI.class);
-        for (FiguraAPI api : set) {
+        for (FiguraAPI api : IOUtils.loadEntryPoints("figura_api", FiguraAPI.class)) {
             ENTRYPOINTS.add(api);
             WHITELISTED_CLASSES.addAll(api.getWhitelistedClasses());
-            Trust.register(api);
         }
     }
 
