@@ -1,8 +1,8 @@
 package org.moon.figura.math.vector;
 
-import org.luaj.vm2.LuaDouble;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.LuaValue;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
@@ -240,8 +240,8 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @LuaWhitelist
     public FiguraVec2 applyFunc(@LuaNotNil LuaFunction function) {
-        x = function.call(LuaDouble.valueOf(x)).todouble();
-        y = function.call(LuaDouble.valueOf(y)).todouble();
+        x = function.call(LuaValue.valueOf(1), LuaValue.valueOf(x)).todouble();
+        y = function.call(LuaValue.valueOf(2), LuaValue.valueOf(y)).todouble();
         return this;
     }
 

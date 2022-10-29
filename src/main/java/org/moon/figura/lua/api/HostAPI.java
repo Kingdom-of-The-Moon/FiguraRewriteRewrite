@@ -230,14 +230,14 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture screenshot() {
+    public FiguraTexture screenshot(String name) {
         if (!isHost())
             return null;
 
-        String name = "screenshot";
+        String screenshot = name == null ? "screenshot" : name;
         NativeImage img = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
-        FiguraTexture texture = new FiguraTexture(owner, name, img);
-        owner.renderer.customTextures.put(name, texture);
+        FiguraTexture texture = new FiguraTexture(owner, screenshot, img);
+        owner.renderer.customTextures.put(screenshot, texture);
         return texture;
     }
 
