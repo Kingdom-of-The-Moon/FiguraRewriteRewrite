@@ -3,8 +3,12 @@ package org.moon.figura.lua.api.action_wheel;
 import net.minecraft.world.item.ItemStack;
 import org.luaj.vm2.LuaFunction;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.docs.LuaFieldDoc;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.LuaUtils;
@@ -29,21 +33,16 @@ public class Action {
 
 
     @LuaWhitelist
-    @LuaFieldDoc("wheel_action.left_click")
     public LuaFunction leftClick;
     @LuaWhitelist
-    @LuaFieldDoc("wheel_action.right_click")
     public LuaFunction rightClick;
 
     @LuaWhitelist
-    @LuaFieldDoc("wheel_action.toggle")
     public LuaFunction toggle;
     @LuaWhitelist
-    @LuaFieldDoc("wheel_action.untoggle")
     public LuaFunction untoggle;
 
     @LuaWhitelist
-    @LuaFieldDoc("wheel_action.scroll")
     public LuaFunction scroll;
 
 
@@ -103,11 +102,6 @@ public class Action {
     }
 
     @LuaWhitelist
-    public Action title(){
-        return title(null);
-    }
-
-    @LuaWhitelist
     public Action title(String title) {
         this.title = title;
         return this;
@@ -124,7 +118,7 @@ public class Action {
     }
 
     @LuaWhitelist
-    public Action color(FiguraVec3 color) {
+    public Action color(@LuaNotNil FiguraVec3 color) {
         this.color = color.copy();
         return this;
     }
@@ -140,7 +134,7 @@ public class Action {
     }
 
     @LuaWhitelist
-    public Action hoverColor(FiguraVec3 color) {
+    public Action hoverColor(@LuaNotNil FiguraVec3 color) {
         this.hoverColor = color.copy();
         return this;
     }
@@ -151,6 +145,10 @@ public class Action {
     }
 
     @LuaWhitelist
+    public Action item(ItemStackAPI item) {
+        return item(item.itemStack);
+    }
+
     public Action item(ItemStack item) {
         this.item = item;
         return this;
@@ -162,6 +160,10 @@ public class Action {
     }
 
     @LuaWhitelist
+    public Action hoverItem(ItemStackAPI item) {
+        return item(item.itemStack);
+    }
+
     public Action hoverItem(ItemStack item) {
         this.item = item;
         return this;
@@ -223,12 +225,12 @@ public class Action {
 
     @LuaWhitelist
     public Action toggleColor(Double r, Double g, Double b){
-        return toggleColor(LuaUtils.parseVec3("toggleColor", r, g, b));
+        return toggleColor(LuaUtils.freeVec3("toggleColor", r, g, b));
     }
 
     @LuaWhitelist
     public Action toggleColor(FiguraVec3 color) {
-        this.toggleColor = color;
+        this.toggleColor = color.copy();
         return this;
     }
 

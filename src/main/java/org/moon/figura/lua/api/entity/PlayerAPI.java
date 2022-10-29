@@ -5,6 +5,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import org.luaj.vm2.LuaError;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
@@ -80,7 +81,7 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    public boolean isSkinLayerVisible(String part) {
+    public boolean isSkinLayerVisible(@LuaNotNil String part) {
         checkEntity();
         try {
             if (part.equalsIgnoreCase("left_pants") || part.equalsIgnoreCase("right_pants"))

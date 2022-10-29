@@ -7,6 +7,8 @@ import org.moon.figura.gui.ActionWheel;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaFieldDoc;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.HashMap;
@@ -34,15 +36,10 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    public void execute(Integer index){
-        execute(index, false);
-    }
-
-    @LuaWhitelist
-    public void execute(Integer index, boolean rightClick) {
+    public void execute(Integer index, boolean right) {
         if (index != null && (index < 1 || index > 8))
             throw new LuaError("index must be between 1 and 8");
-        if (this.isHost) ActionWheel.execute(index == null ? ActionWheel.getSelected() : index - 1, !rightClick);
+        if (this.isHost) ActionWheel.execute(index == null ? ActionWheel.getSelected() : index - 1, !right);
     }
 
     @LuaWhitelist
@@ -61,20 +58,10 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    public Page createPage(){
-        return new Page();
-    }
-
-    @LuaWhitelist
     public Page createPage(String title) {
         Page page = new Page();
-        this.pages.put(title, page);
+        if (title != null) this.pages.put(title, page);
         return page;
-    }
-
-    @LuaWhitelist
-    public void setPage(){
-        currentPage = null;
     }
 
     @LuaWhitelist
@@ -83,7 +70,7 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    public void setPage(String pageTitle){
+    public void setPage(@LuaNotNil String pageTitle){
         if (pages.containsKey(pageTitle))
             currentPage = pages.get(pageTitle);
         else

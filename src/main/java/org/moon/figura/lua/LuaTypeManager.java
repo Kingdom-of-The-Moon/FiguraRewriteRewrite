@@ -46,14 +46,14 @@ public class LuaTypeManager {
                     continue;
                 String name = method.getName();
                 List<Method> methods = overloads.compute(name, (k, v) -> v == null ? new LinkedList<>() : v);
-//                for (int i = 0; i < methods.size(); i ++) {
-//                    Method method1 = methods.get(i);
-//                    if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {
-//                        if (!method.getReturnType().isAssignableFrom(method1.getReturnType()))
-//                            methods.set(i, method);
-//                        continue woe;
-//                    }
-//                }
+                for (int i = 0; i < methods.size(); i ++) {
+                    Method method1 = methods.get(i);
+                    if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {
+                        if (!method.getReturnType().isAssignableFrom(method1.getReturnType()))
+                            methods.set(i, method);
+                        continue woe;
+                    }
+                }
                 methods.add(method);
             }
             currentClass = currentClass.getSuperclass();
@@ -107,7 +107,6 @@ public class LuaTypeManager {
     }
 
     private static Method[] filterOverrides(List<Method> overloads) {
-
         return overloads.toArray(Method[]::new);
     }
 
@@ -208,6 +207,17 @@ public class LuaTypeManager {
             return value.checkuserdata(Object.class);
         else
             return null;
+    }
+
+    public boolean checkTypeStrict(LuaValue value, Class<?> type) {
+        if (type == null || value == null || value.isnil())
+            return true;
+        if(type.isAssignableFrom(value.getClass()))
+            return true;
+        LuaType luaType = luaToJavaTypes.get(type);
+        if (luaType != null)
+            return luaType.checkStrict(value);
+        return checkType(value, type);
     }
 
     public boolean checkType(LuaValue value, Class<?> type) {
@@ -367,21 +377,23 @@ public class LuaTypeManager {
     }
 
     private enum LuaType {
-        BYTE(LuaValue::tobyte, LuaValue::isint),
-        SHORT(LuaValue::toshort, LuaValue::isint),
-        LONG(LuaValue::tolong, LuaValue::isint),
-        FLOAT(value -> (float)value.checkdouble(), LuaValue::isnumber),
-        BOOLEAN(LuaValue::checkboolean, LuaValue::isboolean),
-        DOUBLE(LuaValue::checkdouble, LuaValue::isnumber),
-        INTEGER(LuaValue::checkint, LuaValue::isint),
-        STRING(LuaValue::checkjstring, LuaValue::isstring);
+        BYTE(LuaValue::tobyte, LuaValue::isint, val -> val.isint() && val instanceof LuaNumber),
+        SHORT(LuaValue::toshort, LuaValue::isint, val -> val.isint() && val instanceof LuaNumber),
+        LONG(LuaValue::tolong, LuaValue::isint, val -> val.isint() && val instanceof LuaNumber),
+        FLOAT(value -> (float)value.checkdouble(), LuaValue::isnumber, val -> val.isnumber() && val instanceof LuaNumber),
+        BOOLEAN(LuaValue::checkboolean, LuaValue::isboolean, LuaValue::isboolean),
+        DOUBLE(LuaValue::checkdouble, LuaValue::isnumber, val -> val.isnumber() && val instanceof LuaNumber),
+        INTEGER(LuaValue::checkint, LuaValue::isint, val -> val.isint() && val instanceof LuaNumber),
+        STRING(LuaValue::checkjstring, LuaValue::isstring, val -> val.isstring() && val instanceof LuaString);
 
         private final Function<LuaValue, Object> cast;
         private final Predicate<LuaValue> check;
+        private final Predicate<LuaValue> strict;
 
-        LuaType(Function<LuaValue, Object> func, Predicate<LuaValue> check) {
-            cast = func;
+        LuaType(Function<LuaValue, Object> cast, Predicate<LuaValue> check, Predicate<LuaValue> strict) {
+            this.cast = cast;
             this.check = check;
+            this.strict = strict;
         }
 
         public Object get(LuaValue val) {
@@ -393,6 +405,10 @@ public class LuaTypeManager {
 
         public boolean check(LuaValue val) {
             return check.test(val);
+        }
+
+        public boolean checkStrict(LuaValue val) {
+            return strict.test(val);
         }
     }
 

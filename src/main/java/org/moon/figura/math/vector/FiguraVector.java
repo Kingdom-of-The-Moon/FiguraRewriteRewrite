@@ -122,11 +122,6 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
     public abstract String toString();
 
-    @Override
-    protected void finalize() throws Throwable {
-        free();
-    }
-
     protected static String getString(Double... d) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");

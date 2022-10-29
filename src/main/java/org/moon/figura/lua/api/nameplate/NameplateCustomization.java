@@ -26,7 +26,7 @@ public class NameplateCustomization {
 
     @LuaWhitelist
     public void setText(String text) {
-        if (TextUtils.tryParseJson(text).getString().length() > 256)
+        if (text != null && TextUtils.tryParseJson(text).getString().length() > 256)
             throw new LuaError("Text length exceeded limit of 256 characters");
         this.text = text;
     }

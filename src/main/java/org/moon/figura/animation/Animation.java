@@ -3,10 +3,10 @@ package org.moon.figura.animation;
 import com.mojang.datafixers.util.Pair;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
-import org.moon.figura.model.FiguraModelPart;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class Animation {
     protected float length, blend, offset;
     protected float speed = 1f;
     protected float startDelay, loopDelay;
-    protected boolean override;
+    protected int override;
     protected int priority = 0;
     protected LoopMode loop;
 
@@ -57,7 +57,7 @@ public class Animation {
         this.modelName = modelName;
         this.name = name;
         this.loop = loop;
-        this.override = override;
+        this.override = override ? 7 : 0;
         this.length = length;
         this.offset = offset;
         this.blend = blend;
@@ -245,13 +245,35 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public boolean getOverride() {
-        return this.override;
+    public boolean getOverrideRot() {
+        return (override & 1) == 1;
     }
 
     @LuaWhitelist
-    public Animation override(boolean override) {
-        this.override = override;
+    public boolean getOverridePos() {
+        return (override & 2) == 2;
+    }
+
+    @LuaWhitelist
+    public boolean getOverrideScale() {
+        return (override & 4) == 4;
+    }
+
+    @LuaWhitelist
+    public Animation overrideRot(boolean override) {
+        this.override = override ? this.override | 1 : this.override & 6;
+        return this;
+    }
+
+    @LuaWhitelist
+    public Animation overridePos(boolean override) {
+        this.override = override ? this.override | 2 : this.override & 5;
+        return this;
+    }
+
+    @LuaWhitelist
+    public Animation overrideScale(boolean override) {
+        this.override = override ? this.override | 4 : this.override & 3;
         return this;
     }
 

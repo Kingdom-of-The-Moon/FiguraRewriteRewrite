@@ -111,7 +111,7 @@ public class VectorsAPI {
 
     @LuaWhitelist
     public static FiguraVec3 hexToRGB(String hex) {
-        return ColorUtils.intToRGB(ColorUtils.userInputHex(hex, FiguraVec3.of()));
+        return ColorUtils.userInputHex(hex, FiguraVec3.of());
     }
 
     @LuaWhitelist

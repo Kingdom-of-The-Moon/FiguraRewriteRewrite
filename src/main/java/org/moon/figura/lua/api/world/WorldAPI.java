@@ -17,10 +17,13 @@ import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.PlayerAPI;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.EntityUtils;
@@ -49,7 +52,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static BiomeAPI getBiome(FiguraVec3 pos) {
+    public static BiomeAPI getBiome(@LuaNotNil FiguraVec3 pos) {
         BiomeAPI result = new BiomeAPI(getCurrentWorld().getBiome(pos.asBlockPos()).value(), pos.asBlockPos());
         pos.free();
         return result;
@@ -61,7 +64,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static BlockStateAPI getBlockState(FiguraVec3 pos) {
+    public static BlockStateAPI getBlockState(@LuaNotNil FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
@@ -75,7 +78,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getRedstonePower(FiguraVec3 pos) {
+    public static int getRedstonePower(@LuaNotNil FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         if (getCurrentWorld().getChunkAt(blockPos) == null)
@@ -89,7 +92,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getStrongRedstonePower(FiguraVec3 pos) {
+    public static int getStrongRedstonePower(@LuaNotNil FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         if (getCurrentWorld().getChunkAt(blockPos) == null)
@@ -98,18 +101,8 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static double getTime(){
-        return getTime(0);
-    }
-
-    @LuaWhitelist
     public static double getTime(double delta) {
         return getCurrentWorld().getGameTime() + delta;
-    }
-
-    @LuaWhitelist
-    public static double getTimeOfDay(){
-        return getTimeOfDay(0);
     }
 
     @LuaWhitelist
@@ -123,12 +116,8 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static double getRainGradient(){
-        return getRainGradient(1f);
-    }
-
-    @LuaWhitelist
-    public static double getRainGradient(float delta) {
+    public static double getRainGradient(Float delta) {
+        if (delta == null) delta = 1f;
         return getCurrentWorld().getRainLevel(delta);
     }
 
@@ -189,7 +178,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static boolean isOpenSky(FiguraVec3 pos) {
+    public static boolean isOpenSky(@LuaNotNil FiguraVec3 pos) {
         BlockPos blockPos = pos.asBlockPos();
         pos.free();
         Level world = getCurrentWorld();
@@ -207,7 +196,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static EntityAPI<?> getEntity(String uuid) {
+    public static EntityAPI<?> getEntity(@LuaNotNil String uuid) {
         try {
             return EntityAPI.wrap(EntityUtils.getEntityByUUID(UUID.fromString(uuid)));
         } catch (Exception ignored) {
@@ -248,17 +237,17 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static ItemStackAPI newItem(String item){
+    public static ItemStackAPI newItem(@LuaNotNil String item){
         return newItem(item, 1);
     }
 
     @LuaWhitelist
-    public static ItemStackAPI newItem(String item, int count){
+    public static ItemStackAPI newItem(@LuaNotNil String item, @LuaNotNil int count){
         return newItem(item, count, 0);
     }
 
     @LuaWhitelist
-    public static ItemStackAPI newItem(String item, int count, int damage) {
+    public static ItemStackAPI newItem(@LuaNotNil String item, @LuaNotNil int count, int damage) {
         try {
             ItemStack itemStack = ItemArgument.item(new CommandBuildContext(RegistryAccess.BUILTIN.get())).parse(new StringReader(item)).createItemStack(1, false);
             itemStack.setCount(count);

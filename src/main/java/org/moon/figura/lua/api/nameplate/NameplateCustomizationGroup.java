@@ -1,5 +1,6 @@
 package org.moon.figura.lua.api.nameplate;
 
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
@@ -20,7 +21,7 @@ public class NameplateCustomizationGroup {
     }
 
     @LuaWhitelist
-    public void setText(String text) {
+    public void setText(@LuaNotNil String text) {
         for (NameplateCustomization customization : customizations)
             customization.setText(text);
     }

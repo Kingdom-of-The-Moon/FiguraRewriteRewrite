@@ -77,7 +77,7 @@ public class LuaEvent {
     }
 
     @LuaWhitelist
-    public int remove(String name) {
+    public int remove(@LuaNotNil String name) {
         flushQueue();
 
         int removed = 0;

@@ -2,7 +2,9 @@ package org.moon.figura.lua.api.particle;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.WakeParticle;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -33,8 +35,9 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public void remove() {
+    public LuaParticle remove() {
         particle.remove();
+        return this;
     }
 
     @LuaWhitelist
@@ -53,7 +56,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public LuaParticle pos(FiguraVec3 pos) {
+    public LuaParticle pos(@LuaNotNil FiguraVec3 pos) {
         particle.setPos(pos.x, pos.y, pos.z);
 
         ParticleAccessor p = (ParticleAccessor) particle;
@@ -69,7 +72,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public LuaParticle velocity(FiguraVec3 velocity) {
+    public LuaParticle velocity(@LuaNotNil FiguraVec3 velocity) {
         particle.setParticleSpeed(velocity.x, velocity.y, velocity.z);
         return this;
     }
@@ -93,7 +96,7 @@ public class LuaParticle {
 
     @LuaWhitelist
     public LuaParticle lifetime(int age) {
-        particle.setLifetime(age);
+        particle.setLifetime(Math.max(particle instanceof WakeParticle ? Math.min(age, 60) : age, 0));
         return this;
     }
 

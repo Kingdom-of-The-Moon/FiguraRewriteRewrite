@@ -3,9 +3,11 @@ package org.moon.figura.lua.api;
 import com.mojang.blaze3d.platform.NativeImage;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
+import org.moon.figura.trust.Trust;
 import org.moon.figura.utils.ColorUtils;
 
 import java.util.ArrayList;
@@ -20,7 +22,6 @@ import java.util.Map;
 public class TextureAPI {
 
     private static final int TEXTURE_LIMIT = 128;
-    private static final int MAX_SIZE = 128;
 
     private final Avatar owner;
 
@@ -34,8 +35,9 @@ public class TextureAPI {
     }
 
     private FiguraTexture register(String name, NativeImage image) {
-        if (image.getWidth() > MAX_SIZE || image.getHeight() > MAX_SIZE)
-            throw new LuaError("Texture exceeded max size of " + MAX_SIZE + " x " + MAX_SIZE + " resolution, got " + image.getWidth() + " x " + image.getHeight());
+        int max = owner.trust.get(Trust.TEXTURE_SIZE);
+        if (image.getWidth() > max || image.getHeight() > max)
+            throw new LuaError("Texture exceeded max size of " + max + " x " + max + " resolution, got " + image.getWidth() + " x " + image.getHeight());
 
         FiguraTexture oldText = get(name);
         if (oldText != null)
@@ -50,7 +52,7 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture register(String name, int width, int height) {
+    public FiguraTexture register(@LuaNotNil String name, int width, int height) {
         NativeImage image;
         try {
             image = new NativeImage(width, height, true);
@@ -64,7 +66,7 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture read(String name, String data) {
+    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil String data) {
         NativeImage image;
         try {
             image = NativeImage.fromBase64(data);
@@ -76,7 +78,7 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture get(String name) {
+    public FiguraTexture get(@LuaNotNil String name) {
         check();
         return owner.renderer.customTextures.get(name);
     }
@@ -88,7 +90,7 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture __index(String name) {
+    public FiguraTexture __index(@LuaNotNil String name) {
         check();
 
         FiguraTexture texture = get(name);

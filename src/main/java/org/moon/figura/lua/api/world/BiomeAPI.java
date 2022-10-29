@@ -51,7 +51,6 @@ public class BiomeAPI {
     @LuaWhitelist
     public void setPos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
-        pos.free();
     }
 
     @LuaWhitelist

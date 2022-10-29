@@ -6,6 +6,8 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.LivingEntityAccessor;
 
@@ -26,19 +28,10 @@ public class LivingEntityAPI<T extends LivingEntity> extends EntityAPI<T> {
     }
 
     @LuaWhitelist
-    public double getBodyYaw(){
-        return getBodyYaw(1f);
-    }
-
-    @LuaWhitelist
     public double getBodyYaw(Float delta) {
         checkEntity();
         if (delta == null) delta = 1f;
         return Mth.lerp(delta, entity.yBodyRotO, entity.yBodyRot);
-    }
-
-    public ItemStackAPI getHeldItem(){
-        return getHeldItem(false);
     }
 
     @LuaWhitelist

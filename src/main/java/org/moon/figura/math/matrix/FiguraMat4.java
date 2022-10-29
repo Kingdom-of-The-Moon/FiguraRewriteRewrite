@@ -557,8 +557,7 @@ public class FiguraMat4 extends FiguraMatrix<FiguraMat4, FiguraVec4> {
     }
 
     //Rotates using ZYX matrix order, meaning the X axis, then Y, then Z.
-    @LuaWhitelist
-    public FiguraMat4 rotateZYX(double x, double y, double z) {
+    public void rotateZYX(double x, double y, double z) {
         x = Math.toRadians(x);
         y = Math.toRadians(y);
         z = Math.toRadians(z);
@@ -607,12 +606,22 @@ public class FiguraMat4 extends FiguraMatrix<FiguraMat4, FiguraVec4> {
         v14 = nv14;
         v24 = nv24;
         invalidate();
+    }
+
+    public void rotateZYX(FiguraVec3 vec) {
+        rotateZYX(vec.x, vec.y, vec.z);
+    }
+
+    @LuaWhitelist
+    public FiguraMat4 rotate(@LuaNotNil FiguraVec3 vec) {
+        rotateZYX(vec);
         return this;
     }
 
     @LuaWhitelist
-    public FiguraMat4 rotateZYX(@LuaNotNil FiguraVec3 vec) {
-        return rotateZYX(vec.x, vec.y, vec.z);
+    public FiguraMat4 rotate(double x, double y, double z) {
+        rotateZYX(x, y, z);
+        return this;
     }
 
 

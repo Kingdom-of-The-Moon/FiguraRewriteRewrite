@@ -3,6 +3,7 @@ package org.moon.figura.math.vector;
 import org.luaj.vm2.LuaDouble;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMat4;
@@ -62,7 +63,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 set(FiguraVec4 other) {
+    public FiguraVec4 set(@LuaNotNil FiguraVec4 other) {
         return set(other.x, other.y, other.z, other.w);
     }
 
@@ -77,7 +78,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 add(FiguraVec4 other) {
+    public FiguraVec4 add(@LuaNotNil FiguraVec4 other) {
         return add(other.x, other.y, other.z, other.w);
     }
 
@@ -92,7 +93,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 sub(FiguraVec4 other) {
+    public FiguraVec4 sub(@LuaNotNil FiguraVec4 other) {
         return sub(other.x, other.y, other.z, other.w);
     }
 
@@ -107,7 +108,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 offset(double factor) {
+    public FiguraVec4 offset(@LuaNotNil double factor) {
         this.x += factor;
         this.y += factor;
         this.z += factor;
@@ -117,7 +118,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 mul(FiguraVec4 other) {
+    public FiguraVec4 mul(@LuaNotNil FiguraVec4 other) {
         return mul(other.x, other.y, other.z, other.w);
     }
 
@@ -132,7 +133,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 div(FiguraVec4 other) {
+    public FiguraVec4 div(@LuaNotNil FiguraVec4 other) {
         return div(other.x, other.y, other.z, other.w);
     }
 
@@ -147,7 +148,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 reduce(FiguraVec4 other) {
+    public FiguraVec4 reduce(@LuaNotNil FiguraVec4 other) {
         return reduce(other.x, other.y, other.z, other.w);
     }
 
@@ -162,7 +163,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 scale(double factor) {
+    public FiguraVec4 scale(@LuaNotNil double factor) {
         this.x *= factor;
         this.y *= factor;
         this.z *= factor;
@@ -180,7 +181,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec4 transform(FiguraMat4 mat) {
+    public FiguraVec4 transform(@LuaNotNil FiguraMat4 mat) {
         return set(
                 mat.v11 * x + mat.v12 * y + mat.v13 * z + mat.v14 * w,
                 mat.v21 * x + mat.v22 * y + mat.v23 * z + mat.v24 * w,
@@ -203,7 +204,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
 
     @Override
     @LuaWhitelist
-    public double dot(FiguraVec4 other) {
+    public double dot(@LuaNotNil FiguraVec4 other) {
         return x * other.x + y * other.y + z * other.z + w * other.w;
     }
 
@@ -260,7 +261,7 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     }
 
     @LuaWhitelist
-    public FiguraVec4 applyFunc(LuaFunction function) {
+    public FiguraVec4 applyFunc(@LuaNotNil LuaFunction function) {
         x = function.call(LuaDouble.valueOf(x)).todouble();
         y = function.call(LuaDouble.valueOf(y)).todouble();
         z = function.call(LuaDouble.valueOf(z)).todouble();
@@ -311,69 +312,69 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     // -- metamethods -- //
 
     @LuaWhitelist
-    public static FiguraVec4 __add(FiguraVec4 one, FiguraVec4 other) {
+    public static FiguraVec4 __add(@LuaNotNil FiguraVec4 one, @LuaNotNil FiguraVec4 other) {
         return one.plus(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __add(FiguraVec4 one, Double other) {
+    public static FiguraVec4 __add(@LuaNotNil FiguraVec4 one, double other) {
         return one.offseted(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __add(Double one, FiguraVec4 other) {
+    public static FiguraVec4 __add(double one, @LuaNotNil FiguraVec4 other) {
         return other.offseted(one);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __sub(FiguraVec4 one, FiguraVec4 other) {
+    public static FiguraVec4 __sub(@LuaNotNil FiguraVec4 one, @LuaNotNil FiguraVec4 other) {
         return one.minus(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __sub(FiguraVec4 one, Double other) {
-        return one.offseted(other);
+    public static FiguraVec4 __sub(@LuaNotNil FiguraVec4 one, double other) {
+        return one.offseted(-other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __sub(Double one, FiguraVec4 other) {
+    public static FiguraVec4 __sub(double one, @LuaNotNil FiguraVec4 other) {
         return other.scaled(-1).offset(one);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __mul(FiguraVec4 one, FiguraVec4 other) {
+    public static FiguraVec4 __mul(@LuaNotNil FiguraVec4 one, @LuaNotNil FiguraVec4 other) {
         return one.times(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __mul(FiguraVec4 one, Double other) {
+    public static FiguraVec4 __mul(@LuaNotNil FiguraVec4 one, double other) {
         return one.scaled(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec4 __mul(Double one, FiguraVec4 other) {
+    public static FiguraVec4 __mul(double one, @LuaNotNil FiguraVec4 other) {
         return other.scaled(one);
     }
 
     @LuaWhitelist
-    public FiguraVec4 __div(FiguraVec4 other) {
+    public FiguraVec4 __div(@LuaNotNil FiguraVec4 other) {
         return dividedBy(other);
     }
 
     @LuaWhitelist
-    public FiguraVec4 __div(Double other) {
+    public FiguraVec4 __div(double other) {
         if(other == 0)
             throw new LuaError(new ArithmeticException("Division by zero"));
         return scaled(1 / other);
     }
 
     @LuaWhitelist
-    public FiguraVec4 __mod(FiguraVec4 other) {
+    public FiguraVec4 __mod(@LuaNotNil FiguraVec4 other) {
         return mod(other);
     }
 
     @LuaWhitelist
-    public FiguraVec4 __mod(Double other) {
+    public FiguraVec4 __mod(double other) {
         if (other == 0)
             throw new LuaError("Attempt to reduce vector by 0");
         return mod(oneUse(other, other, other, other));
@@ -395,12 +396,12 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
     }
 
     @LuaWhitelist
-    public boolean __lt(FiguraVec4 r) {
+    public boolean __lt(@LuaNotNil FiguraVec4 r) {
         return x < r.x && y < r.y && z < r.z && w < r.w;
     }
 
     @LuaWhitelist
-    public boolean __le(FiguraVec4 r) {
+    public boolean __le(@LuaNotNil FiguraVec4 r) {
         return x <= r.x && y <= r.y && z <= r.z && w <= r.w;
     }
 

@@ -11,7 +11,6 @@ import net.minecraft.world.item.Items;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.ArrayList;

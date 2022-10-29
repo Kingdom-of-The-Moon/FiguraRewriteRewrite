@@ -3,9 +3,12 @@ package org.moon.figura.math.vector;
 import org.luaj.vm2.LuaDouble;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.lua.docs.*;
+import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
 import org.moon.figura.math.matrix.FiguraMatrix;
+import org.moon.figura.utils.MathUtils;
 import org.moon.figura.utils.caching.CacheUtils;
 
 @LuaWhitelist
@@ -66,7 +69,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 set(FiguraVec6 other) {
+    public FiguraVec6 set(@LuaNotNil FiguraVec6 other) {
         return set(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -83,7 +86,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 add(FiguraVec6 other) {
+    public FiguraVec6 add(@LuaNotNil FiguraVec6 other) {
         return add(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -100,7 +103,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 sub(FiguraVec6 other) {
+    public FiguraVec6 sub(@LuaNotNil FiguraVec6 other) {
         return sub(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -123,7 +126,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 mul(FiguraVec6 other) {
+    public FiguraVec6 mul(@LuaNotNil FiguraVec6 other) {
         return mul(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -140,7 +143,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 div(FiguraVec6 other) {
+    public FiguraVec6 div(@LuaNotNil FiguraVec6 other) {
         return div(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -157,7 +160,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec6 reduce(FiguraVec6 other) {
+    public FiguraVec6 reduce(@LuaNotNil FiguraVec6 other) {
         return reduce(other.x, other.y, other.z, other.w, other.t, other.h);
     }
 
@@ -205,7 +208,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public double dot(FiguraVec6 other) {
+    public double dot(@LuaNotNil FiguraVec6 other) {
         return x * other.x + y * other.y + z * other.z + w * other.w + t * other.t + h * other.h;
     }
 
@@ -328,69 +331,69 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
     // -- metamethods -- //
 
     @LuaWhitelist
-    public static FiguraVec6 __add(FiguraVec6 one, FiguraVec6 other) {
+    public static FiguraVec6 __add(@LuaNotNil FiguraVec6 one, @LuaNotNil FiguraVec6 other) {
         return one.plus(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __add(FiguraVec6 one, Double other) {
+    public static FiguraVec6 __add(@LuaNotNil FiguraVec6 one, double other) {
         return one.offseted(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __add(Double one, FiguraVec6 other) {
+    public static FiguraVec6 __add(double one, @LuaNotNil FiguraVec6 other) {
         return other.offseted(one);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __sub(FiguraVec6 one, FiguraVec6 other) {
+    public static FiguraVec6 __sub(@LuaNotNil FiguraVec6 one, @LuaNotNil FiguraVec6 other) {
         return one.minus(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __sub(FiguraVec6 one, Double other) {
-        return one.offseted(other);
+    public static FiguraVec6 __sub(@LuaNotNil FiguraVec6 one, double other) {
+        return one.offseted(-other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __sub(Double one, FiguraVec6 other) {
+    public static FiguraVec6 __sub(double one, @LuaNotNil FiguraVec6 other) {
         return other.scaled(-1).offset(one);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __mul(FiguraVec6 one, FiguraVec6 other) {
+    public static FiguraVec6 __mul(@LuaNotNil FiguraVec6 one, @LuaNotNil FiguraVec6 other) {
         return one.times(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __mul(FiguraVec6 one, Double other) {
+    public static FiguraVec6 __mul(@LuaNotNil FiguraVec6 one, double other) {
         return one.scaled(other);
     }
 
     @LuaWhitelist
-    public static FiguraVec6 __mul(Double one, FiguraVec6 other) {
+    public static FiguraVec6 __mul(@LuaNotNil Double one, @LuaNotNil FiguraVec6 other) {
         return other.scaled(one);
     }
 
     @LuaWhitelist
-    public FiguraVec6 __div(FiguraVec6 other) {
+    public FiguraVec6 __div(@LuaNotNil FiguraVec6 other) {
         return dividedBy(other);
     }
 
     @LuaWhitelist
-    public FiguraVec6 __div(Double other) {
+    public FiguraVec6 __div(double other) {
         if(other == 0)
             throw new LuaError(new ArithmeticException("Division by zero"));
         return scaled(1 / other);
     }
 
     @LuaWhitelist
-    public FiguraVec6 __mod(FiguraVec6 other) {
+    public FiguraVec6 __mod(@LuaNotNil FiguraVec6 other) {
         return mod(other);
     }
 
     @LuaWhitelist
-    public FiguraVec6 __mod(Double other) {
+    public FiguraVec6 __mod(double other) {
         if (other == 0)
             throw new LuaError("Attempt to reduce vector by 0");
         return mod(oneUse(other, other, other, other, other, other));
@@ -412,12 +415,12 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
     }
 
     @LuaWhitelist
-    public boolean __lt(FiguraVec6 r) {
+    public boolean __lt(@LuaNotNil FiguraVec6 r) {
         return x < r.x && y < r.y && z < r.z && w < r.w && t < r.t && h < r.h;
     }
 
     @LuaWhitelist
-    public boolean __le(FiguraVec6 r) {
+    public boolean __le(@LuaNotNil FiguraVec6 r) {
         return x <= r.x && y <= r.y && z <= r.z && w <= r.w && t <= r.t && h <= r.h;
     }
 

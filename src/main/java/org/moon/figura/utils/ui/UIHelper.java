@@ -11,6 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -26,6 +27,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.gui.screens.AbstractPanelScreen;
+import org.moon.figura.gui.widgets.AbstractContainerElement;
 import org.moon.figura.gui.widgets.ContextMenu;
 import org.moon.figura.math.vector.FiguraVec4;
 import org.moon.figura.utils.FiguraIdentifier;
@@ -99,6 +101,7 @@ public class UIHelper extends GuiComponent {
         FIGURA_GUI,
         PAPERDOLL,
         MINECRAFT_GUI,
+        FIRST_PERSON,
         RENDER
     }
 
@@ -111,6 +114,14 @@ public class UIHelper extends GuiComponent {
         boolean invisible = entity.isInvisible();
 
         entity.setInvisible(false);
+
+        //vehicle
+        LivingEntity vehicle = null;
+        float vBodyYaw = 0f;
+        if (entity.getVehicle() instanceof LivingEntity l) {
+            vehicle = l;
+            vBodyYaw = l.yBodyRot;
+        }
 
         //apply matrix transformers
         stack.pushPose();
@@ -146,6 +157,9 @@ public class UIHelper extends GuiComponent {
                 entity.yBodyRot = 0;
                 entity.yHeadRot = headYaw - bodyYaw;
 
+                if (vehicle != null)
+                    vehicle.yBodyRot = vBodyYaw - bodyYaw;
+
                 //lightning
                 Lighting.setupForEntityInInventory();
 
@@ -158,12 +172,14 @@ public class UIHelper extends GuiComponent {
                 quaternion2.conj();
 
                 //rotations
-
                 float rot = 180f - yaw;
                 entity.setXRot(0f);
                 entity.setYRot(rot);
                 entity.yBodyRot = rot;
                 entity.yHeadRot = rot;
+
+                if (vehicle != null)
+                    vehicle.yBodyRot = rot;
 
                 //set up lighting
                 Lighting.setupForFlatItems();
@@ -182,7 +198,6 @@ public class UIHelper extends GuiComponent {
                 quaternion2.conj();
 
                 //rotations
-
                 entity.setXRot(-angle2);
                 entity.setYRot(180f + angle * 40f);
                 entity.yBodyRot = 180f + angle * 20f;
@@ -197,12 +212,13 @@ public class UIHelper extends GuiComponent {
         }
 
         //setup entity renderer
-        EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
+        Minecraft minecraft = Minecraft.getInstance();
+        EntityRenderDispatcher dispatcher = minecraft.getEntityRenderDispatcher();
         boolean renderHitboxes = dispatcher.shouldRenderHitBoxes();
         dispatcher.setRenderHitBoxes(false);
         dispatcher.setRenderShadow(false);
         dispatcher.overrideCameraOrientation(quaternion2);
-        MultiBufferSource.BufferSource immediate = Minecraft.getInstance().renderBuffers().bufferSource();
+        MultiBufferSource.BufferSource immediate = minecraft.renderBuffers().bufferSource();
 
         //render
         UIHelper.paperdoll = true;
@@ -225,6 +241,10 @@ public class UIHelper extends GuiComponent {
         entity.yBodyRot = bodyYaw;
         entity.yHeadRot = headYaw;
         entity.setInvisible(invisible);
+
+        //vehicle
+        if (vehicle != null)
+            vehicle.yBodyRot = vBodyYaw;
 
         //pop matrix
         stack.popPose();
@@ -355,7 +375,35 @@ public class UIHelper extends GuiComponent {
         RenderSystem.enableScissor((int) (x * scale), (int) (screenY - y * scale - scaledHeight), scaledWidth, scaledHeight);
     }
 
-    public static void highlight(PoseStack stack, int x, int y, int width, int height, int screenW, int screenH) {
+    public static void highlight(PoseStack stack, Object component, Component text) {
+        //object
+        int x, y, width, height;
+        if (component instanceof AbstractWidget w) {
+            x = w.x; y = w.y;
+            width = w.getWidth();
+            height = w.getHeight();
+        } else if (component instanceof AbstractContainerElement c) {
+            x = c.x; y = c.y;
+            width = c.width;
+            height = c.height;
+        } else {
+            return;
+        }
+
+        //screen
+        int screenW, screenH;
+        if (Minecraft.getInstance().screen instanceof AbstractPanelScreen panel) {
+            screenW = panel.width;
+            screenH = panel.height;
+
+            if (text != null)
+                panel.tooltip = text;
+        } else {
+            return;
+        }
+
+        //draw
+
         //left
         fill(stack, 0, 0, x, y + height, 0xBB000000);
         //right
@@ -366,7 +414,7 @@ public class UIHelper extends GuiComponent {
         fill(stack, 0, y + height, x + width, screenH, 0xBB000000);
 
         //outline
-        fillOutline(stack, x - 1, y - 1, width + 2, height + 2, 0xFFFFFFFF);
+        fillOutline(stack, Math.max(x - 1, 0), Math.max(y - 1, 0), Math.min(width + 2, screenW), Math.min(height + 2, screenH), 0xFFFFFFFF);
     }
 
     //widget.isMouseOver() returns false if the widget is disabled or invisible

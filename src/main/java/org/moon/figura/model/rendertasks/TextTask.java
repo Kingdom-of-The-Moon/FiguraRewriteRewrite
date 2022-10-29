@@ -27,6 +27,7 @@ public class TextTask extends RenderTask {
 
     private List<Component> text;
     private boolean centered = false;
+    private boolean rtl = false;
     private boolean shadow = false;
     private boolean outline = false;
     private FiguraVec3 outlineColor;
@@ -46,7 +47,7 @@ public class TextTask extends RenderTask {
 
         for (int i = 0; i < text.size(); i++) {
             Component text = this.text.get(i);
-            int x = centered ? -font.width(text) / 2 : 0;
+            int x = centered ? -font.width(text) / 2 : rtl ? -font.width(text) : 0;
             int y = i * font.lineHeight;
 
             if (outline) {
@@ -86,6 +87,17 @@ public class TextTask extends RenderTask {
     @LuaWhitelist
     public RenderTask centered(boolean centered) {
         this.centered = centered;
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean isRight() {
+        return this.rtl;
+    }
+
+    @LuaWhitelist
+    public RenderTask right(boolean right) {
+        this.rtl = right;
         return this;
     }
 

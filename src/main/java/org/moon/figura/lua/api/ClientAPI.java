@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.world.phys.Vec3;
@@ -11,6 +12,8 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.api.entity.EntityAPI;
+import org.moon.figura.lua.api.entity.PlayerAPI;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -20,6 +23,7 @@ import org.moon.figura.utils.Version;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -244,6 +248,21 @@ public class ClientAPI {
             throw new LuaError("Cannot parse version " + "\"" + ver1 + "\"");
 
         return v1.compareTo(v2);
+    }
+
+    @LuaWhitelist
+    public static String intUUIDToString(int a, int b, int c, int d) {
+        try {
+            UUID uuid = UUIDUtil.uuidFromIntArray(new int[]{a, b, c, d});
+            return uuid.toString();
+        } catch (Exception ignored) {
+            throw new LuaError("Failed to parse uuid");
+        }
+    }
+
+    @LuaWhitelist
+    public static EntityAPI<?> getViewer() {
+        return PlayerAPI.wrap(Minecraft.getInstance().player);
     }
 
     @Override

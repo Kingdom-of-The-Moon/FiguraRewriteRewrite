@@ -36,7 +36,7 @@ import java.util.UUID;
         name = "EntityAPI",
         value = "entity"
 )
-public class EntityAPI<T extends Entity> {
+public class EntityAPI<T extends Entity> extends NullEntity {
 
     protected final UUID entityUUID;
     protected T entity; //We just do not care about memory anymore so, just have something not wrapped in a WeakReference
@@ -72,6 +72,7 @@ public class EntityAPI<T extends Entity> {
         return entity;
     }
 
+    @Override
     @LuaWhitelist
     public boolean isLoaded() {
         checkEntity();
@@ -79,24 +80,16 @@ public class EntityAPI<T extends Entity> {
     }
 
     @LuaWhitelist
-    public FiguraVec3 getPos(){
-        return getPos(1f);
-    }
-
-    @LuaWhitelist
     public FiguraVec3 getPos(Float delta) {
         checkEntity();
+        if (delta == null) delta = 1f;
         return FiguraVec3.fromVec3(entity.getPosition(delta));
-    }
-
-    @LuaWhitelist
-    public FiguraVec2 getRot(){
-        return getRot(1f);
     }
 
     @LuaWhitelist
     public FiguraVec2 getRot(Float delta) {
         checkEntity();
+        if (delta == null) delta = 1f;
         return FiguraVec2.of(Mth.lerp(delta, entity.xRotO, entity.getXRot()), Mth.lerp(delta, entity.yRotO, entity.getYRot()));
     }
 
@@ -301,18 +294,9 @@ public class EntityAPI<T extends Entity> {
     }
 
     @LuaWhitelist
-    public BlockStateAPI getTargetedBlock(){
-        return getTargetedBlock(true);
-    }
-
-    @LuaWhitelist
-    public BlockStateAPI getTargetedBlock(Boolean ignoreLiquids){
-        return getTargetedBlock(ignoreLiquids, 20d);
-    }
-
-    @LuaWhitelist
     public BlockStateAPI getTargetedBlock(boolean ignoreLiquids, Double distance) {
         checkEntity();
+        if (distance == null) distance = 20d;
         distance = Math.max(Math.min(distance, 20), -20);
         HitResult result = entity.pick(distance, 0f, !ignoreLiquids);
         if (result instanceof BlockHitResult blockHit) {

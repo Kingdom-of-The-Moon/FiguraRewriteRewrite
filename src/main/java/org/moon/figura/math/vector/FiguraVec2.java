@@ -98,7 +98,7 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec2 offset(double factor) {
+    public FiguraVec2 offset(@LuaNotNil double factor) {
         this.x += factor;
         this.y += factor;
         return this;
@@ -145,7 +145,7 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @Override
     @LuaWhitelist
-    public FiguraVec2 scale(double factor) {
+    public FiguraVec2 scale(@LuaNotNil double factor) {
         this.x *= factor;
         this.y *= factor;
         return this;
@@ -301,7 +301,7 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @LuaWhitelist
     public static FiguraVec2 __sub(@LuaNotNil FiguraVec2 one, @LuaNotNil Double other) {
-        return one.offseted(other);
+        return one.offseted(-other);
     }
 
     @LuaWhitelist

@@ -1,6 +1,7 @@
 package org.moon.figura.lua;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Primitives;
 import org.apache.commons.lang3.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,6 +13,7 @@ import org.luaj.vm2.lib.VarArgFunction;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract sealed class MethodWrapper extends VarArgFunction {
 
@@ -157,10 +159,10 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
 
     public static final class MultiMethodWrapper extends MethodWrapper {
 
-        protected final Method[] methods;
-        protected final MethodTree tree;
+        private final Method[] methods;
+        private final MethodTree tree;
 
-        protected MultiMethodWrapper(LuaTypeManager manager, Method... methods) {
+        private MultiMethodWrapper(LuaTypeManager manager, Method... methods) {
             super(manager, methods[0].getDeclaringClass(), Modifier.isStatic(methods[0].getModifiers()));
             this.methods = methods;
             for (Method method : methods) {
@@ -187,10 +189,14 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             while (!v.isEmpty()) {
                 List<MethodTree.Node> nextNodes = new ArrayList<>();
                 LuaValue value = v.poll();
-                for (MethodTree.Node branch : nodes)
-                    for (Parameter param : branch.children.keySet())
-                        if (manager.checkType(value, param.getType()) && !((value == null || value.isnil()) && param.isAnnotationPresent(LuaNotNil.class)))
-                            nextNodes.add(branch.children.get(param));
+                for (MethodTree.Node branch : nodes) {
+                    var b = branch.children.entrySet().stream().filter(
+                            entry -> manager.checkType(value, entry.getKey().getType()) && !((value == null || value.isnil()) && entry.getKey().isAnnotationPresent(LuaNotNil.class))
+                    );
+                    if(branch.hasStrNum && value != null && value.isstring() && value.isnumber())
+                        b = b.filter(entry -> manager.checkTypeStrict(value, entry.getKey().getType()));
+                    nextNodes.addAll(b.map(Map.Entry::getValue).toList());
+                }
                 if(!nextNodes.isEmpty())
                     values.add(value);
                 nodes = nextNodes;
@@ -322,6 +328,7 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             public Method method;
             public final Map<Parameter, Node> children = new HashMap<>();
             public Parameter param;
+            public boolean hasStrNum = false;
 
             public Node(Node parent, Parameter param) {
                 this.parent = parent;
@@ -342,6 +349,12 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
                     children.compute(
                             parameters.get(0), (k, v) -> v == null ? new Node(this, k) : v
                     ).add(parameters.subList(1, parameters.size()), method);
+                Set<Class<?>> types = children.keySet().stream().map(Parameter::getType).filter(cl -> Primitives.allWrapperTypes().contains(cl) || Primitives.allPrimitiveTypes().contains(cl) || String.class.equals(cl)).collect(Collectors.toSet());
+                if(types.size() == 2)
+                    if(types.contains(String.class))
+                        hasStrNum = true;
+                    else
+                        throw new RuntimeException("More Wawa");
             }
         }
     }

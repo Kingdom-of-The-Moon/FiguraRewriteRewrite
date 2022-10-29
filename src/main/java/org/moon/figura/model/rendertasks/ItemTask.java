@@ -9,10 +9,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
-import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist

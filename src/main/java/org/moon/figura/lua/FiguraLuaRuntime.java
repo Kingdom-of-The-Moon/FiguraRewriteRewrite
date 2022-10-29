@@ -15,6 +15,7 @@ import org.moon.figura.lua.api.HostAPI;
 import org.moon.figura.lua.api.RendererAPI;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
 import org.moon.figura.lua.api.entity.EntityAPI;
+import org.moon.figura.lua.api.entity.NullEntity;
 import org.moon.figura.lua.api.event.EventsAPI;
 import org.moon.figura.lua.api.keybind.KeybindAPI;
 import org.moon.figura.lua.api.nameplate.NameplateAPI;
@@ -74,6 +75,7 @@ public class FiguraLuaRuntime {
         setupFiguraSandbox();
 
         FiguraAPIManager.setupTypesAndAPIs(this);
+        setUser(null);
 
         loadExtraLibraries();
 
@@ -95,8 +97,15 @@ public class FiguraLuaRuntime {
     }
 
     public void setUser(Entity user) {
-        entityAPI = EntityAPI.wrap(user);
-        userGlobals.set("user", typeManager.javaToLua(entityAPI));
+        Object val;
+        if (user == null) {
+            entityAPI = null;
+            val = NullEntity.INSTANCE;
+        } else {
+            val = entityAPI = EntityAPI.wrap(user);
+        }
+
+        userGlobals.set("user", typeManager.javaToLua(val));
         userGlobals.set("player", userGlobals.get("user"));
     }
 
@@ -258,16 +267,18 @@ public class FiguraLuaRuntime {
                     INIT_SCRIPT.apply(name.getAsString());
             }
         } catch (LuaError e) {
+            owner.luaRuntime = this;
             error(e);
             return false;
         }
 
+        owner.luaRuntime = this;
         return true;
     }
 
     // error ^-^ //
 
-    public void error(Exception e) {
+    public void error(Throwable e) {
         LuaError err = e instanceof LuaError lua ? lua : new LuaError(e);
         FiguraLuaPrinter.sendLuaError(err, owner);
         owner.scriptError = true;
@@ -279,7 +290,7 @@ public class FiguraLuaRuntime {
     private final ZeroArgFunction onReachedLimit = new ZeroArgFunction() {
         @Override
         public LuaValue call() {
-            FiguraMod.debug("Avatar {} bypassed resource limits with {} instructions", owner.owner, getInstructions());
+            FiguraMod.LOGGER.warn("Avatar {} bypassed resource limits with {} instructions", owner.owner, getInstructions());
             LuaError error = new LuaError("Script overran resource limits!");
             setInstructionLimit(1);
             throw error;

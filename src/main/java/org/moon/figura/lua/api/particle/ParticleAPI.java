@@ -11,9 +11,7 @@ import org.moon.figura.ducks.ParticleEngineAccessor;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.math.vector.FiguraVec6;
 import org.moon.figura.utils.LuaUtils;
-import org.moon.figura.utils.MathUtils;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -44,35 +42,34 @@ public class ParticleAPI {
     }
 
     @LuaWhitelist
-    public void addParticle(String name, Double x, Double y, Double z){
-        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z));
+    public LuaParticle addParticle(String name, Double x, Double y, Double z){
+       return addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
     @LuaWhitelist
-    public void addParticle(String name, FiguraVec3 vec){
-        addParticle(name, vec, FiguraVec3.oneUse());
+    public LuaParticle addParticle(String name, FiguraVec3 vec){
+       return addParticle(name, vec, FiguraVec3.oneUse());
     }
 
     @LuaWhitelist
-    public void addParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
-        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    public LuaParticle addParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+       return addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public void addParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
-        addParticle(name, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    public LuaParticle addParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+       return addParticle(name, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public void addParticle(String name, Double x, Double y, Double z, FiguraVec3 axis){
-        addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), axis);
+    public LuaParticle addParticle(String name, Double x, Double y, Double z, FiguraVec3 axis){
+       return addParticle(name, LuaUtils.freeVec3("addParticle", x, y, z), axis);
     }
 
     @LuaWhitelist
-    public void addParticle(String name, FiguraVec3 pos, FiguraVec3 vel){
+    public LuaParticle addParticle(String name, FiguraVec3 pos, FiguraVec3 vel){
 
-        LuaParticle particle = generate(name, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
-        particle.spawn();
+       return generate(name, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z).spawn();
 
     }
 

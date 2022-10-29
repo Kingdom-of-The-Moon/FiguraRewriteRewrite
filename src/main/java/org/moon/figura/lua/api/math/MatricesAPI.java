@@ -1,7 +1,10 @@
 package org.moon.figura.lua.api.math;
 
+import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMat2;
 import org.moon.figura.math.matrix.FiguraMat3;
@@ -26,7 +29,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat2 mat2(FiguraVec2 col1, FiguraVec2 col2) {
+    public static FiguraMat2 mat2(@LuaNotNil FiguraVec2 col1, @LuaNotNil FiguraVec2 col2) {
         return FiguraMat2.of(
                 col1.x, col1.y,
                 col2.x, col2.y
@@ -79,7 +82,6 @@ public class MatricesAPI {
     public static FiguraMat3 rotation3(@LuaNotNil FiguraVec3 vec) {
         FiguraMat3 result = FiguraMat3.of();
         result.rotateZYX(vec);
-        vec.free();
         return result;
     }
 
@@ -113,7 +115,6 @@ public class MatricesAPI {
     public static FiguraMat4 rotation4(@LuaNotNil FiguraVec3 vec) {
         FiguraMat4 result = FiguraMat4.of();
         result.rotateZYX(vec);
-        vec.free();
         return result;
     }
 
@@ -148,7 +149,6 @@ public class MatricesAPI {
     public static FiguraMat2 scale2(@LuaNotNil FiguraVec2 vec) {
         FiguraMat2 result = FiguraMat2.of();
         result.scale(vec);
-        vec.free();
         return result;
     }
 
@@ -161,7 +161,6 @@ public class MatricesAPI {
     public static FiguraMat3 scale3(@LuaNotNil FiguraVec3 vec) {
         FiguraMat3 result = FiguraMat3.of();
         result.scale(vec);
-        vec.free();
         return result;
     }
 
@@ -174,7 +173,6 @@ public class MatricesAPI {
     public static FiguraMat4 scale4(@LuaNotNil FiguraVec3 vec) {
         FiguraMat4 result = FiguraMat4.of();
         result.scale(vec);
-        vec.free();
         return result;
     }
 
@@ -188,7 +186,6 @@ public class MatricesAPI {
     public static FiguraMat3 translate3(@LuaNotNil FiguraVec2 vec) {
         FiguraMat3 result = FiguraMat3.of();
         result.translate(vec);
-        vec.free();
         return result;
     }
 
@@ -201,7 +198,6 @@ public class MatricesAPI {
     public static FiguraMat4 translate4(@LuaNotNil FiguraVec3 vec) {
         FiguraMat4 result = FiguraMat4.of();
         result.translate(vec);
-        vec.free();
         return result;
     }
 

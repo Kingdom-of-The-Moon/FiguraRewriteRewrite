@@ -47,11 +47,6 @@ public class Page {
     }
 
     @LuaWhitelist
-    public Action newAction(){
-        return newAction(null);
-    }
-
-    @LuaWhitelist
     public Action newAction(Integer index) {
         //set the action
         Action action = new Action();

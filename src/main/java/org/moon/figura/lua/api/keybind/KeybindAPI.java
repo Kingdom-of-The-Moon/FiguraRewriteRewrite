@@ -2,7 +2,6 @@ package org.moon.figura.lua.api.keybind;
 
 import net.minecraft.client.KeyMapping;
 import org.moon.figura.avatar.Avatar;
-import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
@@ -36,7 +35,7 @@ public class KeybindAPI {
     }
 
     @LuaWhitelist
-    public String getVanillaKey(String id) {
+    public String getVanillaKey(@LuaNotNil String id) {
         KeyMapping key = KeyMappingAccessor.getAll().get(id);
         return key == null ? null : key.saveString();
     }

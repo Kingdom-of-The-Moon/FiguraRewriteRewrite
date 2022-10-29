@@ -271,22 +271,21 @@ public class FiguraMat2 extends FiguraMatrix<FiguraMat2, FiguraVec2> {
         return result;
     }
 
-    public double apply(@LuaNotNil FiguraVec2 vec) {
+    public double apply(FiguraVec2 vec) {
         FiguraVec2 result = this.times(vec);
         double ret = result.x;
-        vec.free();
         result.free();
         return ret;
     }
 
     @LuaWhitelist
     public double apply(double x) {
-        return apply(FiguraVec2.of(x, 1));
+        return apply(FiguraVec2.oneUse(x, 1));
     }
 
     @LuaWhitelist
     public double applyDir(double x) {
-        return apply(FiguraVec2.of(x, 0));
+        return apply(FiguraVec2.oneUse(x, 0));
     }
 
     //-----------------------------METAMETHODS-----------------------------------//

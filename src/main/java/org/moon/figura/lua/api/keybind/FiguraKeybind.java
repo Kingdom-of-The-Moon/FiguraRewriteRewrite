@@ -9,7 +9,6 @@ import org.luaj.vm2.Varargs;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.List;

@@ -3,6 +3,7 @@ package org.moon.figura.math.vector;
 import org.luaj.vm2.LuaDouble;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
@@ -64,7 +65,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 set(FiguraVec5 other) {
+    public FiguraVec5 set(@LuaNotNil FiguraVec5 other) {
         return set(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -80,7 +81,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 add(FiguraVec5 other) {
+    public FiguraVec5 add(@LuaNotNil FiguraVec5 other) {
         return add(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -96,7 +97,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 sub(FiguraVec5 other) {
+    public FiguraVec5 sub(@LuaNotNil FiguraVec5 other) {
         return sub(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -123,7 +124,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 mul(FiguraVec5 other) {
+    public FiguraVec5 mul(@LuaNotNil FiguraVec5 other) {
         return mul(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -139,7 +140,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 div(FiguraVec5 other) {
+    public FiguraVec5 div(@LuaNotNil FiguraVec5 other) {
         return div(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -155,7 +156,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public FiguraVec5 reduce(FiguraVec5 other) {
+    public FiguraVec5 reduce(@LuaNotNil FiguraVec5 other) {
         return reduce(other.x, other.y, other.z, other.w, other.t);
     }
 
@@ -207,7 +208,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @Override
     @LuaWhitelist
-    public double dot(FiguraVec5 other) {
+    public double dot(@LuaNotNil FiguraVec5 other) {
         return x * other.x + y * other.y + z * other.z + w * other.w + t * other.t;
     }
 
@@ -264,7 +265,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
     }
 
     @LuaWhitelist
-    public FiguraVec5 applyFunc(LuaFunction function) {
+    public FiguraVec5 applyFunc(@LuaNotNil LuaFunction function) {
         x = function.call(LuaDouble.valueOf(x)).todouble();
         y = function.call(LuaDouble.valueOf(y)).todouble();
         z = function.call(LuaDouble.valueOf(z)).todouble();
@@ -341,7 +342,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @LuaWhitelist
     public static FiguraVec5 __sub(FiguraVec5 one, Double other) {
-        return one.offseted(other);
+        return one.offseted(-other);
     }
 
     @LuaWhitelist
