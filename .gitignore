@@ -34,3 +34,6 @@ run/
 remappedSrc/
 *.cap
 *.rdc
+
+/addons/
+/libs/
