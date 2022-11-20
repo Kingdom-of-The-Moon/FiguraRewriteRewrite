@@ -464,7 +464,6 @@ public class FiguraModelPart {
     public void setUV(@LuaNotNil FiguraVec2 uv) {
         this.customization.uvMatrix.reset();
         this.customization.uvMatrix.translate(uv.x, uv.y);
-        uv.free();
     }
 
     @LuaWhitelist
@@ -489,7 +488,6 @@ public class FiguraModelPart {
         this.customization.uvMatrix.reset();
         uv.div(this.textureWidth, this.textureHeight);
         this.customization.uvMatrix.translate(uv.x, uv.y);
-        uv.free();
     }
 
     @LuaWhitelist
@@ -546,12 +544,12 @@ public class FiguraModelPart {
 
     @LuaWhitelist
     public void setLight(@LuaNotNil FiguraVec2 light){
-        setLight((int) light.x, (int) light.y);
+        setLight(light.x, light.y);
     }
 
     @LuaWhitelist
-    public void setLight(Integer blockLight, Integer skyLight) {
-        this.customization.light = LightTexture.pack(blockLight, skyLight);
+    public void setLight(double blockLight, double skyLight) {
+        this.customization.light = LightTexture.pack((int) blockLight, (int) skyLight);
     }
 
     @LuaWhitelist

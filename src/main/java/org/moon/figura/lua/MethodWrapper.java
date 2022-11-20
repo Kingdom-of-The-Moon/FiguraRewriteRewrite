@@ -13,7 +13,6 @@ import org.luaj.vm2.lib.VarArgFunction;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public abstract sealed class MethodWrapper extends VarArgFunction {
 
@@ -186,28 +185,28 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             Object caller = getCaller(v);
             List<MethodTree.Node> nodes = new ArrayList<>();
             nodes.add(tree.root);
-            while (!v.isEmpty()) {
-                List<MethodTree.Node> nextNodes = new ArrayList<>();
-                LuaValue value = v.poll();
-                for (MethodTree.Node branch : nodes) {
-                    var b = branch.children.entrySet().stream().filter(
-                            entry -> manager.checkType(value, entry.getKey().getType()) && !((value == null || value.isnil()) && entry.getKey().isAnnotationPresent(LuaNotNil.class))
-                    );
-                    if(branch.hasStrNum && value != null && value.isstring() && value.isnumber())
-                        b = b.filter(entry -> manager.checkTypeStrict(value, entry.getKey().getType()));
-                    nextNodes.addAll(b.map(Map.Entry::getValue).toList());
+            if (v.isEmpty()) {
+                if (tree.root.method == null)
+                    exhaustEmptyAlternatives(values, nodes);
+            } else {
+                while (!v.isEmpty()) {
+                    List<MethodTree.Node> nextNodes = new ArrayList<>();
+                    LuaValue value = v.poll();
+                    assert value != null;
+                    for (MethodTree.Node branch : nodes) {
+                        var b = branch.children.entrySet().stream().filter(
+                                entry -> manager.checkType(value, entry.getKey().getType()) && !((value.isnil()) && entry.getKey().isAnnotationPresent(LuaNotNil.class))
+                        );
+                        if (branch.hasStrNum && value.isstring() && value.isnumber())
+                            b = b.filter(entry -> manager.checkTypeStrict(value, entry.getKey().getType()));
+                        nextNodes.addAll(b.map(Map.Entry::getValue).toList());
+                    }
+                    if (!nextNodes.isEmpty())
+                        values.add(value);
+                    nodes = nextNodes;
                 }
-                if(!nextNodes.isEmpty())
-                    values.add(value);
-                nodes = nextNodes;
             }
-            while (nodes.size() == 1 && nodes.get(0).method == null && nodes.get(0).children.size() == 1){
-                Parameter p = nodes.get(0).children.keySet().toArray(Parameter[]::new)[0];
-                if(p.isAnnotationPresent(LuaNotNil.class))
-                    throw new LuaError("attempt to call " + name + " with nil as Non-Nil parameter " + p.getName());
-                values.add(getDefault(p.getType()));
-                nodes.set(0, nodes.get(0).children.get(p));
-            }
+            exhaustEmptyAlternatives(values, nodes);
             MethodTree.Node match = null;
             for (MethodTree.Node node : nodes)
                 if (node.method != null)
@@ -218,16 +217,34 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             if (match == null) {
                 StringBuilder builder = new StringBuilder("No viable alternative found for argument").append(args.narg() == 1 ? " " : "s ");
                 for (LuaValue val : manager.varargToList(args))
-                    builder.append(val).append(" ");
+                    builder.append(
+                            val.isuserdata() ? manager.getTypeName(val.checkuserdata().getClass()) : val.typename()
+                    ).append(" ").append(val).append(" ");
                 throw new LuaError(builder.toString());
             }
             Method method = match.method;
             Object[] params = new Object[values.size()];
-            for (int i = values.size() - 1; i >= 0; i --){
+            for (int i = values.size() - 1; i >= 0; i--) {
                 params[i] = manager.luaToJava(values.get(i), match.param.getType());
                 match = match.parent;
             }
             return wrapCall(method, caller, params);
+        }
+
+        private void exhaustEmptyAlternatives(List<LuaValue> values, List<MethodTree.Node> nodes) {
+            MethodTree.Node node;
+            while (nodes.size() == 1 && (node = nodes.get(0)).method == null) {
+                List<Parameter> params = node.children.keySet().stream().filter(param -> !param.isAnnotationPresent(LuaNotNil.class)).toList();
+                Parameter p;
+                if(params.size() != 1) {
+                    nodes.clear();
+                    return;
+                }
+                if((p = params.get(0)).isAnnotationPresent(LuaNotNil.class))
+                    throw new LuaError("attempt to call " + name + " with nil as Non-Nil parameter " + p.getName());
+                values.add(getDefault(p.getType()));
+                nodes.set(0, node.children.get(p));
+            }
         }
 
         @Override
@@ -245,8 +262,8 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
     }
 
     protected LuaValue getDefault(Class<?> type) {
-        if(type.isPrimitive())
-            return switch (type.getName()){
+        if (type.isPrimitive())
+            return switch (type.getName()) {
                 case "float", "double" -> LuaValue.valueOf(0d);
                 case "int", "byte", "long", "short" -> LuaValue.valueOf(0);
                 case "boolean" -> LuaValue.valueOf(false);
@@ -293,23 +310,23 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
 
     public void getUsage(StringBuilder stringBuilder, Method method, Parameter[] parameters) {
         stringBuilder.append(Modifier.toString(method.getModifiers() & ~vis)).append(stringBuilder.isEmpty() ? "" : ' ');
-        String typeName = method.getReturnType().getSimpleName();
+        String typeName = manager.getTypeName(method.getReturnType());
         stringBuilder.append("void".equals(typeName) ? "nil" : typeName).append(' ');
-        stringBuilder.append(clazz.getSimpleName()).append(isStatic ? '.' : ':');
+        stringBuilder.append(manager.getTypeName(clazz)).append(isStatic ? '.' : ':');
         stringBuilder.append(method.getName());
         stringBuilder.append(Arrays.stream(parameters)
                 .map(Parameter::getType)
-                .map(Class::getSimpleName)
+                .map(manager::getTypeName)
                 .collect(Collectors.joining(", ", "(", ")")));
         if (method.getExceptionTypes().length > 0) {
             stringBuilder.append(Arrays.stream(method.getExceptionTypes())
-                    .map(Class::getSimpleName)
+                    .map(manager::getTypeName)
                     .collect(Collectors.joining(",", " throws ", "")));
         }
     }
 
     @Override
-    public String tojstring() {
+    public String name() {
         return name;
     }
 
@@ -350,8 +367,8 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
                             parameters.get(0), (k, v) -> v == null ? new Node(this, k) : v
                     ).add(parameters.subList(1, parameters.size()), method);
                 Set<Class<?>> types = children.keySet().stream().map(Parameter::getType).filter(cl -> Primitives.allWrapperTypes().contains(cl) || Primitives.allPrimitiveTypes().contains(cl) || String.class.equals(cl)).collect(Collectors.toSet());
-                if(types.size() == 2)
-                    if(types.contains(String.class))
+                if (types.size() == 2)
+                    if (types.contains(String.class))
                         hasStrNum = true;
                     else
                         throw new RuntimeException("More Wawa");

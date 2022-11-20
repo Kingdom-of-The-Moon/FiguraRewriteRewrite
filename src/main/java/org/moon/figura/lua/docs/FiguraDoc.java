@@ -49,6 +49,21 @@ public abstract class FiguraDoc {
         return json;
     }
 
+    private static int addFooter(MutableComponent message, String s) {
+        message.append("\n\n")
+                .append(Component.literal("• ")
+                        .append(FiguraText.of("docs.text.description"))
+                        .append(":")
+                        .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
+                .append("\n\t")
+                .append(Component.literal("• ")
+                        .append(FiguraText.of(s))
+                        .withStyle(ColorUtils.Colors.MAYA_BLUE.style));
+
+        FiguraMod.sendChatMessage(message);
+        return 1;
+    }
+
     // -- Special prints :p -- //
 
     public static int printRoot() {
@@ -137,18 +152,7 @@ public abstract class FiguraDoc {
             }
 
             //description
-            message.append("\n\n")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.text.description"))
-                            .append(":")
-                            .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                    .append("\n\t")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs." + description))
-                            .withStyle(ColorUtils.Colors.MAYA_BLUE.style));
-
-            FiguraMod.sendChatMessage(message);
-            return 1;
+            return addFooter(message, "docs." + description);
         }
 
         @Override
@@ -264,18 +268,7 @@ public abstract class FiguraDoc {
             }
 
             //description
-            message.append("\n\n")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.text.description"))
-                            .append(":")
-                            .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                    .append("\n\t")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs." + description))
-                            .withStyle(ColorUtils.Colors.MAYA_BLUE.style));
-
-            FiguraMod.sendChatMessage(message);
-            return 1;
+            return addFooter(message, "docs." + description);
         }
 
         @Override
@@ -341,7 +334,7 @@ public abstract class FiguraDoc {
         @Override
         public int print() {
             //header
-            FiguraMod.sendChatMessage(HEADER.copy()
+            MutableComponent message = HEADER.copy()
 
                     //type
                     .append("\n\n")
@@ -356,20 +349,10 @@ public abstract class FiguraDoc {
                     .append(Component.literal(" (")
                             .append(FiguraText.of(editable ? "docs.text.editable" : "docs.text.not_editable"))
                             .append(")")
-                            .withStyle(editable ? ChatFormatting.GREEN : ChatFormatting.DARK_RED))
+                            .withStyle(editable ? ChatFormatting.GREEN : ChatFormatting.DARK_RED));
 
                     //description
-                    .append("\n\n")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.text.description"))
-                            .append(":")
-                            .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                    .append("\n\t")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs." + description))
-                            .withStyle(ColorUtils.Colors.MAYA_BLUE.style)));
-
-            return 1;
+            return addFooter(message, "docs." + description);
         }
 
         @Override

@@ -4,11 +4,16 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.utils.MathUtils;
 import org.moon.figura.utils.caching.CachedType;
 
 @LuaWhitelist
+@LuaTypeDoc(
+        name = "Vector",
+        value = "vector_n"
+)
 public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends FiguraMatrix<M, T>> implements CachedType<T> {
 
     public abstract double lengthSquared();
@@ -183,8 +188,8 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
                 copy.setSwizzleComponent(swizzle.charAt(i), vals[i]);
             }
             set(copy);
-        }
-        throw new LuaError("Invalid call to __newindex - vector swizzles must be the same size.");
+        } else
+            throw new LuaError("Invalid call to __newindex - vector swizzles must be the same size.");
     }
 
     protected abstract Double getSwizzleComponent(char symbol);

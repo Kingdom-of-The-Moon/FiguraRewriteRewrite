@@ -50,7 +50,7 @@ public class SoundAPI {
     }
 
     @LuaWhitelist
-    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos, float volume, float pitch, Boolean loop){
+    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos, float volume, float pitch, boolean loop){
         return playSound(id, pos.x, pos.y, pos.z, volume, pitch, loop);
     }
 

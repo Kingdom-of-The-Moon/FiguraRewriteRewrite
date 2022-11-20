@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.backend.NetworkManager;
 import org.moon.figura.lua.docs.FiguraDocsManager;
+import org.moon.figura.lua.newdocswip.NewDocsManager;
 
 public class FiguraCommands {
 
@@ -15,6 +16,7 @@ public class FiguraCommands {
 
         //docs
         root.then(FiguraDocsManager.getCommand());
+        root.then(NewDocsManager.getCommand());
         root.then(FiguraDocsManager.getExportCommand());
 
         //links

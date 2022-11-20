@@ -19,6 +19,8 @@ public class LuaTypeManager {
 
     private final Map<Class<?>, LuaTable> metatables = new HashMap<>();
 
+    private final Map<Class<?>, LuaTable> indices = new HashMap<>();
+
     private final Map<Class<?>, String> namesCache = new HashMap<>();
 
     public void generateMetatableFor(Class<?> clazz) {
@@ -104,6 +106,7 @@ public class LuaTypeManager {
         }
 
         metatables.put(clazz, metatable);
+        indices.put(clazz, indexTable);
     }
 
     private static Method[] filterOverrides(List<Method> overloads) {
@@ -129,6 +132,10 @@ public class LuaTypeManager {
                 return someClass.getAnnotation(LuaTypeDoc.class).name();
             return someClass.getSimpleName();
         });
+    }
+
+    public String setTypeName(Class<?> clazz, String name){
+        return namesCache.computeIfAbsent(clazz, unnamed -> name);
     }
 
     private LuaValue wrap(Object instance) {
@@ -374,6 +381,10 @@ public class LuaTypeManager {
 
     public boolean canInfer(Class<?> type) {
         return luaToJavaTypes.containsKey(type) && !type.isPrimitive();
+    }
+
+    public LuaTable getIndexFor(Class<?> clas) {
+        return indices.get(clas);
     }
 
     private enum LuaType {
