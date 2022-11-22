@@ -73,6 +73,11 @@ public class EventsAPI {
     public final LuaEvent ARROW_RENDER = new LuaEvent();
 
     @LuaWhitelist
+    @LuaFieldDoc("events.chat_autocomplete")
+    public final LuaEvent CHAT_AUTOCOMPLETE = new LuaEvent();
+
+
+    @LuaWhitelist
     @LuaMethodDoc("events.get_events")
     public List<LuaEvent> getEvents() {
         return List.of(
@@ -119,6 +124,7 @@ public class EventsAPI {
             case "KEY_PRESS" -> KEY_PRESS;
             case "USE_ITEM" -> USE_ITEM;
             case "ARROW_RENDER" -> ARROW_RENDER;
+            case "CHAT_AUTOCOMPLETE" -> CHAT_AUTOCOMPLETE;
             default -> null;
         };
     }
