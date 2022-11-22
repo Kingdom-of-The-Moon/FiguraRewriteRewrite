@@ -5,6 +5,9 @@ import com.mojang.blaze3d.audio.SoundBuffer;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
@@ -26,7 +29,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.moon.figura.FiguraMod;
@@ -58,6 +63,7 @@ import org.moon.figura.trust.TrustContainer;
 import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.EntityUtils;
 import org.moon.figura.utils.RefilledNumber;
+import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.Version;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -408,6 +414,34 @@ public class Avatar {
     public boolean keyPressEvent(int key, int action, int modifiers) {
         Varargs result = loaded ? run("KEY_PRESS", tick, key, action, modifiers) : null;
         return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
+    }
+
+    @Nullable
+    public Either<Suggestions, String> chatAutocompleteEvent(String input, int cursor) {
+        if (loaded) {
+            LuaEvent ev = luaRuntime.events.CHAT_AUTOCOMPLETE;
+            if (ev.__len() > 0) {
+                Varargs execute = run(ev, tick, input, cursor + 1);
+
+                if (execute.isnumber(1) && execute.istable(2)) {
+                    LuaTable table = execute.checktable(2);
+
+                    SuggestionsBuilder builder = new SuggestionsBuilder(input, execute.checkint(1) - 1);
+
+                    for (int i = 1; table.get(i) != LuaValue.NIL; i++) {
+                        String val = table.get(i).tojstring();
+                        builder.suggest(val);
+                    }
+
+                    return Either.left(builder.build());
+                }
+                else if(execute.isstring(1)) {
+                    return Either.right(execute.tojstring(1));
+                }
+            }
+        }
+
+        return null;
     }
 
     // -- rendering events -- //

@@ -1,11 +1,13 @@
 package org.moon.figura.mixin.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
+import org.moon.figura.ducks.CommandSuggestionsAccessor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ChatScreenMixin {
 
     @Shadow protected EditBox input;
+    @Shadow CommandSuggestions commandSuggestions;
 
     @ModifyVariable(at = @At("HEAD"), method = "handleChatInput", argsOnly = true)
     private String handleChatInput(String text) {
@@ -42,5 +45,18 @@ public class ChatScreenMixin {
             return;
 
         this.input.setTextColor(color);
+    }
+
+    @Inject(
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/client/gui/screens/ChatScreen;commandSuggestions:Lnet/minecraft/client/gui/components/CommandSuggestions;",
+                    ordinal = 0,
+                    shift = At.Shift.AFTER
+            ),
+            method = "init"
+    )
+    private void init(CallbackInfo ci) {
+        ((CommandSuggestionsAccessor) commandSuggestions).setUseFiguraSuggester(true);
     }
 }

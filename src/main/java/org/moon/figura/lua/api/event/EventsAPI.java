@@ -70,6 +70,11 @@ public class EventsAPI {
     public final LuaEvent USE_ITEM = new LuaEvent();
 
     @LuaWhitelist
+    @LuaFieldDoc("events.chat_autocomplete")
+    public final LuaEvent CHAT_AUTOCOMPLETE = new LuaEvent();
+
+
+    @LuaWhitelist
     @LuaMethodDoc("events.get_events")
     public List<LuaEvent> getEvents() {
         return List.of(
@@ -114,6 +119,7 @@ public class EventsAPI {
             case "MOUSE_PRESS" -> MOUSE_PRESS;
             case "KEY_PRESS" -> KEY_PRESS;
             case "USE_ITEM" -> USE_ITEM;
+            case "CHAT_AUTOCOMPLETE" -> CHAT_AUTOCOMPLETE;
             default -> null;
         };
     }
