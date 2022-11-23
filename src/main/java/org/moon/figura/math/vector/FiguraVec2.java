@@ -271,12 +271,6 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
         return other instanceof FiguraVec2 vec && x == vec.x && y == vec.y;
     }
 
-    @Override
-    @LuaWhitelist
-    public String toString() {
-        return getString(x, y);
-    }
-
     // -- metamethods -- //
 
     @LuaWhitelist

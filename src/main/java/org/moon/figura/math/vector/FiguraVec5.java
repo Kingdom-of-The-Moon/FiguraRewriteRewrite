@@ -312,12 +312,6 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
         return other instanceof FiguraVec5 vec && x == vec.x && y == vec.y && z == vec.z && w == vec.w && t == vec.t;
     }
 
-    @Override
-    @LuaWhitelist
-    public String toString() {
-        return getString(x, y, z, w, t);
-    }
-
     // -- metamethods -- //
 
     @LuaWhitelist

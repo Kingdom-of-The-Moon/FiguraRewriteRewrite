@@ -32,6 +32,7 @@ import org.moon.figura.lua.newdocswip.NewDocsManager;
 import org.moon.figura.mixin.SkullBlockEntityAccessor;
 import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.ColorUtils;
+ import org.moon.figura.utils.FiguraResourceListener;
 import org.moon.figura.utils.TextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +74,7 @@ public class FiguraMod implements ClientModInitializer {
         WorldRenderEvents.AFTER_ENTITIES.register(FiguraMod::renderFirstPersonWorldParts);
         HudRenderCallback.EVENT.register(FiguraMod::hudRender);
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new FiguraResourceListener("docs", manger -> NewDocsManager.updateDescriptions()));
     }
 
     private static void tick(Minecraft client) {

@@ -4,6 +4,7 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.utils.MathUtils;
@@ -125,9 +126,13 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
         return 0;
     }
 
-    public abstract String toString();
+    @LuaWhitelist
+    @LuaMethodDoc("")
+    public String toString(){
+        return getString(unpack());
+    };
 
-    protected static String getString(Double... d) {
+    protected static String getString(double[] d) {
         StringBuilder sb = new StringBuilder();
         sb.append("{");
 

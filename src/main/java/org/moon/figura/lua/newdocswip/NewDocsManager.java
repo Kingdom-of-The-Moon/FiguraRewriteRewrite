@@ -1,77 +1,45 @@
 package org.moon.figura.lua.newdocswip;
 
 import com.mojang.brigadier.Command;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.FiguraMod;
-import org.moon.figura.animation.Animation;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.lua.FiguraLuaRuntime;
+import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.MethodWrapper;
-import org.moon.figura.lua.api.*;
-import org.moon.figura.lua.api.action_wheel.Action;
-import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
-import org.moon.figura.lua.api.action_wheel.Page;
-import org.moon.figura.lua.api.entity.EntityAPI;
-import org.moon.figura.lua.api.entity.LivingEntityAPI;
-import org.moon.figura.lua.api.entity.PlayerAPI;
-import org.moon.figura.lua.api.event.EventsAPI;
-import org.moon.figura.lua.api.event.LuaEvent;
-import org.moon.figura.lua.api.keybind.FiguraKeybind;
-import org.moon.figura.lua.api.keybind.KeybindAPI;
-import org.moon.figura.lua.api.math.MatricesAPI;
-import org.moon.figura.lua.api.math.VectorsAPI;
-import org.moon.figura.lua.api.nameplate.EntityNameplateCustomization;
-import org.moon.figura.lua.api.nameplate.NameplateAPI;
-import org.moon.figura.lua.api.nameplate.NameplateCustomization;
-import org.moon.figura.lua.api.nameplate.NameplateCustomizationGroup;
-import org.moon.figura.lua.api.particle.LuaParticle;
-import org.moon.figura.lua.api.particle.ParticleAPI;
-import org.moon.figura.lua.api.ping.PingAPI;
-import org.moon.figura.lua.api.ping.PingFunction;
-import org.moon.figura.lua.api.sound.LuaSound;
-import org.moon.figura.lua.api.sound.SoundAPI;
-import org.moon.figura.lua.api.vanilla_model.VanillaGroupPart;
-import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
-import org.moon.figura.lua.api.vanilla_model.VanillaModelPart;
-import org.moon.figura.lua.api.world.BiomeAPI;
-import org.moon.figura.lua.api.world.BlockStateAPI;
-import org.moon.figura.lua.api.world.ItemStackAPI;
-import org.moon.figura.lua.api.world.WorldAPI;
 import org.moon.figura.lua.docs.LuaFieldDoc;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
-import org.moon.figura.math.matrix.FiguraMat2;
-import org.moon.figura.math.matrix.FiguraMat3;
-import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.math.matrix.FiguraMatrix;
-import org.moon.figura.math.vector.*;
-import org.moon.figura.model.FiguraModelPart;
-import org.moon.figura.model.rendering.texture.FiguraTexture;
-import org.moon.figura.model.rendertasks.BlockTask;
-import org.moon.figura.model.rendertasks.ItemTask;
-import org.moon.figura.model.rendertasks.RenderTask;
-import org.moon.figura.model.rendertasks.TextTask;
+import org.moon.figura.math.vector.FiguraVector;
 import org.moon.figura.utils.FiguraText;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
-import static net.minecraft.ChatFormatting.UNDERLINE;
-import static net.minecraft.ChatFormatting.YELLOW;
+import static net.minecraft.ChatFormatting.*;
 import static org.moon.figura.utils.ColorUtils.Colors.*;
 
 public class NewDocsManager {
@@ -116,160 +84,69 @@ public class NewDocsManager {
         put(FiguraMatrix.class, "Matrix");
     }};
 
-
-    private static final List<Class<?>> classes = new ArrayList<>();
-
-    private static final List<ClassDoc> docs = new ArrayList<>();
-
-    private static final Map<String, List<Class<?>>> GLOBAL_CHILDREN = new HashMap<>() {{
-        put("action_wheel", List.of(
-            ActionWheelAPI.class,
-            Page.class,
-            Action.class
-        ));
-
-        put("animations", List.of(
-            Animation.class
-        ));
-
-        put("nameplate", List.of(
-            NameplateAPI.class,
-            NameplateCustomization.class,
-            EntityNameplateCustomization.class,
-            NameplateCustomizationGroup.class
-        ));
-
-        put("world", List.of(
-            WorldAPI.class,
-            BiomeAPI.class,
-            BlockStateAPI.class,
-            ItemStackAPI.class
-        ));
-
-        put("vanilla_model", List.of(
-            VanillaModelAPI.class,
-            VanillaModelPart.class,
-            VanillaGroupPart.class
-        ));
-
-        put("models", List.of(
-            FiguraModelPart.class,
-            RenderTask.class,
-            BlockTask.class,
-            ItemTask.class,
-            TextTask.class
-        ));
-
-        put("player", List.of(
-            EntityAPI.class,
-            LivingEntityAPI.class,
-            PlayerAPI.class
-        ));
-
-        put("events", List.of(
-            EventsAPI.class,
-            LuaEvent.class
-        ));
-
-        put("keybind", List.of(
-            KeybindAPI.class,
-            FiguraKeybind.class
-        ));
-
-        put("vectors", List.of(
-            VectorsAPI.class,
-            FiguraVec2.class,
-            FiguraVec3.class,
-            FiguraVec4.class,
-            FiguraVec5.class,
-            FiguraVec6.class
-        ));
-
-        put("matrices", List.of(
-            MatricesAPI.class,
-            FiguraMat2.class,
-            FiguraMat3.class,
-            FiguraMat4.class
-        ));
-
-        put("client", List.of(
-            ClientAPI.class
-        ));
-
-        put("host", List.of(
-            HostAPI.class
-        ));
-
-        put("avatar", List.of(
-            AvatarAPI.class
-        ));
-
-        put("particles", List.of(
-            ParticleAPI.class,
-            LuaParticle.class
-        ));
-
-        put("sounds", List.of(
-            SoundAPI.class,
-            LuaSound.class
-        ));
-
-        put("renderer", List.of(
-            RendererAPI.class
-        ));
-
-        put("pings", List.of(
-            PingAPI.class,
-            PingFunction.class
-        ));
-
-        put("textures", List.of(
-            TextureAPI.class,
-            FiguraTexture.class
-        ));
-    }};
-
-    private static List<Doc> allDocs                   = new ArrayList<>();
-    private static Map<Class<?>, ClassDoc> classDocMap = new HashMap<>();
-    private static Map<Method, MethodDoc> methodDocMap = new HashMap<>();
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private static final List<Doc> allDocs                   = new ArrayList<>();
+    private static final Map<Class<?>, ClassDoc> classDocMap = new HashMap<>();
 
     private static BaseDoc root;
 
     private static FiguraLuaRuntime runtime;
 
     public static void init() {
+        allDocs.clear();
+        classDocMap.clear();
+        root = new BaseDoc("docs_new");
         runtime = new FiguraLuaRuntime(new Avatar(UUID.nameUUIDFromBytes(new byte[]{0, 0, 0, 0})), new HashMap<>());
-        for (Map.Entry<Class<?>, String> entry : NAME_MAP.entrySet()) {
-            String name;
-            FiguraMod.LOGGER.info("Checking type name for {}", entry.getKey());
-            if (!(name = runtime.typeManager.setTypeName(entry.getKey(), entry.getValue())).equals(entry.getValue()))
-                FiguraMod.LOGGER.warn("Already named type: {}, current name: {}, expected: {}", entry.getKey(), name, entry.getKey());
-        }
+        runtime.typeManager.generateMetatableFor(NewGlobals.class);
+        for (Map.Entry<Class<?>, String> entry : NAME_MAP.entrySet())
+            runtime.typeManager.setTypeName(entry.getKey(), entry.getValue());
         runtime.init(null);
+        var types = new BaseDoc("types", root);
         for (Class<?> clas : FiguraAPIManager.WHITELISTED_CLASSES)
-            if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class)){
-                ClassDoc doc = new ClassDoc(clas, null);
-                classDocMap.put(clas, doc);
-            }
-        root = new BaseDoc("new_docs");
-        BaseDoc globals = new BaseDoc("globals", root);
-        for (var entry : GLOBAL_CHILDREN.entrySet()) {
-            try {
-                globals.addChild(new GlobalDoc(NewGlobals.class.getDeclaredField(entry.getKey()), entry.getValue(), globals));
-            } catch (NoSuchFieldException e) {
-                globals.addChild(new GlobalDoc(entry.getKey(), entry.getValue().get(0), entry.getValue(), globals));
-                FiguraMod.LOGGER.warn("Couldn't initialise global {}: ", entry.getKey(), e);
-            }
-        }
-        root.addChild(globals);
-        BaseDoc extensions = new BaseDoc("extended_globals", root);
-        root.addChild(extensions);
-        for(ClassDoc doc : classDocMap.values())
-            doc.initFieldAndMethods();
+            if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class)) new ClassDoc(clas, types);
+        for(ClassDoc doc : classDocMap.values()) doc.initFieldAndMethods();
+        System.out.println(types.children.stream().map(classDoc -> classDoc.getName().getString()).sorted().collect(Collectors.joining(", ")));
+
+        ClassDoc globals = new ClassDoc(NewGlobals.class, root);
+        globals.initFieldAndMethods();
+        classDocMap.remove(globals.clas);
     }
 
-    public static LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {
+    public static void updateDescriptions() {
+        for(Doc doc : allDocs){
+            if (!(doc instanceof MethodDoc || doc instanceof FieldDoc)) {
+                continue;
+            }
+            Doc parent = doc.parent;
+            String nameKey = Doc.toSnakeCase(doc.name);
+            String descriptionKey;
+            ArrayList<String> list = new ArrayList<>();
+            if(parent instanceof ClassDoc){
+                do {
+                    descriptionKey = parent.descriptionKey + "." + nameKey;
+                    list.add(descriptionKey);
+                    parent = ((ClassDoc)parent).superClassDoc;
+                } while (parent != null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey));
+                if(parent == null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
+                    FiguraMod.LOGGER.warn("No doc string found for {}'s field {}, checked: {}", doc.parent.name, doc.name, list);
+                    continue;
+                }
+                doc.descriptionKey = descriptionKey;
+            }
+
+        }
+    }
+
+    public static LiteralCommandNode<FabricClientCommandSource> getCommand() {
         return root.createCommand();
+    }
+
+    public static MutableComponent getTypeNameText(Class<?> clas){
+        var type = Component.literal(runtime.typeManager.getTypeName(clas)).withStyle(YELLOW);
+        if(classDocMap.containsKey(clas)){
+            type = type.withStyle(UNDERLINE).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, classDocMap.get(clas).getCommandPath())));
+        }
+        return type;
     }
 
     abstract static class Doc implements Command<FabricClientCommandSource> {
@@ -282,14 +159,16 @@ public class NewDocsManager {
         public List<Doc> children = new ArrayList<>();
         public boolean executes = true;
         protected String descriptionKey;
+        protected LiteralCommandNode<FabricClientCommandSource> command;
 
-        public LiteralArgumentBuilder<FabricClientCommandSource> createCommand() {
+        public LiteralCommandNode<FabricClientCommandSource> createCommand() {
             var cmd = literal(name);
-            for (var child : children)
+            for (Doc child : children)
                 cmd.then(child.createCommand());
             if (executes)
                 cmd.executes(this);
-            return cmd;
+            command = cmd.build();
+            return command;
         }
 
         public void addChild(Doc child) {
@@ -298,7 +177,7 @@ public class NewDocsManager {
 
         @Override
         public int run(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
-            print();
+            FiguraMod.sendChatMessage(getPrintText());
             return 0;
         }
 
@@ -310,19 +189,35 @@ public class NewDocsManager {
             return Component.empty();
         }
 
-        protected void print() {
-            FiguraMod.sendChatMessage(FiguraText.of(
-                BODY_KEY,
-                HEADER,
-                getBullet(FiguraText.of(getType())).withStyle(CHLOE_PURPLE.style),
-                getBullet(getName()),
-                getSyntax(),
-                DESC,
-                FiguraText.of("docs." + descriptionKey)
-            ).withStyle(MAYA_BLUE.style));
+        protected MutableComponent getPrintText() {
+            MutableComponent name = getName();
+            MutableComponent firstBullet = FiguraText.of(getType());
+            MutableComponent secondBullet;
+            if (this instanceof ClassDoc classDoc && Modifier.isAbstract(classDoc.clas.getModifiers())) {
+                firstBullet.append(" ").append(name.withStyle(MAYA_BLUE.style)).append(Component.literal(" (abstract)").withStyle(SKYE_BLUE.style));
+                secondBullet = Component.empty();
+                for(Class<?> clas : classDocMap.keySet()){
+                    if(classDoc.clas.isAssignableFrom(clas) && clas != classDoc.clas){
+                        if(!secondBullet.getString().isBlank())
+                            secondBullet.append(", ");
+                        secondBullet.append(getTypeNameText(clas));
+                    }
+                }
+                secondBullet = FiguraText.of("docs.text.subtypes").append(": ").append(secondBullet.getString().isBlank() ? FiguraText.of("docs.no_subtypes") : secondBullet);
+            } else
+                secondBullet = name.copy();
+             return FiguraText.of(
+                    BODY_KEY,
+                    HEADER,
+                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style),
+                    getBullet(secondBullet),
+                    getSyntax(),
+                    DESC,
+                    FiguraText.of("docs." + descriptionKey)
+            ).withStyle(MAYA_BLUE.style);
         }
 
-        protected Component getName() {
+        protected MutableComponent getName() {
             return Component.literal(name);
         }
 
@@ -338,74 +233,41 @@ public class NewDocsManager {
 
         protected static String toSnakeCase(String name){
             boolean b = name.toLowerCase().equals(name) || name.toUpperCase().equals(name);
-            if(!(b) && name.indexOf('_') != -1){
-                return null;
-            } else if (b) {
-                return name.toLowerCase();
-            }else {
+            if(!(b) && name.indexOf('_') != -1) return null;
+            else if (b) return name.toLowerCase();
+            else {
                 Matcher matcher;
                 for(Pattern step : steps){
                     matcher = step.matcher(name);
                     while (matcher.find()){
-                        name = matcher.replaceAll(matcher.group(1) + "_" + matcher.group(2).toLowerCase());
+                        name = matcher.replaceFirst(matcher.group(1) + "_" + matcher.group(2).toLowerCase());
                         matcher = step.matcher(name);
                     }
                 }
                 return name;
             }
         }
+
+        protected String getCommandPath() {
+            CommandDispatcher<FabricClientCommandSource> dispatcher = ClientCommandManager.getActiveDispatcher();
+            if(dispatcher != null)
+                return "/" + dispatcher.getPath(this.command).parallelStream().collect(Collectors.joining(" "));
+            else
+                return "";
+        }
     }
 
     static class BaseDoc extends Doc {
 
         BaseDoc(String name) {
-            this.name = name;
-            parent = null;
+            this(name, null);
         }
 
         BaseDoc(String name, Doc parent) {
-            this.parent = parent;
+            allDocs.add(this);
             this.name = name;
-        }
-    }
-
-    static class GlobalDoc extends Doc {
-        private final Doc type;
-
-        public GlobalDoc(Field field, List<Class<?>> classes, Doc parent) {
             this.parent = parent;
-            var fda = field.getDeclaredAnnotation(LuaTypeDoc.class);
-            this.name = fda == null || fda.name().isEmpty()? toSnakeCase(field.getName()) : fda.name();
-            this.type = classDocMap.get(field.getType());
-            initSubs(classes);
-        }
-
-        public GlobalDoc(String name, Class<?> type, List<Class<?>> value, Doc parent) {
-            this.parent = parent;
-            this.name = name;
-            this.type = classDocMap.get(type);
-            initSubs(classes);
-        }
-
-        void initSubs(List<Class<?>> classes){
-            for (Class<?> clas : classes) {
-                if (clas.isAnnotationPresent(LuaTypeDoc.class)) {
-                    ClassDoc doc;
-                    if (classDocMap.containsKey(clas)) {
-                        doc = classDocMap.get(clas);
-                        doc.parent = this;
-                    } else {
-                        doc = new ClassDoc(clas, this);
-                        classDocMap.put(clas, doc);
-                    }
-                    addChild(doc);
-                }
-            }
-        }
-
-        @Override
-        public String getType() {
-            return "docs.text.field";
+            if (parent != null) parent.addChild(this);
         }
     }
 
@@ -414,11 +276,13 @@ public class NewDocsManager {
         public ClassDoc superClassDoc;
 
         public ClassDoc(Class<?> clas, Doc parent) {
+            allDocs.add(this);
             this.clas = clas;
+            classDocMap.put(clas, this);
             this.name = clas.getAnnotation(LuaTypeDoc.class).name();
             this.descriptionKey = clas.getAnnotation(LuaTypeDoc.class).value();
-            Class<?> t;
-            if ((t = clas.getSuperclass()).isAnnotationPresent(LuaTypeDoc.class))
+            Class<?> t = clas.getSuperclass();
+            if ((t).isAnnotationPresent(LuaTypeDoc.class))
                 if (classDocMap.containsKey(t))
                     superClassDoc = classDocMap.get(t);
                 else {
@@ -427,17 +291,23 @@ public class NewDocsManager {
                     superClassDoc = doc;
                 }
             this.parent = parent;
+            parent.addChild(this);
         }
 
         void initFieldAndMethods() {
-            boolean wl = clas.getAnnotation(LuaTypeDoc.class).whitelist();
+            boolean bl = clas.getAnnotation(LuaTypeDoc.class).blacklist();
             for (Field field : clas.getDeclaredFields())
-                if (field.isAnnotationPresent(LuaFieldDoc.class) ^ wl)
+                if (field.isAnnotationPresent(LuaWhitelist.class) && field.isAnnotationPresent(LuaFieldDoc.class) == bl)
                     addChild(new FieldDoc(field, this));
             LuaTable index = runtime.typeManager.getIndexFor(clas);
             if(index != null)
-                for (LuaFunction wrapper : Arrays.stream(index.keys()).map(index::rawget).toArray(LuaFunction[]::new))
-                    addChild(new MethodDoc(wrapper, this));
+                for (LuaValue value : Arrays.stream(index.keys()).map(index::rawget).toArray(LuaValue[]::new)){
+                    if (
+                            value instanceof LuaFunction wrapper && (
+                                    !(wrapper instanceof MethodWrapper methodWrapper) || methodWrapper.getMethods().stream().anyMatch(method -> method.isAnnotationPresent(LuaMethodDoc.class)) == bl
+                            )
+                    ) addChild(new MethodDoc(wrapper, this));
+                }
             else
                 FiguraMod.LOGGER.warn("Index table for class {} does not exist, maybe it has not been initialised properly?", clas);
         }
@@ -453,14 +323,14 @@ public class NewDocsManager {
         private final Field field;
 
         FieldDoc(Field field, Doc parent) {
+            allDocs.add(this);
             this.field = field;
             this.parent = parent;
             var fda = field.getDeclaredAnnotation(LuaTypeDoc.class);
             this.name = fda == null || fda.name().isEmpty()? field.getName() : fda.name();
             this.type = classDocMap.get(field.getType());
-            descriptionKey = toSnakeCase(name);
-            if(parent instanceof ClassDoc)
-                descriptionKey = parent.descriptionKey + "." + descriptionKey;
+            String nameKey = toSnakeCase(name);
+            ArrayList<String> list = new ArrayList<>();
             children = List.of();
         }
 
@@ -470,8 +340,12 @@ public class NewDocsManager {
         }
 
         @Override
-        protected Component getName() {
-            return Component.literal(type.name).withStyle(YELLOW, UNDERLINE).append(" " + name);
+        protected MutableComponent getName() {
+            return Component.literal(type != null? type.name : runtime.typeManager.getTypeName(field.getType())).withStyle(YELLOW, UNDERLINE).append(" " + name);
+        }
+
+        public boolean isEditable(){
+            return !Modifier.isFinal(field.getModifiers());
         }
     }
 
@@ -479,23 +353,50 @@ public class NewDocsManager {
         private final LuaFunction wrapper;
 
         public MethodDoc(LuaFunction wrapper, Doc parent) {
+            allDocs.add(this);
             this.wrapper = wrapper;
             this.parent = parent;
             this.name = wrapper.name();
-            descriptionKey = toSnakeCase(name);
-            if(parent instanceof ClassDoc)
-                descriptionKey = parent.descriptionKey + "." + descriptionKey;
+            String nameKey = toSnakeCase(name);
+            ArrayList<String> list = new ArrayList<>();
+            children = List.of();
         }
 
         @Override
         protected MutableComponent getSyntax() {
-            final String text;
+            MutableComponent syntax = Component.literal("\n").append(getBullet(FiguraText.of("docs.text.syntax")).append(":\n\t").withStyle(CHLOE_PURPLE.style));
             if(wrapper instanceof MethodWrapper figuraFunction){
-                text = String.join("\n • ", figuraFunction.toString().split("\n"));
+                var prefix = Component.empty();
+                if(parent instanceof ClassDoc type){
+                    prefix = Component.translatable(
+                        "<%s>",
+                        getTypeNameText(type.clas)
+                    ).withStyle(YELLOW).append(
+                            Component.literal(figuraFunction.isStatic? "." : ":").withStyle(FRAN_PINK.style).withStyle(BOLD)
+                    );
+                }
+                for (Iterator<Method> iterator = figuraFunction.getMethods().stream().sorted(Comparator.comparingInt(Method::getParameterCount)).iterator(); iterator.hasNext(); ) {
+                    Method method = iterator.next();
+                    MutableComponent argText = Component.empty();
+                    for (Parameter param : method.getParameters()) {
+                        if(!argText.getString().isBlank())
+                            argText.append(", ");
+                        argText.append(getTypeNameText(param.getType())).append(Component.literal(" " + param.getName()).withStyle(WHITE));
+                    }
+
+                    syntax.append(getBullet(prefix)).append(Component.literal(name).withStyle(MAYA_BLUE.style)).append(
+                            Component.translatable(
+                                    "(%s) → %s %s",
+                                    argText,
+                                    FiguraText.of("docs.text.returns").withStyle(MAYA_BLUE.style),
+                                    getTypeNameText(method.getReturnType())
+                            ).withStyle(FRAN_PINK.style)
+                    ).append("\n\t");
+                }
+                return syntax;
             } else {
-                text = name + "(...)";
+                return syntax.append(getBullet(name + "(...)"));
             }
-            return Component.literal(text);
         }
 
         @Override

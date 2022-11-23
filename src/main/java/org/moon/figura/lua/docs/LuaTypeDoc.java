@@ -22,6 +22,6 @@ public @interface LuaTypeDoc {
      */
     String value();
 
-    boolean whitelist() default false;
+    boolean blacklist() default false;
 
 }

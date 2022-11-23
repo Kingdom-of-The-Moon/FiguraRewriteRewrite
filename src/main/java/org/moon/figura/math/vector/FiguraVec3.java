@@ -290,12 +290,6 @@ public class FiguraVec3 extends FiguraVector<FiguraVec3, FiguraMat3> {
         return other instanceof FiguraVec3 vec && x == vec.x && y == vec.y && z == vec.z;
     }
 
-    @Override
-    @LuaWhitelist
-    public String toString() {
-        return getString(x, y, z);
-    }
-
     // -- vec3 specific -- //
 
     @LuaWhitelist

@@ -433,6 +433,8 @@
 
   "figura.docs": "The \"/figura docs\" command allows you to access documentation for all types and functions Figura adds to its Lua scripting environment.",
   "figura.docs.text.type": "Type",
+  "figura.docs.text.subtypes": "Subtypes",
+  "figura.docs.text.no_subtypes": "There are none lol?",
   "figura.docs.text.description": "Description",
   "figura.docs.text.function": "Function",
   "figura.docs.text.syntax": "Syntax",
@@ -654,7 +656,7 @@
   "figura.docs.blockstate.get_map_color": "Gets the map color of this BlockState, as a Vector3 with R,G,B ranging 0 to 1.",
   "figura.docs.blockstate.is_solid_block": "Gets whether or not the BlockState is considered a \"solid\" block by Minecraft.",
   "figura.docs.blockstate.is_full_cube": "Gets whether or not the BlockState has a full cube as its collision hitbox.",
-  "figura.docs.blockstate.has_emissive_lightning": "Gets whether or not the BlockState uses emissive lighting.",
+  "figura.docs.blockstate.has_emissive_lighting": "Gets whether or not the BlockState uses emissive lighting.",
   "figura.docs.blockstate.get_hardness": "Gets the hardness of the BlockState.",
   "figura.docs.blockstate.get_comparator_output": "Gets the amount of signal strength a comparator would get from this BlockState.",
   "figura.docs.blockstate.has_block_entity": "Gets whether or not this BlockState has an associated block entity.",
@@ -668,7 +670,7 @@
   "figura.docs.blockstate.as_item": "Returns an ItemStack representing this block in item form, whatever Minecraft deems that to be. If it cannot find an item for this block, it will return nil.",
   "figura.docs.blockstate.get_tags": "Returns a table containing all the tags of this block, as strings.",
   "figura.docs.blockstate.get_material": "Gets the name of the material this block is made of.",
-  "figura.docs.blockstate.get_has_collision": "Returns true if this block has collision.",
+  "figura.docs.blockstate.has_collision": "Returns true if this block has collision.",
   "figura.docs.blockstate.get_collision_shape": "Returns a table representing the bounding boxes of the collision shape. The table a list of Vector6, where the first 3 coordinates are one corner of the box and the last 3 are the other corner.",
   "figura.docs.blockstate.get_outline_shape": "Returns a table representing the bounding boxes of the outline shape. The table a list of Vector6, where the first 3 coordinates are one corner of the box and the last 3 are the other corner.",
   "figura.docs.blockstate.get_sounds": "Gets the names of all the sounds which can play from this BlockState, as well as their pitch and volume. Stored in a table.",
@@ -1235,7 +1237,7 @@
 
   "figura.docs.world": "A global API dedicated to reading information from the Minecraft world. Accessed using the name \"world\".",
   "figura.docs.world.get_biome": "Gets the Biome located at the given position.",
-  "figura.docs.world.get_blockstate": "Gets the BlockState of the block at the given position.",
+  "figura.docs.world.get_block_state": "Gets the BlockState of the block at the given position.",
   "figura.docs.world.get_redstone_power": "Gets the redstone power level of the block at the given position.",
   "figura.docs.world.get_strong_redstone_power": "Gets the direct redstone power level of the block at the given position.",
   "figura.docs.world.get_time": "Gets the current game time of the world. If delta is passed in, then it adds delta to the time. The default value of delta is zero.",
@@ -1254,8 +1256,8 @@
   "figura.docs.world.new_item": "Parses and create a new ItemStack from the given string. A count and damage can be given, to be applied on this itemstack.",
   "figura.docs.world.exists": "Checks whether or not a world currently exists. This will almost always be true, but might be false on some occasions such as while travelling between dimensions.",
 
-  "figura.doc_template.body": "%s\n\n%s\n\t%s\n%s\n%s\n\t • %s",
-  "figura.doc_template.desc": " • Description:",
-  "figura.doc_template.header": "\n •*+•* %s Docs *•+*• ",
-  "figura.doc_template.bullet": " • %s"
+  "figura.doc_template.body": "%s\n\n%s\n\t%s\n%s\n%s\n\t• %s",
+  "figura.doc_template.desc": "• Description:",
+  "figura.doc_template.header": "\n•*+•* %s Docs *•+*•",
+  "figura.doc_template.bullet": "• %s"
 }

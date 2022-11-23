@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public abstract sealed class MethodWrapper extends VarArgFunction {
 
     private static final int vis = Modifier.PUBLIC | Modifier.PRIVATE | Modifier.PROTECTED;
-    protected final boolean isStatic;
+    public final boolean isStatic;
     protected final Class<?> clazz;
 
 
@@ -38,6 +38,8 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
         wrapper.name = methods[0].getName();
         return wrapper;
     }
+
+    abstract public List<Method> getMethods();
 
     public sealed abstract static class Single extends MethodWrapper {
         protected final Method method;
@@ -76,6 +78,11 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
 
         protected Varargs wrapCall(Object caller, Object... args) {
             return super.wrapCall(method, caller, args);
+        }
+
+        @Override
+        public List<Method> getMethods() {
+            return List.of(method);
         }
 
         @Override
@@ -176,6 +183,11 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
 
         public static MultiMethodWrapper of(LuaTypeManager manager, Method... methods) {
             return new MultiMethodWrapper(manager, methods);
+        }
+
+        @Override
+        public List<Method> getMethods() {
+            return List.of(methods);
         }
 
         @Override

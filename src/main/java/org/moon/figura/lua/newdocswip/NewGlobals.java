@@ -6,8 +6,7 @@ import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
+import org.moon.figura.lua.MethodWrapper;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.lua.api.*;
@@ -35,12 +34,12 @@ import java.util.Map;
  */
 @LuaTypeDoc(
         name = "globals",
-        value = "globals",
-        whitelist = true
+        value = "globals"
 )
-public abstract class NewGlobals {
+@LuaWhitelist
+abstract class NewGlobals {
 
-    public LuaFunction vec;
+    public MethodWrapper vec;
     public ActionWheelAPI action_wheel;
     public Map<String, Animation> animations;
     public LuaTable figuraMetatables;

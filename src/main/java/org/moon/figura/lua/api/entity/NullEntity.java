@@ -7,7 +7,8 @@ import org.moon.figura.lua.docs.LuaTypeDoc;
 @LuaWhitelist
 @LuaTypeDoc(
         name = "NullEntity",
-        value = "" //no docs, however the name field is required for the wrapper
+        value = "", //no docs, however the name field is required for the wrapper
+        blacklist = true
 )
 public class NullEntity {
 

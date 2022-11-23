@@ -303,12 +303,6 @@ public class FiguraVec4 extends FiguraVector<FiguraVec4, FiguraMat4> {
         return other instanceof FiguraVec4 vec && x == vec.x && y == vec.y && z == vec.z && w == vec.w;
     }
 
-    @Override
-    @LuaWhitelist
-    public String toString() {
-        return getString(x, y, z, w);
-    }
-
     // -- metamethods -- //
 
     @LuaWhitelist
