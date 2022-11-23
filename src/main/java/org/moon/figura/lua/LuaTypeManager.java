@@ -5,6 +5,8 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
+import javax.script.ScriptEngineManager;
+import javax.script.SimpleBindings;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
@@ -42,7 +44,7 @@ public class LuaTypeManager {
         LuaTable indexTable = new LuaTable();
         Class<?> currentClass = clazz;
         while (currentClass.isAnnotationPresent(whitelist)) {
-            woe:
+            nextMethod:
             for (Method method : currentClass.getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(whitelist) || method.isSynthetic())
                     continue;
@@ -53,7 +55,7 @@ public class LuaTypeManager {
                     if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {
                         if (!method.getReturnType().isAssignableFrom(method1.getReturnType()))
                             methods.set(i, method);
-                        continue woe;
+                        continue nextMethod;
                     }
                 }
                 methods.add(method);

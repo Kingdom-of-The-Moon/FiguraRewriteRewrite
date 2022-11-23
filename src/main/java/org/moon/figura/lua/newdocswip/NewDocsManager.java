@@ -28,10 +28,7 @@ import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
 import org.moon.figura.utils.FiguraText;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +59,7 @@ public class NewDocsManager {
 
         put(String.class, "String");
 
-        put(Object.class, "Any");
+        put(Object.class, "Something");
         put(LuaUserdata.class, "Userdata");
 
         put(Boolean.class, "Boolean");
@@ -71,7 +68,7 @@ public class NewDocsManager {
         //Lua things
         put(LuaFunction.class, "Function");
         put(LuaTable.class, "Table");
-        put(LuaValue.class, "AnyType");
+        put(LuaValue.class, "Any");
 
         //converted things
         put(Map.class, "Table");
@@ -98,6 +95,7 @@ public class NewDocsManager {
         root = new BaseDoc("docs_new");
         runtime = new FiguraLuaRuntime(new Avatar(UUID.nameUUIDFromBytes(new byte[]{0, 0, 0, 0})), new HashMap<>());
         runtime.typeManager.generateMetatableFor(NewGlobals.class);
+        runtime.typeManager.generateMetatableFor(NewMathDocs.class);
         for (Map.Entry<Class<?>, String> entry : NAME_MAP.entrySet())
             runtime.typeManager.setTypeName(entry.getKey(), entry.getValue());
         runtime.init(null);
@@ -106,10 +104,13 @@ public class NewDocsManager {
             if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class))
                 new ClassDoc(clas, types);
         for(ClassDoc doc : classDocMap.values())
-            doc.initFieldAndMethods();
+            doc.initFieldsAndMethods();
 
         ClassDoc globals = new ClassDoc(NewGlobals.class, root);
-        globals.initFieldAndMethods();
+        globals.initFieldsAndMethods();
+        ClassDoc math = new ClassDoc(NewMathDocs.class, globals);
+        math.initFieldsAndMethods();
+
         for(Doc doc : globals.children)
             doc.parent = root;
         classDocMap.remove(globals.clas);
@@ -156,12 +157,15 @@ public class NewDocsManager {
         if(classDocMap.containsKey(clas)){
             type = type.withStyle(UNDERLINE).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, classDocMap.get(clas).getCommandPath())));
         }
-        return type;
+        return Component.empty().append(type).withStyle(RESET);
     }
 
     abstract static class Doc implements Command<FabricClientCommandSource> {
         public static final String BODY_KEY = "doc_template.body";
         public static final MutableComponent HEADER = FiguraText.of("doc_template.header", FiguraText.of()).withStyle(FRAN_PINK.style).withStyle(UNDERLINE);
+        public static final MutableComponent GLOBAL = FiguraText.of("docs.text.global");
+        public static final MutableComponent KEY = FiguraText.of("docs.text.key");
+        public static final MutableComponent VALUE = FiguraText.of("docs.text.value");
         public static final MutableComponent DESC = FiguraText.of("doc_template.desc", FiguraText.of()).withStyle(CHLOE_PURPLE.style);
         public static final String BULLET_KEY = "doc_template.bullet";
         public Doc parent;
@@ -201,7 +205,7 @@ public class NewDocsManager {
 
         protected MutableComponent getPrintText() {
             MutableComponent name = getName();
-            MutableComponent firstBullet = FiguraText.of(getType());
+            MutableComponent firstBullet = (this.parent == root && !(this instanceof BaseDoc) ? GLOBAL.copy().append(" ") : Component.empty()).append(FiguraText.of(getType()));
             MutableComponent secondBullet;
             if (this instanceof ClassDoc classDoc && Modifier.isAbstract(classDoc.clas.getModifiers())) {
                 firstBullet.append(" ").append(name.withStyle(MAYA_BLUE.style)).append(Component.literal(" (abstract)").withStyle(SKYE_BLUE.style));
@@ -214,9 +218,20 @@ public class NewDocsManager {
                     }
                 }
                 secondBullet = FiguraText.of("docs.text.subtypes").append(": ").append(secondBullet.getString().isBlank() ? FiguraText.of("docs.no_subtypes") : secondBullet);
+            } else if(this instanceof FieldDoc fieldDoc && fieldDoc.field.getGenericType() instanceof ParameterizedType parameterizedType){
+                secondBullet = name.copy();
+                Iterator<Type> iter = Arrays.stream(parameterizedType.getActualTypeArguments()).iterator();
+                if(iter.hasNext()){
+                    secondBullet.append("\n\t");
+                    secondBullet.append(getBullet(KEY).append(" ").append(getTypeNameText((Class<?>) iter.next())));
+                }
+                if(iter.hasNext()){
+                    secondBullet.append("\n\t");
+                    secondBullet.append(getBullet(VALUE).append(" ").append(getTypeNameText((Class<?>) iter.next())));
+                }
             } else
                 secondBullet = name.copy();
-             return FiguraText.of(
+            return FiguraText.of(
                     BODY_KEY,
                     HEADER,
                     getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style),
@@ -304,7 +319,7 @@ public class NewDocsManager {
             parent.addChild(this);
         }
 
-        void initFieldAndMethods() {
+        void initFieldsAndMethods() {
             boolean bl = clas.getAnnotation(LuaTypeDoc.class).blacklist();
             for (Field field : clas.getDeclaredFields())
                 if (field.isAnnotationPresent(LuaWhitelist.class) && field.isAnnotationPresent(LuaFieldDoc.class) == bl)
@@ -351,7 +366,7 @@ public class NewDocsManager {
 
         @Override
         protected MutableComponent getName() {
-            return Component.literal(type != null? type.name : runtime.typeManager.getTypeName(field.getType())).withStyle(YELLOW, UNDERLINE).append(" " + name);
+            return Component.empty().append(getTypeNameText(field.getType())).append(" " + name);
         }
 
         public boolean isEditable(){

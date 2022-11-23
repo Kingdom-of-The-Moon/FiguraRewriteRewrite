@@ -433,6 +433,9 @@
 
   "figura.docs": "The \"/figura docs\" command allows you to access documentation for all types and functions Figura adds to its Lua scripting environment.",
   "figura.docs.text.type": "Type",
+  "figura.docs.text.global": "Global",
+  "figura.docs.text.key": "Key",
+  "figura.docs.text.value": "Value",
   "figura.docs.text.subtypes": "Subtypes",
   "figura.docs.text.no_subtypes": "There are none lol?",
   "figura.docs.text.description": "Description",

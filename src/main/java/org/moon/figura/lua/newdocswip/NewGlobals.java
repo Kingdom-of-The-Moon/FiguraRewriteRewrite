@@ -7,6 +7,7 @@ import org.luaj.vm2.LuaValue;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.MethodWrapper;
+import org.moon.figura.lua.docs.FiguraMathDocs;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.lua.api.*;
@@ -39,29 +40,77 @@ import java.util.Map;
 @LuaWhitelist
 abstract class NewGlobals {
 
+    @LuaWhitelist
     public MethodWrapper vec;
+
+    @LuaWhitelist
     public ActionWheelAPI action_wheel;
+
+    @LuaWhitelist
     public Map<String, Animation> animations;
-    public LuaTable figuraMetatables;
+
+    @LuaWhitelist
+    public Map<String, LuaTable> figuraMetatables;
+
+    @LuaWhitelist
     public NameplateAPI nameplate;
+
+    @LuaWhitelist
     public WorldAPI world;
+
+    @LuaWhitelist
     public VanillaModelAPI vanilla_model;
+
+    @LuaWhitelist
     public Map<String, FiguraModelPart> models;
+
+    @LuaWhitelist
     public PlayerAPI player;
+
+    @LuaWhitelist
     public EventsAPI events;
+
+    @LuaWhitelist
     public KeybindAPI keybind;
+
+    @LuaWhitelist
     public VectorsAPI vectors;
+
+    @LuaWhitelist
     public MatricesAPI matrices;
+
+    @LuaWhitelist
     public ClientAPI client;
+
+    @LuaWhitelist
     public HostAPI host;
+
+    @LuaWhitelist
     public AvatarAPI avatar;
+
+    @LuaWhitelist
     public ParticleAPI particles;
+
+    @LuaWhitelist
     public SoundAPI sounds;
+
+    @LuaWhitelist
     public RendererAPI renderer;
+
+    @LuaWhitelist
     public EntityAPI<?> user;
+
+    @LuaWhitelist
     public Map<String, PingAPI> pings;
+
+    @LuaWhitelist
     public TextureAPI textures;
-    public LuaFunction type;
+
+    @LuaWhitelist
+    public NewMathDocs math;
+
+    @LuaWhitelist
+    public static String type(LuaValue value) { return null; }
 
     @LuaWhitelist
     public static LuaValue require(String scriptName) {return null;}
