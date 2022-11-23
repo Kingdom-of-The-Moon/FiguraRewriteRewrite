@@ -101,14 +101,17 @@ public class NewDocsManager {
         for (Map.Entry<Class<?>, String> entry : NAME_MAP.entrySet())
             runtime.typeManager.setTypeName(entry.getKey(), entry.getValue());
         runtime.init(null);
-        var types = new BaseDoc("types", root);
+        BaseDoc types = new BaseDoc("types", root);
         for (Class<?> clas : FiguraAPIManager.WHITELISTED_CLASSES)
-            if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class)) new ClassDoc(clas, types);
-        for(ClassDoc doc : classDocMap.values()) doc.initFieldAndMethods();
-        System.out.println(types.children.stream().map(classDoc -> classDoc.getName().getString()).sorted().collect(Collectors.joining(", ")));
+            if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class))
+                new ClassDoc(clas, types);
+        for(ClassDoc doc : classDocMap.values())
+            doc.initFieldAndMethods();
 
         ClassDoc globals = new ClassDoc(NewGlobals.class, root);
         globals.initFieldAndMethods();
+        for(Doc doc : globals.children)
+            doc.parent = root;
         classDocMap.remove(globals.clas);
     }
 
@@ -118,6 +121,7 @@ public class NewDocsManager {
                 continue;
             }
             Doc parent = doc.parent;
+            String type = doc instanceof MethodDoc? "method" : "field";
             String nameKey = Doc.toSnakeCase(doc.name);
             String descriptionKey;
             ArrayList<String> list = new ArrayList<>();
@@ -128,11 +132,17 @@ public class NewDocsManager {
                     parent = ((ClassDoc)parent).superClassDoc;
                 } while (parent != null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey));
                 if(parent == null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
-                    FiguraMod.LOGGER.warn("No doc string found for {}'s field {}, checked: {}", doc.parent.name, doc.name, list);
-                    continue;
+                    FiguraMod.LOGGER.warn("No doc string found for {}'s {} {}, checked: {}", doc.parent.name, type, doc.name, list);
                 }
-                doc.descriptionKey = descriptionKey;
+            } else if (parent == root) {
+                descriptionKey = "globals." + nameKey;
+                if(FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)){
+                    FiguraMod.LOGGER.warn("No doc string found for global {} {}, checked: {}", type, doc.name, "figura.docs." + descriptionKey);
+                }
+            } else {
+                descriptionKey = nameKey;
             }
+            doc.descriptionKey = descriptionKey;
 
         }
     }
@@ -142,7 +152,7 @@ public class NewDocsManager {
     }
 
     public static MutableComponent getTypeNameText(Class<?> clas){
-        var type = Component.literal(runtime.typeManager.getTypeName(clas)).withStyle(YELLOW);
+        MutableComponent type = Component.literal(runtime.typeManager.getTypeName(clas)).withStyle(YELLOW);
         if(classDocMap.containsKey(clas)){
             type = type.withStyle(UNDERLINE).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, classDocMap.get(clas).getCommandPath())));
         }
