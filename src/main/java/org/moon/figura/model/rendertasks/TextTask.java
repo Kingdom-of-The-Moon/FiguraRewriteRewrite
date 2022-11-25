@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.avatar.Badges;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
@@ -74,8 +75,9 @@ public class TextTask extends RenderTask {
 
     @LuaWhitelist
     public RenderTask text(String text) {
-        this.text = TextUtils.splitText(TextUtils.noBadges4U(TextUtils.tryParseJson(text)), "\n");
-        this.cachedComplexity = text.length() + 1;
+        this.text = text == null ? null : TextUtils.splitText(Badges.noBadges4U(TextUtils.tryParseJson(text)), "\n");
+        if (text != null)
+            this.cachedComplexity = text.length() + 1;
         return this;
     }
 
