@@ -5,6 +5,7 @@ import org.moon.figura.lua.api.*;
 import org.moon.figura.lua.api.action_wheel.Action;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
 import org.moon.figura.lua.api.action_wheel.Page;
+import org.moon.figura.lua.api.ConfigAPI;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.LivingEntityAPI;
 import org.moon.figura.lua.api.entity.NullEntity;
@@ -130,13 +131,15 @@ public class FiguraAPIManager {
         add(ClientAPI.class);
 
         add(AvatarAPI.class);
+
+        add(ConfigAPI.class);
     }};
 
     public static final Map<String, Function<FiguraLuaRuntime, Object>> API_GETTERS = new LinkedHashMap<>() {{
         put("events", r -> r.events = new EventsAPI());
         put("sounds", r -> new SoundAPI(r.owner));
         put("vanilla_model", r -> r.vanilla_model = new VanillaModelAPI());
-        put("keybind", r -> r.keybind = new KeybindAPI(r.owner));
+        put("keybinds", r -> r.keybinds = new KeybindAPI(r.owner));
         put("host", r -> r.host = new HostAPI(r.owner));
         put("nameplate", r -> r.nameplate = new NameplateAPI());
         put("renderer", r -> r.renderer = new RendererAPI(r.owner));
@@ -149,7 +152,8 @@ public class FiguraAPIManager {
         put("matrices", r -> MatricesAPI.INSTANCE);
         put("world", r -> WorldAPI.INSTANCE);
         put("pings", r -> r.ping = new PingAPI(r.owner));
-        put("textures", r -> new TextureAPI(r.owner));
+        put("textures", r -> r.texture = new TextureAPI(r.owner));
+        put("config", r -> new ConfigAPI(r.owner));
     }};
 
     private static final Set<FiguraAPI> ENTRYPOINTS = new HashSet<>();

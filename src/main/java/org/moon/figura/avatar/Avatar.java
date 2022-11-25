@@ -37,6 +37,7 @@ import org.moon.figura.lua.api.particle.ParticleAPI;
 import org.moon.figura.lua.api.ping.PingArg;
 import org.moon.figura.lua.api.ping.PingFunction;
 import org.moon.figura.lua.api.sound.SoundAPI;
+import org.moon.figura.lua.api.world.BlockStateAPI;
 import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
@@ -47,6 +48,7 @@ import org.moon.figura.model.PartCustomization;
 import org.moon.figura.model.rendering.AvatarRenderer;
 import org.moon.figura.model.rendering.ImmediateAvatarRenderer;
 import org.moon.figura.model.rendering.PartFilterScheme;
+import org.moon.figura.model.rendering.texture.EntityRenderMode;
 import org.moon.figura.trust.Trust;
 import org.moon.figura.trust.TrustContainer;
 import org.moon.figura.trust.TrustManager;
@@ -58,12 +60,8 @@ import org.moon.figura.utils.ui.UIHelper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Queue;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -74,6 +72,7 @@ import java.util.function.Supplier;
 public class Avatar {
 
     private static CompletableFuture<Void> tasks;
+    public static boolean firstPerson;
 
     //properties
     public final UUID owner;
@@ -85,6 +84,7 @@ public class Avatar {
     public String name, entityName;
     public String authors;
     public Version version;
+    public String id;
     public int fileSize;
     public String color;
     public boolean minify;
@@ -94,11 +94,12 @@ public class Avatar {
 
     public AvatarRenderer renderer;
     public FiguraLuaRuntime luaRuntime;
+    public EntityRenderMode renderMode = EntityRenderMode.OTHER;
 
     public final TrustContainer.PlayerContainer trust;
 
     public final Map<String, SoundBuffer> customSounds = new HashMap<>();
-    public final Map<Integer, Animation> animations = new ConcurrentHashMap<>();
+    public final Map<Integer, Animation> animations = new HashMap<>();
 
     //runtime status
     public boolean hasTexture = false;
@@ -154,12 +155,14 @@ public class Avatar {
                 name = metadata.getString("name");
                 authors = metadata.getString("authors");
                 version = new Version(metadata.getString("ver"));
+                if (metadata.contains("id"))
+                    id = metadata.getString("id");
                 if (metadata.contains("color"))
                     color = metadata.getString("color");
                 if (metadata.contains("minify"))
                     minify = metadata.getBoolean("minify");
                 fileSize = getFileSize();
-                versionStatus = version.compareTo(Version.VERSION);
+                versionStatus = version.compareTo(FiguraMod.VERSION);
                 if (entityName.isBlank())
                     entityName = name;
 
@@ -193,7 +196,7 @@ public class Avatar {
     }
 
     public void tick() {
-        if (scriptError || luaRuntime == null)
+        if (scriptError || luaRuntime == null || !loaded)
             return;
 
         checkUser();
@@ -217,7 +220,7 @@ public class Avatar {
     public void render(float delta) {
         complexity.reset(trust.get(Trust.COMPLEXITY));
 
-        if (scriptError || luaRuntime == null)
+        if (scriptError || luaRuntime == null || !loaded)
             return;
 
         render.reset(trust.get(Trust.RENDER_INST));
@@ -227,7 +230,7 @@ public class Avatar {
 
     public void runPing(int id, byte[] data) {
         events.offer(() -> {
-            if (scriptError || luaRuntime == null)
+            if (scriptError || luaRuntime == null || !loaded)
                 return null;
 
             LuaValue[] args = PingArg.fromByteArray(data, this);
@@ -244,7 +247,7 @@ public class Avatar {
     public Varargs run(Object toRun, Instructions limit, Object... args) {
         //create event
         Supplier<Varargs> ev = () -> {
-            if (scriptError || luaRuntime == null)
+            if (scriptError || luaRuntime == null || !loaded)
                 return null;
 
             //parse args
@@ -269,7 +272,7 @@ public class Avatar {
                 else if (toRun instanceof Pair<?, ?> pair)
                     ret = luaRuntime.run(pair.getFirst().toString(), pair.getSecond().toString());
                 else
-                    throw new IllegalArgumentException("Invalid type to run!");
+                    throw new IllegalArgumentException("Internal event error - Invalid type to run!");
 
                 limit.use(luaRuntime.getInstructions());
                 return ret;
@@ -287,16 +290,21 @@ public class Avatar {
         //add event to the queue
         events.offer(ev);
 
-        Varargs val = null;
+        Varargs val = LuaValue.NIL;
 
         //run all queued events
-        while (!events.isEmpty()) {
-            Supplier<Varargs> e = events.poll();
-            Varargs result = e.get();
+        Supplier<Varargs> e;
+        while ((e = events.poll()) != null) {
+            try {
+                Varargs result = e.get();
 
-            //if the event is the same the one created, set the return value to it
-            if (e == ev)
-                val = result;
+                //if the event is the same the one created, set the return value to it
+                if (e == ev)
+                    val = result;
+            } catch (Exception | StackOverflowError ex) {
+                if (luaRuntime != null)
+                    luaRuntime.error(ex);
+            }
         }
 
         //return the new event result
@@ -306,58 +314,69 @@ public class Avatar {
     // -- script events -- //
 
     public void tickEvent() {
-        if (luaRuntime != null && luaRuntime.getUser() != null)
+        if (loaded && luaRuntime != null && luaRuntime.getUser() != null)
             run("TICK", tick);
     }
 
-    public void renderEvent(float delta, String context) {
-        if (luaRuntime != null && luaRuntime.getUser() != null)
-            run("RENDER", render, delta, context);
+    public void renderEvent(float delta) {
+        if (loaded && luaRuntime != null && luaRuntime.getUser() != null)
+            run("RENDER", render, delta, renderMode.name());
     }
 
-    public void postRenderEvent(float delta, String context) {
-        if (luaRuntime != null && luaRuntime.getUser() != null)
-            run("POST_RENDER", render.post(), delta, context);
+    public void postRenderEvent(float delta) {
+        if (loaded && luaRuntime != null && luaRuntime.getUser() != null)
+            run("POST_RENDER", render.post(), delta, renderMode.name());
+        renderMode = EntityRenderMode.OTHER;
     }
 
     public void postWorldRenderEvent(float delta) {
+        if (!loaded)
+            return;
+
         if (renderer != null)
             renderer.allowMatrixUpdate = false;
 
         run("POST_WORLD_RENDER", worldRender.post(), delta);
     }
 
-    public boolean skullRenderEvent(float delta, FiguraVec3 pos) {
+    public boolean skullRenderEvent(float delta, BlockStateAPI block, ItemStackAPI item) {
         Varargs result = null;
-        if (renderer != null && renderer.allowSkullRendering)
-            result = run("SKULL_RENDER", render, delta, pos);
+        if (loaded && renderer != null && renderer.allowSkullRendering)
+            result = run("SKULL_RENDER", render, delta, block, item);
         return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
     }
 
     public boolean useItemEvent(ItemStackAPI stack, String type, int particleCount) {
-        Varargs result = run("USE_ITEM", tick, stack, type, particleCount);
+        Varargs result = loaded ? run("USE_ITEM", tick, stack, type, particleCount) : null;
         return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
     }
 
     // -- host only events -- //
 
     public String chatSendMessageEvent(String message) {
-        Varargs val = run("CHAT_SEND_MESSAGE", tick, message);
+        Varargs val = loaded ? run("CHAT_SEND_MESSAGE", tick, message) : null;
         return val == null || (!val.isnil(1) && !Config.CHAT_MESSAGES.asBool()) ? message : val.isnil(1) ? "" : val.arg(1).tojstring();
     }
 
     public void chatReceivedMessageEvent(String message) {
-        run("CHAT_RECEIVE_MESSAGE", tick, message);
+        if (loaded)
+            run("CHAT_RECEIVE_MESSAGE", tick, message);
     }
 
-    public void mouseScrollEvent(double delta) {
-        run("MOUSE_SCROLL", tick, delta);
+    public boolean mouseScrollEvent(double delta) {
+        Varargs result = loaded ? run("MOUSE_SCROLL", tick, delta) : null;
+        return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
+    }
+
+    public boolean mouseMoveEvent(double x, double y) {
+        Varargs result = loaded ? run("MOUSE_MOVE", tick, x, y) : null;
+        return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
     }
 
     // -- rendering events -- //
 
     public void render(Entity entity, float yaw, float delta, float alpha, PoseStack matrices, MultiBufferSource bufferSource, int light, int overlay, LivingEntityRenderer<?, ?> entityRenderer, PartFilterScheme filter, boolean translucent, boolean glowing) {
-        if (renderer == null)
+        if (renderer == null || !loaded)
             return;
 
         renderer.vanillaModelData.update(entityRenderer);
@@ -383,8 +402,8 @@ public class Avatar {
         }
     }
 
-    public synchronized void worldRender(Entity entity, double camX, double camY, double camZ, PoseStack matrices, MultiBufferSource bufferSource, int light, float tickDelta) {
-        if (renderer == null)
+    public synchronized void worldRender(Entity entity, double camX, double camY, double camZ, PoseStack matrices, MultiBufferSource bufferSource, int lightFallback, float tickDelta) {
+        if (renderer == null || !loaded)
             return;
 
         for (Queue<Pair<FiguraMat4, FiguraMat3>> queue : renderer.pivotCustomizations.values()) {
@@ -396,12 +415,13 @@ public class Avatar {
         }
 
         renderer.allowMatrixUpdate = true;
+        renderer.updateLight = renderMode != EntityRenderMode.OTHER;
         renderer.entity = entity;
         renderer.currentFilterScheme = PartFilterScheme.WORLD;
         renderer.bufferSource = bufferSource;
         renderer.matrices = matrices;
         renderer.tickDelta = tickDelta;
-        renderer.light = light;
+        renderer.light = lightFallback;
         renderer.alpha = 1f;
         renderer.overlay = OverlayTexture.NO_OVERLAY;
         renderer.translucent = false;
@@ -412,19 +432,27 @@ public class Avatar {
         matrices.scale(-1, -1, 1);
         complexity.use(renderer.renderSpecialParts());
         matrices.popPose();
+
+        renderer.updateLight = false;
     }
 
     public void firstPersonWorldRender(Entity watcher, MultiBufferSource bufferSource, PoseStack matrices, Camera camera, float tickDelta) {
-        if (renderer == null)
+        if (renderer == null || !loaded)
             return;
 
         int light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(watcher, tickDelta);
         Vec3 camPos = camera.getPosition();
+
+        EntityRenderMode oldMode = renderMode;
+        renderMode = EntityRenderMode.FIRST_PERSON;
+
         worldRender(watcher, camPos.x, camPos.y, camPos.z, matrices, bufferSource, light, tickDelta);
+
+        renderMode = oldMode;
     }
 
     public void firstPersonRender(PoseStack stack, MultiBufferSource bufferSource, Player player, PlayerRenderer playerRenderer, ModelPart arm, int light, int overlay, float tickDelta) {
-        if (renderer == null)
+        if (renderer == null || !loaded)
             return;
 
         PartFilterScheme filter = arm == playerRenderer.getModel().leftArm ? PartFilterScheme.LEFT_ARM : PartFilterScheme.RIGHT_ARM;
@@ -444,7 +472,7 @@ public class Avatar {
     }
 
     public void hudRender(PoseStack stack, MultiBufferSource bufferSource, Entity entity, float tickDelta) {
-        if (renderer == null)
+        if (renderer == null || !loaded)
             return;
 
         renderer.currentFilterScheme = PartFilterScheme.HUD;
@@ -472,7 +500,7 @@ public class Avatar {
     }
 
     public boolean skullRender(PoseStack stack, MultiBufferSource bufferSource, int light, Direction direction, float yaw) {
-        if (renderer == null || !renderer.allowSkullRendering)
+        if (renderer == null || !loaded || !renderer.allowSkullRendering)
             return false;
 
         renderer.allowPivotParts = false;
@@ -515,7 +543,7 @@ public class Avatar {
     }
 
     public boolean headRender(PoseStack stack, MultiBufferSource bufferSource, int light) {
-        if (renderer == null)
+        if (renderer == null || !loaded)
             return false;
 
         stack.pushPose();
@@ -551,7 +579,7 @@ public class Avatar {
     }
 
     public boolean renderPortrait(PoseStack stack, int x, int y, int screenSize, float modelScale, boolean scissors) {
-        if (!Config.AVATAR_PORTRAITS.asBool() || renderer == null)
+        if (!Config.AVATAR_PORTRAITS.asBool() || renderer == null || !loaded)
             return false;
 
         //matrices
@@ -617,7 +645,7 @@ public class Avatar {
 
     private static final PartCustomization PIVOT_PART_RENDERING_CUSTOMIZATION = PartCustomization.of();
     public synchronized boolean pivotPartRender(ParentType parent, Consumer<PoseStack> consumer) {
-        if (renderer == null || !parent.isPivot)
+        if (renderer == null || !loaded || !parent.isPivot)
             return false;
 
         Queue<Pair<FiguraMat4, FiguraMat3>> queue = renderer.pivotCustomizations.computeIfAbsent(parent, p -> new ConcurrentLinkedQueue<>());
@@ -641,9 +669,22 @@ public class Avatar {
         return true;
     }
 
+    public void updateMatrices(LivingEntityRenderer<?, ?> entityRenderer, PoseStack stack) {
+        if (renderer == null || !loaded)
+            return;
+
+        renderer.currentFilterScheme = PartFilterScheme.MODEL;
+        renderer.matrices = stack;
+        renderer.vanillaModelData.update(entityRenderer);
+        renderer.updateMatrices();
+    }
+
     // -- animations -- //
 
     public void applyAnimations() {
+        if (!loaded)
+            return;
+
         int animationsLimit = trust.get(Trust.BB_ANIMATIONS);
         int limit = animationsLimit;
         for (Animation animation : animations.values())
@@ -652,6 +693,9 @@ public class Avatar {
     }
 
     public void clearAnimations() {
+        if (!loaded)
+            return;
+
         for (Animation animation : animations.values())
             AnimationPlayer.clear(animation);
     }
@@ -730,6 +774,13 @@ public class Avatar {
         if (!nbt.contains("animations"))
             return;
 
+        ArrayList<String> autoAnims = new ArrayList<>();
+        CompoundTag metadata = nbt.getCompound("metadata");
+        if (metadata.contains("autoAnims")) {
+            for (Tag name : metadata.getList("autoAnims", Tag.TAG_STRING))
+                autoAnims.add(name.getAsString());
+        }
+
         ListTag root = nbt.getList("animations", Tag.TAG_COMPOUND);
         for (int i = 0; i < root.size(); i++) {
             try {
@@ -738,8 +789,11 @@ public class Avatar {
                 if (!animNbt.contains("mdl") || !animNbt.contains("name"))
                     continue;
 
+                String mdl = animNbt.getString("mdl");
+                String name = animNbt.getString("name");
+
                 Animation animation = new Animation(this,
-                        animNbt.getString("mdl"), animNbt.getString("name"),
+                        mdl, name,
                         animNbt.contains("loop") ? Animation.LoopMode.valueOf(animNbt.getString("loop").toUpperCase()) : Animation.LoopMode.ONCE,
                         animNbt.contains("ovr") && animNbt.getBoolean("ovr"),
                         animNbt.contains("len") ? animNbt.getFloat("len") : 0f,
@@ -752,11 +806,14 @@ public class Avatar {
                 if (animNbt.contains("code")) {
                     for (Tag code : animNbt.getList("code", Tag.TAG_COMPOUND)) {
                         CompoundTag compound = (CompoundTag) code;
-                        animation.addCode(compound.getFloat("time"), compound.getString("src"));
+                        animation.newCode(compound.getFloat("time"), compound.getString("src"));
                     }
                 }
 
                 animations.put(i, animation);
+
+                if (autoAnims.contains(mdl + "." + name))
+                    animation.play();
             } catch (Exception ignored) {}
         }
     }

@@ -45,6 +45,7 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     public final ResourceLocation textureID;
     private boolean registered = false;
     private boolean dirty = true;
+    private boolean modified = false;
     private final String name;
     private final Avatar owner;
 
@@ -76,7 +77,7 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
 
     public FiguraTexture(Avatar owner, String name, NativeImage image) {
         this.texture = image;
-        this.textureID = new FiguraIdentifier("avatar_tex/" + owner.owner + "/custom/" + name);
+        this.textureID = new FiguraIdentifier("avatar_tex/" + owner.owner + "/custom/" + UUID.randomUUID());
         this.name = name;
         this.owner = owner;
     }
@@ -116,8 +117,10 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
 
         isClosed = true;
 
-        //Close native image
+        //Close native images
         texture.close();
+        if (backup != null)
+            backup.close();
 
         //Cache GLID and then release it on GPU
         RenderSystem.recordRenderCall(() -> TextureUtil.releaseTextureId(this.id));
@@ -129,6 +132,7 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
     }
 
     private void backupImage() {
+        this.modified = true;
         if (this.backup == null) {
             backup = new NativeImage(texture.format(), texture.getWidth(), texture.getHeight(), true);
             backup.copyFrom(texture);
@@ -208,11 +212,10 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
 
     @LuaWhitelist
     public void restore() {
-        if (backup == null)
-            return;
-
-        this.texture.copyFrom(backup);
-        backup = null;
+        if (modified) {
+            this.texture.copyFrom(backup);
+            this.modified = false;
+        }
     }
 
     @LuaWhitelist
@@ -229,7 +232,7 @@ public class FiguraTexture extends AbstractTexture implements Closeable {
         for (int i = y; i < y + height; i++) {
             for (int j = x; j < x + width; j++) {
                 FiguraVec4 color = getPixel(j, i);
-                LuaValue result = function.call(LuaValue.valueOf(j), LuaValue.valueOf(i), owner.luaRuntime.typeManager.javaToLua(color));
+                LuaValue result = function.call(owner.luaRuntime.typeManager.javaToLua(color), LuaValue.valueOf(j), LuaValue.valueOf(i));
                 if (!result.isnil() && result.isuserdata(FiguraVec4.class))
                     setPixel(j, i, (FiguraVec4) result.checkuserdata(FiguraVec4.class));
             }

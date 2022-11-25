@@ -10,8 +10,10 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.Component;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.AvatarManager;
-import org.moon.figura.backend.NetworkManager;
+import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.lua.FiguraLuaPrinter;
+import org.moon.figura.trust.Trust;
+import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraText;
 
@@ -81,6 +83,7 @@ public enum Config {
 
     ActionWheel,
     ACTION_WHEEL_BUTTON("key.keyboard.b"),
+    ACTION_WHEEL_MODE(0, 4),
     ACTION_WHEEL_SCALE(1f, InputType.FLOAT),
     ACTION_WHEEL_TITLE(0, 5),
     ACTION_WHEEL_DECORATIONS(true),
@@ -96,6 +99,7 @@ public enum Config {
     FIGURA_INVENTORY(true),
     TOAST_TIME(5f, InputType.FLOAT),
     TOAST_TITLE_TIME(2f, InputType.FLOAT),
+    WARDROBE_FILE_NAMES(false),
 
     Paperdoll,
     HAS_PAPERDOLL(false),
@@ -112,7 +116,26 @@ public enum Config {
     RELOAD_BUTTON("key.keyboard.unknown"),
     PANIC_BUTTON("key.keyboard.unknown"),
     BUTTON_LOCATION(0, 5),
-    UPDATE_CHANNEL(1, 3),
+    UPDATE_CHANNEL(1, 3) {
+        @Override
+        public void onChange() {
+            super.onChange();
+            NetworkStuff.checkVersion();
+        }
+    },
+    DEFAULT_TRUST(1, Trust.Group.values().length - 1) {{
+        List<Component> list = new ArrayList<>();
+        Trust.Group[] groups = Trust.Group.values();
+        for (int i = 0; i < groups.length - 1; i++)
+            list.add(groups[i].text.copy());
+        this.enumList = list;
+    }
+        @Override
+        public void onChange() {
+            super.onChange();
+            TrustManager.saveToDisk();
+        }
+    },
     EASTER_EGGS(true),
 
     Dev {{this.name = this.name.copy().withStyle(ChatFormatting.RED);}},
@@ -123,6 +146,7 @@ public enum Config {
                 FiguraText.of(tooltip + ".cubes").setStyle(ColorUtils.Colors.FRAN_PINK.style),
                 FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.MAYA_BLUE.style));
     }},
+    FIRST_PERSON_MATRICES(true),
     LOG_OTHERS(false),
     LOG_PINGS(0, 3),
     SYNC_PINGS(false) {{
@@ -141,20 +165,11 @@ public enum Config {
                 .append(FiguraText.of(tooltip + "3").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
     }},
     MAIN_DIR("", InputType.FOLDER_PATH),
-    AUTH_SERVER_IP("figura.moonlight-devs.org:25565", InputType.IP) {
+    SERVER_IP("figura.moonlight-devs.org:25565", InputType.IP) {
         @Override
         public void onChange() {
             super.onChange();
-            NetworkManager.closeBackend();
-            NetworkManager.auth(true);
-        }
-    },
-    BACKEND_IP("figura.moonlight-devs.org:25500", InputType.IP) {
-        @Override
-        public void onChange() {
-            super.onChange();
-            NetworkManager.closeBackend();
-            NetworkManager.auth(true);
+            NetworkStuff.reAuth();
         }
     };
 

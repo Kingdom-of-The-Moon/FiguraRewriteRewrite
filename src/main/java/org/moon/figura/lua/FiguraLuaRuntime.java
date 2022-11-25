@@ -13,6 +13,7 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.api.AvatarAPI;
 import org.moon.figura.lua.api.HostAPI;
 import org.moon.figura.lua.api.RendererAPI;
+import org.moon.figura.lua.api.TextureAPI;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.NullEntity;
@@ -24,7 +25,9 @@ import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 import java.util.function.Function;
 
 /**
@@ -37,14 +40,14 @@ public class FiguraLuaRuntime {
     public EntityAPI<?> entityAPI;
     public EventsAPI events;
     public VanillaModelAPI vanilla_model;
-    public KeybindAPI keybind;
+    public KeybindAPI keybinds;
     public HostAPI host;
     public NameplateAPI nameplate;
     public RendererAPI renderer;
     public ActionWheelAPI action_wheel;
     public AvatarAPI avatar_meta;
-
     public PingAPI ping;
+    public TextureAPI texture;
 
     //---------------------------------
 
@@ -52,7 +55,7 @@ public class FiguraLuaRuntime {
     private final Globals userGlobals = new Globals();
     private final LuaValue setHookFunction;
     protected final Map<String, String> scripts = new HashMap<>();
-    private final Map<String, LuaValue> loadedScripts = new HashMap<>();
+    private final Map<String, Varargs> loadedScripts = new HashMap<>();
     private final Stack<String> loadingScripts = new Stack<>();
     public final LuaTypeManager typeManager = new LuaTypeManager();
 
@@ -128,12 +131,14 @@ public class FiguraLuaRuntime {
         LuaString.s_metatable = new ReadOnlyLuaTable(LuaString.s_metatable);
     }
 
-    private final OneArgFunction requireFunction = new OneArgFunction() {
+    private final VarArgFunction requireFunction = new VarArgFunction() {
         @Override
-        public LuaValue call(LuaValue arg) {
-            String name = arg.checkjstring().replaceAll("[/\\\\]", ".");
+        public Varargs invoke(Varargs arg) {
+            String name = arg.checkjstring(1).replaceAll("[/\\\\]", ".");
             if (loadingScripts.contains(name))
                 throw new LuaError("Detected circular dependency in script " + loadingScripts.peek());
+            if (scripts.get(name) == null && arg(2).isfunction())
+                return arg.checkfunction(2).call();
 
             return INIT_SCRIPT.apply(name);
         }
@@ -228,12 +233,12 @@ public class FiguraLuaRuntime {
 
     // init event //
 
-    private final Function<String, LuaValue> INIT_SCRIPT = str -> {
+    private final Function<String, Varargs> INIT_SCRIPT = str -> {
         //format name
         String name = str.replaceAll("[/\\\\]", ".");
 
         //already loaded
-        LuaValue val = loadedScripts.get(name);
+        Varargs val = loadedScripts.get(name);
         if (val != null)
             return val;
 
@@ -245,7 +250,7 @@ public class FiguraLuaRuntime {
         this.loadingScripts.push(name);
 
         //load
-        LuaValue value = userGlobals.load(src, name).call(name);
+        Varargs value = userGlobals.load(src, name).invoke(LuaValue.valueOf(name));
         if (value == LuaValue.NIL)
             value = LuaValue.TRUE;
 
@@ -258,6 +263,8 @@ public class FiguraLuaRuntime {
         if (scripts.size() == 0)
             return false;
 
+        owner.luaRuntime = this;
+
         try {
             if (autoScripts == null) {
                 for (String name : scripts.keySet())
@@ -266,23 +273,24 @@ public class FiguraLuaRuntime {
                 for (Tag name : autoScripts)
                     INIT_SCRIPT.apply(name.getAsString());
             }
-        } catch (LuaError e) {
-            owner.luaRuntime = this;
+        } catch (Exception | StackOverflowError e) {
             error(e);
             return false;
         }
 
-        owner.luaRuntime = this;
         return true;
     }
 
     // error ^-^ //
 
     public void error(Throwable e) {
-        LuaError err = e instanceof LuaError lua ? lua : new LuaError(e);
-        FiguraLuaPrinter.sendLuaError(err, owner);
+        FiguraLuaPrinter.sendLuaError(parseError(e), owner);
         owner.scriptError = true;
         owner.luaRuntime = null;
+    }
+
+    public static LuaError parseError(Throwable e) {
+        return e instanceof LuaError lua ? lua : e instanceof StackOverflowError ? new LuaError("Stack Overflow") : new LuaError(e);
     }
 
     // avatar limiting //

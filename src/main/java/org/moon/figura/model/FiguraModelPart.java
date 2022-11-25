@@ -3,6 +3,13 @@ package org.moon.figura.model;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.LightTexture;
 import org.luaj.vm2.LuaError;
+import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.math.matrix.FiguraMat3;
+import org.moon.figura.math.matrix.FiguraMat4;
+import org.moon.figura.math.vector.FiguraVec2;
+import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.model.rendering.ImmediateAvatarRenderer;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.model.rendering.texture.FiguraTextureSet;
@@ -11,13 +18,6 @@ import org.moon.figura.model.rendertasks.BlockTask;
 import org.moon.figura.model.rendertasks.ItemTask;
 import org.moon.figura.model.rendertasks.RenderTask;
 import org.moon.figura.model.rendertasks.TextTask;
-import org.moon.figura.lua.LuaNotNil;
-import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaTypeDoc;
-import org.moon.figura.math.matrix.FiguraMat3;
-import org.moon.figura.math.matrix.FiguraMat4;
-import org.moon.figura.math.vector.FiguraVec2;
-import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -31,7 +31,7 @@ import java.util.Map;
         name = "ModelPart",
         value = "model_part"
 )
-public class FiguraModelPart {
+public class FiguraModelPart implements Comparable<FiguraModelPart> {
 
     public final String name;
     public FiguraModelPart parent;
@@ -126,8 +126,12 @@ public class FiguraModelPart {
             return;
 
         FiguraMat4 prevPartToView = currentTransforms.inverted();
-        prevPartToView.rightMultiply(FiguraMat4.of().rotateY(180));
-        double s = UIHelper.paperdoll ?  1 / 16d * UIHelper.dollScale : 1 / 16d;
+        double s = 1 / 16d;
+        if (UIHelper.paperdoll) {
+            s *= -UIHelper.dollScale;
+        } else {
+            prevPartToView.rightMultiply(FiguraMat4.of().rotateY(180));
+        }
         prevPartToView.scale(s, s, s);
         FiguraVec3 piv = customization.getPivot();
         FiguraVec3 piv2 = customization.getOffsetPivot().add(piv);
@@ -168,6 +172,16 @@ public class FiguraModelPart {
             customization.setAnimRot(vec);
         }
     }
+    public void globalAnimRot(FiguraVec3 vec, boolean merge) {
+        /*FiguraModelPart part = parent;
+        while (part != null) {
+            FiguraVec3 rot = part.getAnimRot();
+            vec.subtract(rot);
+            rot.free();
+            part = part.parent;
+        }*/
+        animRotation(vec, merge);
+    }
     public void animScale(FiguraVec3 vec, boolean merge) {
         if (merge) {
             FiguraVec3 scale = customization.getAnimScale();
@@ -197,6 +211,18 @@ public class FiguraModelPart {
         for (int i = 0; i < this.children.size(); i++)
             map.put(i + 1, this.children.get(i));
         return map;
+    }
+
+    @LuaWhitelist
+    public boolean isChildOf(@LuaNotNil FiguraModelPart part) {
+        FiguraModelPart p = parent;
+        while (p != null) {
+            if (p == part)
+                return true;
+            p = p.parent;
+        }
+
+        return false;
     }
 
     @LuaWhitelist
@@ -380,8 +406,8 @@ public class FiguraModelPart {
     }
 
     @LuaWhitelist
-    public void setPrimaryTexture(@LuaNotNil String textureType, @LuaNotNil String textureNameOrPath){
-        setPrimaryTextureDumb(textureType, textureNameOrPath);
+    public void setPrimaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
+        setPrimaryTextureDumb(textureType, path);
     }
 
     @LuaWhitelist
@@ -404,8 +430,8 @@ public class FiguraModelPart {
     }
 
     @LuaWhitelist
-    public void setSecondaryTexture(@LuaNotNil String textureType, @LuaNotNil String textureNameOrPath){
-        setSecondaryTextureDumb(textureType, textureNameOrPath);
+    public void setSecondaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
+        setSecondaryTextureDumb(textureType, path);
     }
 
     @LuaWhitelist
@@ -590,21 +616,21 @@ public class FiguraModelPart {
     }
 
     @LuaWhitelist
-    public RenderTask addText(@LuaNotNil String taskName) {
+    public RenderTask newText(@LuaNotNil String taskName) {
         RenderTask task = new TextTask();
         this.renderTasks.put(taskName, task);
         return task;
     }
 
     @LuaWhitelist
-    public RenderTask addItem(@LuaNotNil String taskName) {
+    public RenderTask newItem(@LuaNotNil String taskName) {
         RenderTask task = new ItemTask();
         this.renderTasks.put(taskName, task);
         return task;
     }
 
     @LuaWhitelist
-    public RenderTask addBlock(@LuaNotNil String taskName) {
+    public RenderTask newBlock(@LuaNotNil String taskName) {
         RenderTask task = new BlockTask();
         this.renderTasks.put(taskName, task);
         return task;
@@ -646,6 +672,16 @@ public class FiguraModelPart {
 
         this.childCache.put(key, null);
         return null;
+    }
+
+    @Override
+    public int compareTo(FiguraModelPart o) {
+        if (this.isChildOf(o))
+            return 1;
+        else if (o.isChildOf(this))
+            return -1;
+        else
+            return 0;
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.moon.figura.lua.api;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.brigadier.StringReader;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -13,11 +14,10 @@ import net.minecraft.world.entity.Entity;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
-import org.moon.figura.avatar.Badges;
+import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.config.Config;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
@@ -27,6 +27,8 @@ import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.TextUtils;
+
+import java.util.BitSet;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -55,17 +57,6 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public EntityAPI<?> getTargetedEntity() {
-        if (!isHost()) return null;
-
-        Entity entity = this.minecraft.crosshairPickEntity;
-        if (entity != null && Minecraft.getInstance().player != null && !entity.isInvisibleTo(Minecraft.getInstance().player))
-            return EntityAPI.wrap(entity);
-
-        return null;
-    }
-
-    @LuaWhitelist
     public void setTitleTimes(FiguraVec3 titleTimes){
         setTitleTimes((int) titleTimes.x, (int) titleTimes.y, (int) titleTimes.z);
     }
@@ -83,24 +74,24 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public void setTitle(String text) {
+    public void setTitle(@LuaNotNil String text) {
         if (isHost())
             this.minecraft.gui.setTitle(TextUtils.tryParseJson(text));
     }
 
     @LuaWhitelist
-    public void setSubtitle(String text) {
+    public void setSubtitle(@LuaNotNil String text) {
         if (isHost())
             this.minecraft.gui.setSubtitle(TextUtils.tryParseJson(text));
     }
 
     @LuaWhitelist
-    public void setActionBar(String text){
+    public void setActionBar(@LuaNotNil String text){
         setActionbar(text, false);
     }
 
     @LuaWhitelist
-    public void setActionbar(String text, boolean animated) {
+    public void setActionbar(@LuaNotNil String text, boolean animated) {
         if (isHost())
             this.minecraft.gui.setOverlayMessage(TextUtils.tryParseJson(text), animated);
     }
@@ -159,7 +150,13 @@ public class HostAPI {
         if (!isHost()) return;
         if (!FiguraMod.DEBUG_MODE)
             throw new LuaError("Congrats, you found this debug easter egg!");
-        Badges.set(owner.owner, index, value, pride);
+
+        Pair<BitSet, BitSet> badges = AvatarManager.getBadges(owner.owner);
+        if (badges == null)
+            return;
+
+        BitSet set = pride ? badges.getFirst() : badges.getSecond();
+        set.set(index, value);
     }
 
     @LuaWhitelist
@@ -195,7 +192,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public void setChatText(String text) {
+    public void setChatText(@LuaNotNil String text) {
         if (isHost() && Config.CHAT_MESSAGES.asBool() && Minecraft.getInstance().screen instanceof ChatScreen chat)
             ((ChatScreenAccessor) chat).getInput().setValue(text);
     }
@@ -229,15 +226,13 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture screenshot(String name) {
+    public FiguraTexture screenshot(@LuaNotNil String name) {
         if (!isHost())
             return null;
 
         String screenshot = name == null ? "screenshot" : name;
         NativeImage img = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
-        FiguraTexture texture = new FiguraTexture(owner, screenshot, img);
-        owner.renderer.customTextures.put(screenshot, texture);
-        return texture;
+        return owner.luaRuntime.texture.register(name, img, true);
     }
 
     @LuaWhitelist

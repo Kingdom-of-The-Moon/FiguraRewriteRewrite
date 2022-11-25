@@ -11,7 +11,7 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.avatar.local.LocalAvatarFetcher;
 import org.moon.figura.avatar.local.LocalAvatarLoader;
-import org.moon.figura.backend.NetworkManager;
+import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.commands.FiguraLinkCommand;
 import org.moon.figura.config.Config;
 import org.moon.figura.gui.widgets.*;
@@ -67,24 +67,24 @@ public class WardrobeScreen extends AbstractPanelScreen {
         addRenderableWidget(upload = new TexturedButton(buttX - 48, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/upload.png"), 72, 24, FiguraText.of("gui.wardrobe.upload.tooltip"), button -> {
             Avatar avatar = AvatarManager.getAvatarForPlayer(FiguraMod.getLocalPlayerUUID());
             try {
-                LocalAvatarLoader.loadAvatar(null);
+                LocalAvatarLoader.loadAvatar(null, null);
             } catch (Exception ignored) {}
-            NetworkManager.uploadAvatar(avatar, null);
+            NetworkStuff.uploadAvatar(avatar);
             AvatarList.selectedEntry = null;
         }));
         upload.active = false;
 
         //reload
         addRenderableWidget(new TexturedButton(buttX - 12, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/reload.png"), 72, 24, FiguraText.of("gui.wardrobe.reload.tooltip"), button -> {
-            AvatarManager.clearAvatar(FiguraMod.getLocalPlayerUUID());
+            AvatarManager.clearAvatars(FiguraMod.getLocalPlayerUUID());
             AvatarManager.localUploaded = true;
-            NetworkManager.assertBackend();
+            NetworkStuff.auth();
             AvatarList.selectedEntry = null;
         }));
 
         //delete
         addRenderableWidget(delete = new TexturedButton(buttX + 24, buttY, 24, 24, 0, 0, 24, new FiguraIdentifier("textures/gui/delete.png"), 72, 24, FiguraText.of("gui.wardrobe.delete.tooltip"), button ->
-                NetworkManager.deleteAvatar(null))
+                NetworkStuff.deleteAvatar(null))
         );
 
         statusWidget = new StatusWidget(entity.x + entity.width - 64, 0, 64);
@@ -94,7 +94,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
         // -- bottom -- //
 
         //version
-        Label version = new Label(FiguraText.of().append(" " + FiguraMod.VERSION).withStyle(ChatFormatting.ITALIC), middle, this.height - 5, true);
+        Label version = new Label(FiguraText.of().append(" " + FiguraMod.VERSION.noBuildString()).withStyle(ChatFormatting.ITALIC), middle, this.height - 5, true);
         addRenderableOnly(version);
         version.setColor(0x33FFFFFF);
 
@@ -155,8 +155,8 @@ public class WardrobeScreen extends AbstractPanelScreen {
 
         //backend buttons
         Avatar avatar;
-        boolean backend = NetworkManager.backendStatus == 3;
-        upload.active = backend && NetworkManager.canUpload() && !AvatarManager.localUploaded && (avatar = AvatarManager.getAvatarForPlayer(FiguraMod.getLocalPlayerUUID())) != null && avatar.nbt != null;
+        boolean backend = NetworkStuff.backendStatus == 3;
+        upload.active = NetworkStuff.canUpload() && !AvatarManager.localUploaded && (avatar = AvatarManager.getAvatarForPlayer(FiguraMod.getLocalPlayerUUID())) != null && avatar.nbt != null;
         delete.active = backend;
     }
 

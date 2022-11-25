@@ -3,14 +3,17 @@ package org.moon.figura.lua.api.sound;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.SoundBuffer;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.sounds.ChannelAccess;
+import net.minecraft.client.sounds.SoundBufferLibrary;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.phys.Vec3;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
+import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.trust.Trust;
 import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
@@ -23,56 +26,123 @@ public class LuaSound {
     private final Avatar owner;
     private final String id;
     private final SoundBuffer buffer;
-    private final ChannelAccess.ChannelHandle handle;
+    private final Sound sound;
+
+    private ChannelAccess.ChannelHandle handle;
+    private boolean playing = false;
+
+    private FiguraVec3 pos = FiguraVec3.of();
+    private float pitch = 1f;
     private float volume = 1f;
-    private Status status = Status.STOPPED;
+    private float attenuation = 1f;
+    private boolean loop = false;
 
     public LuaSound(SoundBuffer buffer, String id, Avatar owner) {
         this.owner = owner;
         this.id = id;
         this.buffer = buffer;
-        this.handle = SoundAPI.getSoundEngine().figura$createHandle(owner.owner, id, Library.Pool.STATIC);
-        handle.execute(channel -> channel.linearAttenuation(16f));
+        this.sound = null;
+    }
+
+    public LuaSound(Sound sound, String id, Avatar owner) {
+        this.owner = owner;
+        this.id = id;
+        this.buffer = null;
+        this.sound = sound;
+    }
+
+    public ChannelAccess.ChannelHandle getHandle() {
+        return handle;
+    }
+
+    private float calculateVolume() {
+        return volume * SoundAPI.getSoundEngine().figura$getVolume(SoundSource.PLAYERS) * (owner.trust.get(Trust.VOLUME) / 100f);
     }
 
     @LuaWhitelist
     public LuaSound play() {
-        if (status != Status.PLAYING && !Minecraft.getInstance().isPaused() && owner.soundsRemaining.use()) {
+        if (this.playing)
+            return this;
+
+        if (handle != null) {
+            handle.execute(Channel::unpause);
+            this.playing = true;
+        } else if (buffer != null) {
+            this.handle = SoundAPI.getSoundEngine().figura$createHandle(owner.owner, id, Library.Pool.STATIC);
+            if (handle == null)
+                return this;
+
             SoundAPI.getSoundEngine().figura$addSound(this);
+
             handle.execute(channel -> {
-                if (isPaused()) {
-                    channel.unpause();
-                } else {
+                channel.setPitch(pitch);
+                channel.setVolume(calculateVolume());
+                channel.linearAttenuation(attenuation * 16f);
+                channel.setLooping(loop);
+                channel.setSelfPosition(pos.asVec3());
+                channel.setRelative(false);
+                channel.attachStaticBuffer(buffer);
+                channel.play();
+            });
+
+            this.playing = true;
+        } else if (sound != null) {
+            boolean shouldStream = sound.shouldStream();
+            this.handle = SoundAPI.getSoundEngine().figura$createHandle(owner.owner, id, shouldStream ? Library.Pool.STREAMING : Library.Pool.STATIC);
+            if (handle == null)
+                return this;
+
+            SoundAPI.getSoundEngine().figura$addSound(this);
+
+            handle.execute(channel -> {
+                channel.setPitch(pitch);
+                channel.setVolume(calculateVolume());
+                channel.linearAttenuation(attenuation * 16f);
+                channel.setLooping(loop && !shouldStream);
+                channel.setSelfPosition(pos.asVec3());
+                channel.setRelative(false);
+            });
+
+            SoundBufferLibrary lib = SoundAPI.getSoundEngine().figura$getSoundBuffers();
+            if (!shouldStream) {
+                lib.getCompleteBuffer(sound.getPath()).thenAccept(buffer -> handle.execute(channel -> {
                     channel.attachStaticBuffer(buffer);
                     channel.play();
-                }
-            });
-            status = Status.PLAYING;
+                }));
+            } else {
+                lib.getStream(sound.getPath(), loop).thenAccept(stream -> handle.execute(channel -> {
+                    channel.attachBufferStream(stream);
+                    channel.play();
+                }));
+            }
+
+            this.playing = true;
         }
+
         return this;
     }
 
     @LuaWhitelist
     public boolean isPlaying() {
-        return status == Status.PLAYING;
+        if (handle != null)
+            handle.execute(channel -> this.playing = channel.playing());
+        return this.playing;
     }
 
-    @LuaWhitelist
-    public boolean isPaused() {
-        return status == Status.PAUSED;
-    }
-
-    @LuaWhitelist
+    @LuaWhitelist //TODO - no worky
     public LuaSound pause() {
-        handle.execute(Channel::pause);
-        status = Status.PAUSED;
+        this.playing = false;
+        if (handle != null)
+            handle.execute(Channel::pause);
         return this;
     }
 
     @LuaWhitelist
     public LuaSound stop() {
-        handle.execute(Channel::stop);
-        status = Status.STOPPED;
+        this.playing = false;
+        if (handle != null)
+            handle.execute(Channel::stop);
+        handle = null;
         return this;
     }
 
@@ -82,62 +152,71 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    public LuaSound pos(FiguraVec3 vec) {
-        handle.execute(channel -> channel.setSelfPosition(new Vec3(vec.x, vec.y, vec.z)));
+    public LuaSound pos(FiguraVec3 pos) {
+        if (handle != null)
+            handle.execute(channel -> channel.setSelfPosition(pos.asVec3()));
         return this;
+    }
+
+    @LuaWhitelist
+    public FiguraVec3 getPos() {
+        return pos;
     }
 
     @LuaWhitelist
     public LuaSound volume(float volume) {
-        this.volume = Math.min(volume * SoundAPI.getSoundEngine().figura$getVolume(SoundSource.PLAYERS), 1);
-        handle.execute(channel -> channel.setVolume(volume));
+        this.volume = Math.min(volume, 1);
+        if (handle != null)
+            handle.execute(channel -> channel.setVolume(calculateVolume()));
         return this;
+    }
+
+    @LuaWhitelist
+    public float getVolume() {
+        return volume;
     }
 
     @LuaWhitelist
     public LuaSound attenuation(float attenuation) {
-        handle.execute(channel -> channel.linearAttenuation(Math.max(attenuation, 1f) * 16f));
+        this.attenuation = Math.max(attenuation, 1);
+        if (handle != null)
+            handle.execute(channel -> channel.linearAttenuation(this.attenuation * 16f));
         return this;
+    }
+
+    @LuaWhitelist
+    public float getAttenuation() {
+        return attenuation;
     }
 
     @LuaWhitelist
     public LuaSound pitch(float pitch) {
-        handle.execute(channel -> {
-            channel.setPitch(pitch);
-            if (pitch <= 0)
-                channel.stop();
-        });
+        this.pitch = Math.max(pitch, 0);
+        if (handle != null)
+            handle.execute(channel -> channel.setPitch(this.pitch));
         return this;
+    }
+
+    @LuaWhitelist
+    public float getPitch() {
+        return pitch;
     }
 
     @LuaWhitelist
     public LuaSound loop(boolean loop) {
-        handle.execute(channel -> channel.setLooping(loop));
+        this.loop = loop;
+        if (handle != null)
+            handle.execute(channel -> channel.setLooping(this.loop));
         return this;
     }
 
     @LuaWhitelist
-    public LuaSound relative(boolean relative) {
-        handle.execute(channel -> channel.setRelative(relative));
-        return this;
-    }
-
-    public ChannelAccess.ChannelHandle getHandle() {
-        return handle;
-    }
-
-    public float getVolume() {
-        return volume;
+    public boolean isLooping() {
+        return loop;
     }
 
     @Override
     public String toString() {
         return id + " (Sound)";
-    }
-
-    private enum Status {
-        PAUSED,
-        PLAYING,
-        STOPPED
     }
 }

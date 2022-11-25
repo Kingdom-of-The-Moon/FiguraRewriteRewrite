@@ -254,9 +254,9 @@ public class FiguraVec3 extends FiguraVector<FiguraVec3, FiguraMat3> {
 
     @LuaWhitelist
     public FiguraVec3 applyFunc(@LuaNotNil LuaFunction function) {
-        x = function.call(LuaValue.valueOf(1), LuaValue.valueOf(x)).todouble();
-        y = function.call(LuaValue.valueOf(2), LuaValue.valueOf(y)).todouble();
-        z = function.call(LuaValue.valueOf(3), LuaValue.valueOf(z)).todouble();
+        x = function.call(LuaValue.valueOf(x), LuaValue.valueOf(1)).todouble();
+        y = function.call(LuaValue.valueOf(y), LuaValue.valueOf(2)).todouble();
+        z = function.call(LuaValue.valueOf(z), LuaValue.valueOf(3)).todouble();
         return this;
     }
 
@@ -317,15 +317,20 @@ public class FiguraVec3 extends FiguraVector<FiguraVec3, FiguraMat3> {
     public BlockPos asBlockPos() {
         return new BlockPos(x, y, z);
     }
-
     public static FiguraVec3 fromBlockPos(BlockPos pos) {
         return of(pos.getX(), pos.getY(), pos.getZ());
     }
 
+    public Vec3 asVec3() {
+        return new Vec3(x, y, z);
+    }
     public static FiguraVec3 fromVec3(Vec3 vec) {
         return of(vec.x, vec.y, vec.z);
     }
 
+    public Vector3f asVec3f() {
+        return new Vector3f((float) x, (float) y, (float) z);
+    }
     public static FiguraVec3 fromVec3f(Vector3f vec) {
         return of(vec.x(), vec.y(), vec.z());
     }

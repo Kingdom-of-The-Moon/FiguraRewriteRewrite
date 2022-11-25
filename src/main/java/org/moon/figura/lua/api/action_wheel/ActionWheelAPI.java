@@ -53,12 +53,12 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    public Action createAction() {
+    public Action newAction() {
         return new Action();
     }
 
     @LuaWhitelist
-    public Page createPage(String title) {
+    public Page newPage(String title) {
         Page page = new Page();
         if (title != null) this.pages.put(title, page);
         return page;

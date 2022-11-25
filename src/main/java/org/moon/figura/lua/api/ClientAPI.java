@@ -234,7 +234,7 @@ public class ClientAPI {
 
     @LuaWhitelist
     public static String getFiguraVersion() {
-        return FiguraMod.VERSION;
+        return FiguraMod.VERSION.toString();
     }
 
     @LuaWhitelist
@@ -245,7 +245,7 @@ public class ClientAPI {
         if (v1.invalid)
             throw new LuaError("Cannot parse version " + "\"" + ver1 + "\"");
         if (v2.invalid)
-            throw new LuaError("Cannot parse version " + "\"" + ver1 + "\"");
+            throw new LuaError("Cannot parse version " + "\"" + ver2 + "\"");
 
         return v1.compareTo(v2);
     }

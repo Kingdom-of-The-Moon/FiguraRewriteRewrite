@@ -67,7 +67,7 @@ public class TrustScreen extends AbstractPanelScreen {
         int listWidth = Math.min(middle - 6, 208);
         int lineHeight =  font.lineHeight;
 
-        double guiScale = this.minecraft.getWindow().getGuiScale();
+        double guiScale = this.minecraft == null ? 1 : this.minecraft.getWindow().getGuiScale();
         double screenScale = Math.min(this.width, this.height) / 1018d;
         int modelSize = Math.min((int) ((192 / guiScale) * (screenScale * guiScale)), 96);
 
@@ -240,7 +240,7 @@ public class TrustScreen extends AbstractPanelScreen {
 
     @Override
     public void renderOverlays(PoseStack stack, int mouseX, int mouseY, float delta) {
-        if (dragged != null)
+        if (dragged != null && dragged.dragged)
             dragged.renderDragged(stack, mouseX, mouseY, delta);
 
         super.renderOverlays(stack, mouseX, mouseY, delta);
@@ -264,27 +264,34 @@ public class TrustScreen extends AbstractPanelScreen {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        boolean bool = false;
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean bool = super.mouseClicked(mouseX, mouseY, button);
+        dragged = null;
 
-        if (playerList.selectedEntry instanceof PlayerElement element && element.isMouseOver(mouseX, mouseY)) {
+        if (button == 0 && playerList.selectedEntry instanceof PlayerElement element && element.isMouseOver(mouseX, mouseY)) {
             dragged = element;
-            dragged.dragged = true;
-            dragged.index = playerList.getTrustAt(mouseY);
-            bool = true;
+            element.anchorX = (int) mouseX;
+            element.anchorY = (int) mouseY;
+            element.initialY = element.y;
         }
 
+        return bool;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (dragged != null) {
             dragged.index = playerList.getTrustAt(mouseY);
-            bool = true;
+            dragged.dragged = true;
+            return true;
         }
 
-        return bool || super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (dragged == null)
+        if (dragged == null || !dragged.dragged)
             return super.mouseReleased(mouseX, mouseY, button);
 
         TrustContainer trust = dragged.getTrust();

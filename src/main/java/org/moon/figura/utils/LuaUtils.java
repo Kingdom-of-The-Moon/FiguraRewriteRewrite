@@ -46,7 +46,6 @@ public class LuaUtils {
         }
         throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }
-
     /**
      * This code gets repeated SO MUCH that I decided to put it in the utils class.
      * @param x Either the x coordinate of a vector, or a vector itself.

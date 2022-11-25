@@ -113,7 +113,7 @@ public class BlockbenchModelParser {
                 Path p = sourceFile.toPath().resolve(textures[i].relative_path);
                 File f = p.toFile();
                 if (!f.exists()) throw new Exception("File do not exists!");
-                if (!p.startsWith(avatar)) throw new Exception("File from outside the avatar folder!");
+                if (!p.normalize().startsWith(avatar)) throw new Exception("File from outside the avatar folder!");
 
                 //load texture
                 source = IOUtils.readFileBytes(f);
@@ -123,7 +123,7 @@ public class BlockbenchModelParser {
                 path = path.substring(0, path.length() - 4);
 
                 //feedback
-                FiguraMod.debug("Loaded " + (renderType.equals("emissive") ? "Emissive" : "") + " Texture \"{}\" from {}", name, f);
+                FiguraMod.debug("Loaded" + (renderType.equals("emissive") ? " Emissive" : "") + " Texture \"{}\" from {}", name, f);
             } catch (Exception ignored) {
                 //otherwise, load from the source stored in the model
                 source = Base64.getDecoder().decode(textures[i].source.substring("data:image/png;base64,".length()));
@@ -437,7 +437,8 @@ public class BlockbenchModelParser {
                 ListTag scaleData = new ListTag();
 
                 //parse keyframes
-                for (JsonElement keyframeJson : entry.getValue().getAsJsonObject().get("keyframes").getAsJsonArray()) {
+                JsonObject animationData = entry.getValue().getAsJsonObject();
+                for (JsonElement keyframeJson : animationData.get("keyframes").getAsJsonArray()) {
                     BlockbenchModel.KeyFrame keyFrame = gson.fromJson(keyframeJson, BlockbenchModel.KeyFrame.class);
 
                     CompoundTag keyframeNbt = new CompoundTag();
@@ -478,12 +479,17 @@ public class BlockbenchModelParser {
                     CompoundTag nbt = new CompoundTag();
                     CompoundTag channels = new CompoundTag();
 
-                    if (!rotData.isEmpty())
-                        channels.put("rotation", rotData);
+                    if (!rotData.isEmpty()) {
+                        JsonElement globalRotJson = animationData.get("rotation_global");
+                        if (globalRotJson != null && globalRotJson.getAsBoolean())
+                            channels.put("grot", rotData);
+                        else
+                            channels.put("rot", rotData);
+                    }
                     if (!posData.isEmpty())
-                        channels.put("position", posData);
+                        channels.put("pos", posData);
                     if (!scaleData.isEmpty())
-                        channels.put("scale", scaleData);
+                        channels.put("scl", scaleData);
 
                     if (!channels.isEmpty()) {
                         nbt.putInt("id", i + animationOffset);

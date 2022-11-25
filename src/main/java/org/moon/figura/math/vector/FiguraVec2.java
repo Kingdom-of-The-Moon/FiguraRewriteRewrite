@@ -240,8 +240,8 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @LuaWhitelist
     public FiguraVec2 applyFunc(@LuaNotNil LuaFunction function) {
-        x = function.call(LuaValue.valueOf(1), LuaValue.valueOf(x)).todouble();
-        y = function.call(LuaValue.valueOf(2), LuaValue.valueOf(y)).todouble();
+        x = function.call(LuaValue.valueOf(x), LuaValue.valueOf(1)).todouble();
+        y = function.call(LuaValue.valueOf(y), LuaValue.valueOf(2)).todouble();
         return this;
     }
 

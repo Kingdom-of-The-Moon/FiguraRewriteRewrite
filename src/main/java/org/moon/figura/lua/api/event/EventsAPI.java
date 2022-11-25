@@ -13,49 +13,36 @@ import org.moon.figura.lua.docs.LuaTypeDoc;
 )
 public class EventsAPI {
 
-    public EventsAPI() {
-        ENTITY_INIT = new LuaEvent();
-        TICK = new LuaEvent();
-        WORLD_TICK = new LuaEvent();
-        RENDER = new LuaEvent();
-        POST_RENDER = new LuaEvent();
-        WORLD_RENDER = new LuaEvent();
-        POST_WORLD_RENDER = new LuaEvent();
-        CHAT_SEND_MESSAGE = new LuaEvent(true);
-        CHAT_RECEIVE_MESSAGE = new LuaEvent();
-        SKULL_RENDER = new LuaEvent();
-        MOUSE_SCROLL = new LuaEvent();
-        USE_ITEM = new LuaEvent();
-    }
-
     //Unsure on how to do the docs for these fields. Maybe we keep the @LuaFieldDoc, just don't allow them to be
     //whitelisted and accessed automatically?
     //Maybe in the __index comment we give a docs list of the events?
 
     @LuaWhitelist
-    public final LuaEvent ENTITY_INIT;
+    public final LuaEvent ENTITY_INIT = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent TICK;
+    public final LuaEvent TICK = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent WORLD_TICK;
+    public final LuaEvent WORLD_TICK = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent RENDER;
+    public final LuaEvent RENDER = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent POST_RENDER;
+    public final LuaEvent POST_RENDER = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent WORLD_RENDER;
+    public final LuaEvent WORLD_RENDER = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent POST_WORLD_RENDER;
+    public final LuaEvent POST_WORLD_RENDER = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent CHAT_SEND_MESSAGE;
+    public final LuaEvent CHAT_SEND_MESSAGE = new LuaEvent(true);
     @LuaWhitelist
-    public final LuaEvent CHAT_RECEIVE_MESSAGE;
+    public final LuaEvent CHAT_RECEIVE_MESSAGE = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent SKULL_RENDER;
+    public final LuaEvent SKULL_RENDER = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent MOUSE_SCROLL;
+    public final LuaEvent MOUSE_SCROLL = new LuaEvent();
     @LuaWhitelist
-    public final LuaEvent USE_ITEM;
+    public final LuaEvent MOUSE_MOVE = new LuaEvent();
+    @LuaWhitelist
+    public final LuaEvent USE_ITEM = new LuaEvent();
 
     @LuaWhitelist
     @LuaMetamethodDoc(overloads = @LuaMetamethodOverload(
@@ -76,6 +63,7 @@ public class EventsAPI {
             case "CHAT_RECEIVE_MESSAGE" -> CHAT_RECEIVE_MESSAGE;
             case "SKULL_RENDER" -> SKULL_RENDER;
             case "MOUSE_SCROLL" -> MOUSE_SCROLL;
+            case "MOUSE_MOVE" -> MOUSE_MOVE;
             case "USE_ITEM" -> USE_ITEM;
             default -> null;
         };

@@ -7,6 +7,10 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Style;
 import org.moon.figura.FiguraMod;
@@ -14,18 +18,23 @@ import org.moon.figura.animation.Animation;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.avatar.local.LocalAvatarFetcher;
-import org.moon.figura.backend.NetworkManager;
+import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.config.Config;
 import org.moon.figura.trust.Trust;
 import org.moon.figura.trust.TrustContainer;
 import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.FiguraText;
+import org.moon.figura.utils.MathUtils;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 public class FiguraDebugCommand {
 
@@ -74,14 +83,14 @@ public class FiguraDebugCommand {
         //mod meta
         JsonObject meta = new JsonObject();
 
-        meta.addProperty("version", FiguraMod.VERSION);
+        meta.addProperty("version", FiguraMod.VERSION.toString());
         meta.addProperty("localUUID", FiguraMod.getLocalPlayerUUID().toString());
         meta.addProperty("ticks", FiguraMod.ticks);
         meta.addProperty("figuraDirectory", FiguraMod.getFiguraDirectory().toString());
         meta.addProperty("figuraCacheDirectory", FiguraMod.getCacheDirectory().toString());
-        meta.addProperty("backendStatus", NetworkManager.backendStatus);
-        meta.addProperty("hasBackend", NetworkManager.hasBackend());
-        meta.addProperty("backendDisconnectedReason", NetworkManager.disconnectedReason);
+        meta.addProperty("backendStatus", NetworkStuff.backendStatus);
+        meta.addProperty("backendConnected", NetworkStuff.isConnected());
+        meta.addProperty("backendDisconnectedReason", NetworkStuff.disconnectedReason);
         meta.addProperty("uploaded", AvatarManager.localUploaded);
         meta.addProperty("panicMode", AvatarManager.panic);
 
@@ -216,6 +225,10 @@ public class FiguraDebugCommand {
 
         a.add("animations", animations);
 
+        //sizes
+        if (avatar.nbt != null)
+            a.add("sizes", parseNbtSizes(avatar.nbt));
+
         //return as string
         root.add("avatar", a);
         return GSON.toJson(root);
@@ -234,5 +247,89 @@ public class FiguraDebugCommand {
         }
 
         return avatar;
+    }
+
+    private static JsonObject parseNbtSizes(CompoundTag nbt) {
+        JsonObject sizes = new JsonObject();
+
+        //metadata
+        sizes.addProperty("metadata", getBytesFromNbt(nbt.getCompound("metadata")));
+
+        //models
+        JsonObject models = new JsonObject();
+
+        CompoundTag modelsNbt = nbt.getCompound("models");
+        ListTag childrenNbt = modelsNbt.getList("chld", Tag.TAG_COMPOUND);
+
+        for (Tag tag : childrenNbt) {
+            CompoundTag compound = (CompoundTag) tag;
+            models.addProperty(compound.getString("name"), getBytesFromNbt(compound));
+        }
+
+        sizes.add("models", models);
+        sizes.addProperty("models_total", getBytesFromNbt(modelsNbt));
+
+        //scripts
+        JsonObject scripts = new JsonObject();
+
+        CompoundTag scriptsNbt = nbt.getCompound("scripts");
+        for (String key : scriptsNbt.getAllKeys())
+            scripts.addProperty(key, getBytesFromNbt(scriptsNbt.get(key)));
+
+        sizes.add("scripts", scripts);
+        sizes.addProperty("scripts_total", getBytesFromNbt(scriptsNbt));
+
+        //sounds
+        JsonObject sounds = new JsonObject();
+
+        CompoundTag soundsNbt = nbt.getCompound("sounds");
+        for (String key : soundsNbt.getAllKeys())
+            sounds.addProperty(key, getBytesFromNbt(soundsNbt.get(key)));
+
+        sizes.add("sounds", sounds);
+        sizes.addProperty("sounds_total", getBytesFromNbt(soundsNbt));
+
+        //textures
+        JsonObject textures = new JsonObject();
+        CompoundTag texturesNbt = nbt.getCompound("textures");
+
+        CompoundTag textureSrc = texturesNbt.getCompound("src");
+        for (String key : textureSrc.getAllKeys())
+            textures.addProperty(key, getBytesFromNbt(textureSrc.get(key)));
+
+        sizes.add("textures", textures);
+        sizes.addProperty("textures_total", getBytesFromNbt(texturesNbt));
+
+        //animations
+        JsonObject animations = new JsonObject();
+        ListTag animationsNbt = nbt.getList("animations", Tag.TAG_COMPOUND);
+
+        for (Tag tag : animationsNbt) {
+            CompoundTag compound = (CompoundTag) tag;
+            animations.addProperty(compound.getString("mdl") + "." + compound.getString("name"), getBytesFromNbt(compound));
+        }
+
+        sizes.add("animations", animations);
+        sizes.addProperty("animations_total", getBytesFromNbt(animationsNbt));
+
+        //total
+        sizes.addProperty("total", getBytesFromNbt(nbt));
+        return sizes;
+    }
+
+    private static String getBytesFromNbt(Tag nbt) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(baos)));
+            NbtIo.writeUnnamedTag(nbt, dos);
+            dos.close();
+
+            int size = baos.size();
+            baos.close();
+
+            return size < 1000 ? size + "b" : MathUtils.asFileSize(size) + " (" + size + "b)";
+        } catch (Exception ignored) {
+            return "?";
+        }
     }
 }

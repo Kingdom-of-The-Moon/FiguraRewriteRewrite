@@ -16,9 +16,10 @@ import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.world.entity.Entity;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
+import org.moon.figura.avatar.local.CacheAvatarLoader;
 import org.moon.figura.avatar.local.LocalAvatarFetcher;
 import org.moon.figura.avatar.local.LocalAvatarLoader;
-import org.moon.figura.backend.NetworkManager;
+import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.commands.FiguraCommands;
 import org.moon.figura.config.Config;
 import org.moon.figura.config.ConfigManager;
@@ -34,6 +35,7 @@ import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.ColorUtils;
  import org.moon.figura.utils.FiguraResourceListener;
 import org.moon.figura.utils.TextUtils;
+import org.moon.figura.utils.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +49,7 @@ public class FiguraMod implements ClientModInitializer {
 
     public static final String MOD_ID = "figura";
     public static final String MOD_NAME = "Figura";
-    public static final String VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().getFriendlyString();
+    public static final Version VERSION = new Version(FabricLoader.getInstance().getModContainer(FiguraMod.MOD_ID).get().getMetadata().getVersion().getFriendlyString());
     public static final boolean DEBUG_MODE = Math.random() + 1 < 0;
     public static final LocalDate DATE = LocalDate.now();
     public static final boolean CHEESE_DAY = DATE.getDayOfMonth() == 1 && DATE.getMonthValue() == 4;
@@ -62,6 +64,7 @@ public class FiguraMod implements ClientModInitializer {
         ConfigManager.init();
         TrustManager.init();
         LocalAvatarFetcher.init();
+        CacheAvatarLoader.init();
         FiguraAPIManager.init();
         FiguraDocsManager.init();
         NewDocsManager.init();
@@ -78,7 +81,7 @@ public class FiguraMod implements ClientModInitializer {
     }
 
     private static void tick(Minecraft client) {
-        NetworkManager.tick();
+        NetworkStuff.tick();
         LocalAvatarLoader.tickWatchedKey();
         AvatarManager.tickLoadedAvatars();
         FiguraLuaPrinter.printChatFromQueue();

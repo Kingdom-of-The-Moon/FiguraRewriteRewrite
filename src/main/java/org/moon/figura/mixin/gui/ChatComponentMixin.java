@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Mixin(ChatComponent.class)
 public class ChatComponentMixin {
@@ -41,8 +42,7 @@ public class ChatComponentMixin {
     private Component addMessageName(Component message) {
         //get config
         int config = Config.CHAT_NAMEPLATE.asInt();
-
-        if (config == 0 || this.minecraft.player == null)
+        if (config == 0 || this.minecraft.player == null || AvatarManager.panic)
             return message;
 
         //iterate over ALL online players
@@ -52,26 +52,21 @@ public class ChatComponentMixin {
             if (player == null)
                 continue;
 
-            //get metadata
-            Avatar avatar = AvatarManager.getAvatarForPlayer(uuid);
-            if (avatar == null)
-                continue;
-
             //apply customization
             Component replacement;
             boolean replaceBadges = false;
 
-            NameplateCustomization custom = avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.CHAT;
+            Avatar avatar = AvatarManager.getAvatarForPlayer(uuid);
+            NameplateCustomization custom = avatar == null || avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.CHAT;
             if (custom != null && custom.getText() != null && avatar.trust.get(Trust.NAMEPLATE_EDIT) == 1) {
-                replacement = NameplateCustomization.applyCustomization(custom.getText().replaceAll("\n|\\\\n", ""));
-                if (custom.getText().contains("${badges}"))
-                    replaceBadges = true;
+                replacement = NameplateCustomization.applyCustomization(custom.getText().replaceAll("\n|\\\\n", " "));
+                replaceBadges = replacement.getString().contains("${badges}");
             } else {
                 replacement = Component.literal(player.getProfile().getName());
             }
 
             //badges
-            Component badges = config > 1 ? Badges.fetchBadges(avatar) : Component.empty();
+            Component badges = config > 1 ? Badges.fetchBadges(uuid) : Component.empty();
             if (replaceBadges) {
                 replacement = TextUtils.replaceInText(replacement, "\\$\\{badges\\}", badges);
             } else if (badges.getString().length() > 0) {
@@ -79,7 +74,7 @@ public class ChatComponentMixin {
             }
 
             //modify message
-            message = TextUtils.replaceInText(message, "\\b" + player.getProfile().getName() + "\\b", replacement);
+            message = TextUtils.replaceInText(message, "\\b" + Pattern.quote(player.getProfile().getName()) + "\\b", replacement);
         }
 
         return message;

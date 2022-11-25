@@ -47,7 +47,8 @@ public class PlayerElement extends AbstractTrustElement {
 
     //drag
     public boolean dragged = false;
-    public int index = -1;
+    public int anchorX, anchorY, initialY;
+    public int index;
 
     public PlayerElement(String name, TrustContainer trust, ResourceLocation skin, UUID owner, PlayerList parent) {
         super(40, trust, parent);
@@ -118,8 +119,8 @@ public class PlayerElement extends AbstractTrustElement {
     public void renderDragged(PoseStack stack, int mouseX, int mouseY, float delta) {
         int oX = x;
         int oY = y;
-        x = mouseX - 20;
-        y = mouseY - height / 2;
+        x = mouseX - (anchorX - x);
+        y = mouseY - (anchorY - y) + (initialY - oY);
         super.render(stack, mouseX, mouseY, delta);
         x = oX;
         y = oY;
@@ -133,7 +134,7 @@ public class PlayerElement extends AbstractTrustElement {
         float ty = y + height / 2f;
 
         stack.translate(tx, ty, 100);
-        stack.scale(scale, scale, scale);
+        stack.scale(scale, scale, 1f);
 
         animate(delta, (UIHelper.getContext() == this.context && this.context.isVisible()) || this.isMouseOver(mouseX, mouseY) || this.isFocused());
 
@@ -163,8 +164,7 @@ public class PlayerElement extends AbstractTrustElement {
             NameplateCustomization custom = avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.LIST;
             if (custom != null && custom.getText() != null && avatar.trust.get(Trust.NAMEPLATE_EDIT) == 1) {
                 name = NameplateCustomization.applyCustomization(custom.getText());
-                if (custom.getText().contains("${badges}"))
-                    replaceBadges = true;
+                replaceBadges = name.getString().contains("${badges}");
             }
 
             head = !dragged && avatar.renderPortrait(stack, x + 4, y + 4, Math.round(32 * scale), 64, true);
@@ -193,7 +193,7 @@ public class PlayerElement extends AbstractTrustElement {
 
         name = Component.empty().append(name.copy().withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(this.name + "\n" + this.owner)))));
 
-        Component badges = Badges.fetchBadges(avatar);
+        Component badges = Badges.fetchBadges(owner);
         name = replaceBadges ? TextUtils.replaceInText(name, "\\$\\{badges\\}", badges) : name.copy().append(" ").append(badges);
 
         nameLabel.setText(TextUtils.trimToWidthEllipsis(font, name, width - 40, TextUtils.ELLIPSIS));

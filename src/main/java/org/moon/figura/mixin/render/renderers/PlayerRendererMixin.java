@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Mixin(PlayerRenderer.class)
 public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -46,20 +47,14 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
     @Inject(method = "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"), cancellable = true)
     private void renderFiguraLabelIfPresent(AbstractClientPlayer player, Component text, PoseStack stack, MultiBufferSource multiBufferSource, int light, CallbackInfo ci) {
-        //config
+        //return on config or high entity distance
         int config = Config.ENTITY_NAMEPLATE.asInt();
-
-        //get metadata
-        Avatar avatar = AvatarManager.getAvatarForPlayer(player.getUUID());
-        if (avatar == null || config == 0)
-            return;
-
-        //check entity distance
-        if (this.entityRenderDispatcher.distanceToSqr(player) > 4096)
+        if (config == 0 || AvatarManager.panic || this.entityRenderDispatcher.distanceToSqr(player) > 4096)
             return;
 
         //get customizations
-        EntityNameplateCustomization custom = avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.ENTITY;
+        Avatar avatar = AvatarManager.getAvatarForPlayer(player.getUUID());
+        EntityNameplateCustomization custom = avatar == null || avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.ENTITY;
 
         //enabled
         if (custom != null && !custom.visible) {
@@ -68,7 +63,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
         }
 
         //trust check
-        boolean trust = avatar.trust.get(Trust.NAMEPLATE_EDIT) == 1;
+        boolean trust = avatar != null && avatar.trust.get(Trust.NAMEPLATE_EDIT) == 1;
 
         stack.pushPose();
 
@@ -96,21 +91,20 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
 
         if (custom != null && custom.getText() != null && trust) {
             replacement = NameplateCustomization.applyCustomization(custom.getText());
-            if (custom.getText().contains("${badges}"))
-                replaceBadges = true;
+            replaceBadges = replacement.getString().contains("${badges}");
         } else {
             replacement = Component.literal(player.getName().getString());
         }
 
         //badges
-        Component badges = config > 1 ? Badges.fetchBadges(avatar) : Component.empty();
+        Component badges = config > 1 ? Badges.fetchBadges(player.getUUID()) : Component.empty();
         if (replaceBadges) {
             replacement = TextUtils.replaceInText(replacement, "\\$\\{badges\\}", badges);
         } else if (badges.getString().length() > 0) {
             ((MutableComponent) replacement).append(" ").append(badges);
         }
 
-        text = TextUtils.replaceInText(text, "\\b" + player.getName().getString() + "\\b", replacement);
+        text = TextUtils.replaceInText(text, "\\b" + Pattern.quote(player.getName().getString()) + "\\b", replacement);
 
         // * variables * //
         boolean isSneaking = player.isDiscrete();

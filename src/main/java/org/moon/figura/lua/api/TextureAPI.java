@@ -10,7 +10,9 @@ import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.trust.Trust;
 import org.moon.figura.utils.ColorUtils;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +36,9 @@ public class TextureAPI {
             throw new LuaError("Avatar have no active renderer!");
     }
 
-    private FiguraTexture register(String name, NativeImage image) {
+    public FiguraTexture register(String name, NativeImage image, boolean ignoreSize) {
         int max = owner.trust.get(Trust.TEXTURE_SIZE);
-        if (image.getWidth() > max || image.getHeight() > max)
+        if (!ignoreSize && (image.getWidth() > max || image.getHeight() > max))
             throw new LuaError("Texture exceeded max size of " + max + " x " + max + " resolution, got " + image.getWidth() + " x " + image.getHeight());
 
         FiguraTexture oldText = get(name);
@@ -52,29 +54,35 @@ public class TextureAPI {
     }
 
     @LuaWhitelist
-    public FiguraTexture register(@LuaNotNil String name, int width, int height) {
+    public FiguraTexture newTexture(@LuaNotNil String name, int width, int height) {
         NativeImage image;
         try {
             image = new NativeImage(width, height, true);
         } catch (Exception e) {
-            throw new LuaError(e.getMessage());
+            throw (e instanceof LuaError le? le : new LuaError(e.getMessage()));
         }
 
-        FiguraTexture texture = register(name, image);
+        FiguraTexture texture = register(name, image, false);
         texture.fill(0, 0, width, height, ColorUtils.Colors.FRAN_PINK.vec.augmented());
         return texture;
     }
 
     @LuaWhitelist
-    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil String data) {
-        NativeImage image;
+    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil byte[] byteArray){
+        try(ByteArrayInputStream bais = new ByteArrayInputStream(byteArray)) {
+            return register(name, NativeImage.read(null, bais), false);
+        } catch (Exception e){
+            throw (e instanceof LuaError le? le : new LuaError(e.getMessage()));
+        }
+    }
+
+    @LuaWhitelist
+    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil String base64Text) {
         try {
-            image = NativeImage.fromBase64(data);
+            return register(name, NativeImage.fromBase64(base64Text), false);
         } catch (Exception e) {
             throw new LuaError(e.getMessage());
         }
-
-        return register(name, image);
     }
 
     @LuaWhitelist

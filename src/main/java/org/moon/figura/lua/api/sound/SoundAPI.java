@@ -6,6 +6,7 @@ import net.minecraft.client.resources.sounds.Sound;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.ducks.SoundEngineAccessor;
@@ -14,7 +15,6 @@ import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.WorldAPI;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-//noinspection UnresolvedClassReferenceRepair
 import org.moon.figura.mixin.sound.SoundManagerAccessor;
 import org.moon.figura.trust.Trust;
 
@@ -34,7 +34,6 @@ public class SoundAPI {
     }
 
     public static SoundEngineAccessor getSoundEngine() {
-        //noinspection UnresolvedClassReferenceRepair
         return (SoundEngineAccessor) ((SoundManagerAccessor) Minecraft.getInstance().getSoundManager()).getSoundEngine();
     }
 
@@ -65,12 +64,12 @@ public class SoundAPI {
     }
 
     @LuaWhitelist
-    public void addSound(String name, String base64Text){
-        addSound(name, Base64.getDecoder().decode(base64Text));
+    public void newSound(String name, String base64Text){
+        newSound(name, Base64.getDecoder().decode(base64Text));
     }
 
     @LuaWhitelist
-    public void addSound(String name, byte[] byteArray){
+    public void newSound(String name, byte[] byteArray){
         try {
             owner.loadSound(name, byteArray);
         } catch (Exception e) {
@@ -85,18 +84,13 @@ public class SoundAPI {
             return new LuaSound(buffer, id, owner);
 
         try {
-            ResourceLocation res = new ResourceLocation(id);
-            //noinspection UnresolvedClassReferenceRepair
-            WeighedSoundEvents event = ((SoundManagerAccessor) Minecraft.getInstance().getSoundManager()).getSoundEvent(res);
-            if (event == null)
-                throw new LuaError("Could not find sound \"" + id + "\"");
-
-            Sound sound = event.getSound(WorldAPI.getCurrentWorld().random);
-            if (sound == SoundManager.EMPTY_SOUND)
-                return null;
-
-            buffer = getSoundEngine().figura$getBuffer(sound.getPath());
-            return new LuaSound(buffer, id, owner);
+            WeighedSoundEvents events = Minecraft.getInstance().getSoundManager().getSoundEvent(new ResourceLocation(id));
+            if (events != null) {
+                Sound sound = events.getSound(RandomSource.create(WorldAPI.getCurrentWorld().random.nextLong()));
+                if (sound != SoundManager.EMPTY_SOUND)
+                    return new LuaSound(sound, id, owner);
+            }
+            throw new LuaError("Unable to find sound \"" + id + "\"");
         } catch (Exception e) {
             throw new LuaError(e.getMessage());
         }

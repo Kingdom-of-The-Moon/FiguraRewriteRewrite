@@ -1,18 +1,27 @@
 package org.moon.figura.lua.api.world;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Marker;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.avatar.Avatar;
@@ -22,8 +31,8 @@ import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.PlayerAPI;
+import org.moon.figura.lua.api.particle.LuaParticle;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.EntityUtils;
@@ -205,14 +214,97 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static Map<String, LuaTable> playerVars() {
-        HashMap<String, LuaTable> playerList = new HashMap<>();
-        for (Player player : getCurrentWorld().players()) {
-            Avatar avatar = AvatarManager.getAvatarForPlayer(player.getUUID());
-            LuaTable tbl = avatar == null || avatar.luaRuntime == null ? new LuaTable() : avatar.luaRuntime.avatar_meta.storedStuff;
-            playerList.put(player.getName().getString(), new ReadOnlyLuaTable(tbl));
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z){
+        return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec){
+        return raycastBlock(fluid, vec, FiguraVec3.oneUse());
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+        return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+        return raycastBlock(fluid, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, FiguraVec3 axis){
+        return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), axis);
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 start, FiguraVec3 end) {
+        if (true) return null;
+
+        BlockHitResult result = getCurrentWorld().clip(new ClipContext(start.asVec3(), end.asVec3(), ClipContext.Block.OUTLINE, fluid ? ClipContext.Fluid.NONE : ClipContext.Fluid.ANY, new Marker(EntityType.MARKER, getCurrentWorld())));
+
+        if (result == null || result.getType() == HitResult.Type.MISS)
+            return null;
+
+        HashMap<String, Object> map = new HashMap<>();
+        BlockPos pos = result.getBlockPos();
+        map.put("block", getBlockState((double) pos.getX(), (double) pos.getY(), (double) pos.getZ()));
+        map.put("direction", result.getDirection().getName());
+        map.put("pos", FiguraVec3.fromVec3(result.getLocation()));
+
+        return map;
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z){
+        return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(FiguraVec3 vec){
+        return raycastEntity(vec, FiguraVec3.oneUse());
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+        return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+        return raycastEntity(vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, FiguraVec3 axis){
+        return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), axis);
+    }
+
+    @LuaWhitelist
+    public HashMap<String, Object> raycastEntity(FiguraVec3 start, FiguraVec3 end) {
+        if (true) return null;
+
+        EntityHitResult result = ProjectileUtil.getEntityHitResult(new Marker(EntityType.MARKER, getCurrentWorld()), start.asVec3(), end.asVec3(), new AABB(start.asVec3(), end.asVec3()), entity -> true, Double.MAX_VALUE);
+
+        if (result == null)
+            return null;
+
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("entity", EntityAPI.wrap(result.getEntity()));
+        map.put("pos", FiguraVec3.fromVec3(result.getLocation()));
+
+        return map;
+    }
+
+    @LuaWhitelist
+    public static Map<String, LuaTable> avatarVars() {
+        HashMap<String, LuaTable> varList = new HashMap<>();
+        for (Avatar avatar : AvatarManager.getLoadedAvatars()) {
+            LuaTable tbl = avatar.luaRuntime == null ? new LuaTable() : avatar.luaRuntime.avatar_meta.storedStuff;
+            varList.put(avatar.owner.toString(), new ReadOnlyLuaTable(tbl));
         }
-        return playerList;
+        return varList;
     }
 
     @LuaWhitelist

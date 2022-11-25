@@ -14,13 +14,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.math.matrix.FiguraMat3;
+import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.model.ParentType;
 import org.moon.figura.model.VanillaModelData;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.model.rendering.texture.FiguraTextureSet;
-import org.moon.figura.math.matrix.FiguraMat3;
-import org.moon.figura.math.matrix.FiguraMat4;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +52,6 @@ public abstract class AvatarRenderer {
     public PoseStack matrices;
     public MultiBufferSource bufferSource;
     public VanillaModelData vanillaModelData = new VanillaModelData();
-    public boolean allowMatrixUpdate = false;
 
     public PartFilterScheme currentFilterScheme;
     public final HashMap<ParentType, ConcurrentLinkedQueue<Pair<FiguraMat4, FiguraMat3>>> pivotCustomizations = new HashMap<>();
@@ -60,10 +59,12 @@ public abstract class AvatarRenderer {
     public final HashMap<String, FiguraTexture> textures = new HashMap<>();
     public final HashMap<String, FiguraTexture> customTextures = new HashMap<>();
     protected static int shouldRenderPivots;
+    public boolean allowMatrixUpdate = false;
     public boolean allowHiddenTransforms = true;
     public boolean allowRenderTasks = true;
     public boolean allowSkullRendering = true;
     public boolean allowPivotParts = true;
+    public boolean updateLight = false;
 
     public AvatarRenderer(Avatar avatar) {
         this.avatar = avatar;
@@ -92,6 +93,8 @@ public abstract class AvatarRenderer {
 
     public abstract int render();
     public abstract int renderSpecialParts();
+    public abstract void updateMatrices();
+
     protected void clean() {
         root.clean();
         for (FiguraTexture texture : customTextures.values())

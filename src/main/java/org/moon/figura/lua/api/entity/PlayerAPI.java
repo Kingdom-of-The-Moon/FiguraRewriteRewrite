@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.level.GameType;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -15,11 +16,27 @@ import org.moon.figura.lua.docs.LuaTypeDoc;
         value = "player"
 )
 public class PlayerAPI extends LivingEntityAPI<Player> {
+
+    private PlayerInfo playerInfo;
+
     public PlayerAPI(Player entity) {
         super(entity);
     }
 
-    private String cachedModelType;
+    private boolean checkPlayerInfo() {
+        if (playerInfo != null)
+            return true;
+
+        if (Minecraft.getInstance().player == null)
+            return false;
+
+        PlayerInfo info = Minecraft.getInstance().player.connection.getPlayerInfo(entity.getUUID());
+        if (info == null)
+            return false;
+
+        playerInfo = info;
+        return true;
+    }
 
     @LuaWhitelist
     public int getFood() {
@@ -54,30 +71,29 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     @LuaWhitelist
     public String getModelType() {
         checkEntity();
-        if (cachedModelType == null) {
-            if (Minecraft.getInstance().player == null)
-                return null;
-
-            PlayerInfo info = Minecraft.getInstance().player.connection.getPlayerInfo(entity.getUUID());
-            if (info == null)
-                return null;
-
-            cachedModelType = info.getModelName().toUpperCase();
-        }
-        return cachedModelType;
+        return checkPlayerInfo() ? playerInfo.getModelName().toUpperCase() : null;
     }
 
     @LuaWhitelist
     public String getGamemode() {
         checkEntity();
-        if (Minecraft.getInstance().player == null)
+        if (!checkPlayerInfo())
             return null;
 
-        PlayerInfo info = Minecraft.getInstance().player.connection.getPlayerInfo(entity.getUUID());
-        if (info == null)
-            return null;
+        GameType gamemode = playerInfo.getGameMode();
+        return gamemode == null ? null : gamemode.getName().toUpperCase();
+    }
 
-        return info.getGameMode() == null ? null : info.getGameMode().getName().toUpperCase();
+    @LuaWhitelist
+    public boolean hasCape() {
+        checkEntity();
+        return checkPlayerInfo() && playerInfo.isCapeLoaded();
+    }
+
+    @LuaWhitelist
+    public boolean hasSkin() {
+        checkEntity();
+        return checkPlayerInfo() && playerInfo.isSkinLoaded();
     }
 
     @LuaWhitelist

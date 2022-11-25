@@ -12,7 +12,7 @@ import java.util.ArrayList;
 @LuaWhitelist
 @LuaTypeDoc(
         name = "KeybindAPI",
-        value = "keybind_api"
+        value = "keybinds"
 )
 public class KeybindAPI {
 
@@ -24,9 +24,7 @@ public class KeybindAPI {
     }
 
     @LuaWhitelist
-    public FiguraKeybind create(@LuaNotNil String name, @LuaNotNil String key, boolean gui) {
-        this.keyBindings.removeIf(binding -> binding.getName().equals(name));
-
+    public FiguraKeybind newKeybind(@LuaNotNil String name, @LuaNotNil String key, boolean gui) {
         FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key));
         binding.gui = gui;
 
