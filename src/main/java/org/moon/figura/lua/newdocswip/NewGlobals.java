@@ -71,7 +71,7 @@ abstract class NewGlobals {
     public EventsAPI events;
 
     @LuaWhitelist
-    public KeybindAPI keybind;
+    public KeybindAPI keybinds;
 
     @LuaWhitelist
     public VectorsAPI vectors;

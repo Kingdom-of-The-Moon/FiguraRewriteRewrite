@@ -7,15 +7,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.network.chat.ClickEvent;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.network.chat.*;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.item.UseAnim;
+import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.FiguraMod;
+import org.moon.figura.animation.Animation;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.lua.FiguraLuaRuntime;
@@ -26,7 +29,11 @@ import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
+import org.moon.figura.model.rendering.texture.EntityRenderMode;
+import org.moon.figura.model.rendering.texture.FiguraTextureSet;
+import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.FiguraText;
+import org.moon.figura.utils.TextUtils;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -99,12 +106,25 @@ public class NewDocsManager {
         for (Map.Entry<Class<?>, String> entry : NAME_MAP.entrySet())
             runtime.typeManager.setTypeName(entry.getKey(), entry.getValue());
         runtime.init(null);
+
         BaseDoc types = new BaseDoc("types", root);
         for (Class<?> clas : FiguraAPIManager.WHITELISTED_CLASSES)
             if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class))
                 new ClassDoc(clas, types);
         for(ClassDoc doc : classDocMap.values())
             doc.initFieldsAndMethods();
+
+        BaseDoc enums = new BaseDoc("enums", root);
+        for (Class<?> enumClass : new Class[]{
+                RenderTypes.class,
+                FiguraTextureSet.OverrideType.class,
+                Pose.class,
+                ItemTransforms.TransformType.class,
+                Animation.PlayState.class,
+                Animation.LoopMode.class,
+                UseAnim.class,
+                EntityRenderMode.class
+        }) new EnumDoc(enumClass, enums);
 
         ClassDoc globals = new ClassDoc(NewGlobals.class, root);
         globals.initFieldsAndMethods();
@@ -118,32 +138,33 @@ public class NewDocsManager {
 
     public static void updateDescriptions() {
         for(Doc doc : allDocs){
-            if (!(doc instanceof MethodDoc || doc instanceof FieldDoc)) {
-                continue;
-            }
-            Doc parent = doc.parent;
-            String type = doc instanceof MethodDoc? "method" : "field";
-            String nameKey = Doc.toSnakeCase(doc.name);
-            String descriptionKey;
-            ArrayList<String> list = new ArrayList<>();
-            if(parent instanceof ClassDoc){
-                do {
-                    descriptionKey = parent.descriptionKey + "." + nameKey;
-                    list.add(descriptionKey);
-                    parent = ((ClassDoc)parent).superClassDoc;
-                } while (parent != null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey));
-                if(parent == null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
-                    FiguraMod.LOGGER.warn("No doc string found for {}'s {} {}, checked: {}", doc.parent.name, type, doc.name, list);
+            if (doc instanceof MethodDoc || doc instanceof FieldDoc) {
+                Doc parent = doc.parent;
+                String type = doc instanceof MethodDoc ? "method" : "field";
+                String nameKey = Doc.toSnakeCase(doc.name);
+                String descriptionKey;
+                ArrayList<String> list = new ArrayList<>();
+                if (parent instanceof ClassDoc) {
+                    do {
+                        descriptionKey = parent.descriptionKey + "." + nameKey;
+                        list.add(descriptionKey);
+                        parent = ((ClassDoc) parent).superClassDoc;
+                    } while (parent != null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey));
+                    if (parent == null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
+                        FiguraMod.LOGGER.warn("No doc string found for {}'s {} {}, checked: {}", doc.parent.name, type, doc.name, list);
+                    }
+                } else if (parent == root) {
+                    descriptionKey = "globals." + nameKey;
+                    if (FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
+                        FiguraMod.LOGGER.warn("No doc string found for global {} {}, checked: {}", type, doc.name, "figura.docs." + descriptionKey);
+                    }
+                } else {
+                    descriptionKey = nameKey;
                 }
-            } else if (parent == root) {
-                descriptionKey = "globals." + nameKey;
-                if(FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)){
-                    FiguraMod.LOGGER.warn("No doc string found for global {} {}, checked: {}", type, doc.name, "figura.docs." + descriptionKey);
-                }
-            } else {
-                descriptionKey = nameKey;
+                doc.descriptionKey = descriptionKey;
+            } else if(doc instanceof ListDoc listDoc){
+                listDoc.updateMaxWidth();
             }
-            doc.descriptionKey = descriptionKey;
 
         }
     }
@@ -152,7 +173,7 @@ public class NewDocsManager {
         return root.createCommand();
     }
 
-    public static MutableComponent getTypeNameText(Class<?> clas){
+    public static @NotNull MutableComponent getTypeNameText(Class<?> clas){
         MutableComponent type = Component.literal(runtime.typeManager.getTypeName(clas)).withStyle(YELLOW);
         if(classDocMap.containsKey(clas)){
             type = type.withStyle(UNDERLINE).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, classDocMap.get(clas).getCommandPath())));
@@ -218,19 +239,19 @@ public class NewDocsManager {
                     }
                 }
                 secondBullet = FiguraText.of("docs.text.subtypes").append(": ").append(secondBullet.getString().isBlank() ? FiguraText.of("docs.no_subtypes") : secondBullet);
-            } else if(this instanceof FieldDoc fieldDoc && fieldDoc.field.getGenericType() instanceof ParameterizedType parameterizedType){
+            } else
                 secondBullet = name.copy();
+            if(this instanceof FieldDoc fieldDoc && fieldDoc.field.getGenericType() instanceof ParameterizedType parameterizedType) {
                 Iterator<Type> iter = Arrays.stream(parameterizedType.getActualTypeArguments()).iterator();
-                if(iter.hasNext()){
+                if (iter.hasNext()) {
                     secondBullet.append("\n\t");
                     secondBullet.append(getBullet(KEY).append(" ").append(getTypeNameText((Class<?>) iter.next())));
                 }
-                if(iter.hasNext()){
+                if (iter.hasNext()) {
                     secondBullet.append("\n\t");
                     secondBullet.append(getBullet(VALUE).append(" ").append(getTypeNameText((Class<?>) iter.next())));
                 }
-            } else
-                secondBullet = name.copy();
+            }
             return FiguraText.of(
                     BODY_KEY,
                     HEADER,
@@ -344,16 +365,14 @@ public class NewDocsManager {
     }
 
     static class FieldDoc extends Doc {
-        private final Doc type;
         private final Field field;
 
         FieldDoc(Field field, Doc parent) {
             allDocs.add(this);
             this.field = field;
             this.parent = parent;
-            var fda = field.getDeclaredAnnotation(LuaTypeDoc.class);
-            this.name = fda == null || fda.name().isEmpty()? field.getName() : fda.name();
-            this.type = classDocMap.get(field.getType());
+            var fda = field.getDeclaredAnnotation(LuaFieldDoc.class);
+            this.name = fda == null || fda.value().isEmpty()? field.getName() : fda.value();
             String nameKey = toSnakeCase(name);
             ArrayList<String> list = new ArrayList<>();
             children = List.of();
@@ -428,5 +447,95 @@ public class NewDocsManager {
         protected String getType() {
             return "docs.text.function";
         }
+    }
+
+    /*
+    * - Enums
+    * RenderTypes
+    * FiguraTextureSet.OverrideType
+    * Pose
+    * ItemTransforms.TransformType
+    * Animation.PlayState
+    * Animation.LoopMode
+    * UseAnim
+    * EntityRenderMode
+    *
+    * - CustomEnum
+    * ParentType
+    * PlayerModelPart
+    * ColorUtils.Colors
+    *
+    * - SpecialTypes
+    * GameRendererAccessor.getEffects (GameRendererAccessor.getEffects() ResourceLocation[])
+    * FiguraListDocs.KEYBINDS
+    * KEY_IDS  (KeyMappingAccessor.getAll().keySet() Set<String>)
+    * */
+
+    static abstract class ListDoc extends Doc {
+        private int maxWidth;
+
+        abstract public List<MutableComponent> getList();
+
+        @Override
+        protected MutableComponent getPrintText() {
+            MutableComponent name = getName();
+            MutableComponent firstBullet = FiguraText.of(getType()).append(" ").append(name.copy());
+            MutableComponent secondBullet = Component.empty();
+            for(FormattedText line : getPaddedList()) {
+                secondBullet.append(getBullet(TextUtils.formattedTextToText(line))).append("\n\t");
+            }
+            return FiguraText.of(
+                    BODY_KEY,
+                    HEADER,
+                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style),
+                    secondBullet,
+                    getSyntax(),
+                    DESC,
+                    FiguraText.of("docs." + descriptionKey)
+            ).withStyle(MAYA_BLUE.style);
+        }
+
+        @Override
+        protected String getType() {
+            return "docs.text.type";
+        }
+
+        public void updateMaxWidth(){
+            maxWidth = 0;
+            for(MutableComponent text : getList()){
+                maxWidth = Math.max(Minecraft.getInstance().font.width(text), maxWidth);
+            }
+        }
+
+        private List<FormattedText> getPaddedList(){
+            return getList().stream().map(enu -> Minecraft.getInstance().font.substrByWidth(enu.append(" ".repeat(maxWidth)), maxWidth)).toList();
+        }
+    }
+
+    static class EnumDoc<T extends Enum<T>> extends ListDoc {
+        private final Class<T> enumClass;
+
+        private final List<Enum<T>> values;
+
+        public EnumDoc(@NotNull Class<T> enumClass, Doc parent){
+            allDocs.add(this);
+            this.enumClass = enumClass;
+            this.parent = parent;
+            if (parent != null) parent.addChild(this);
+            LuaTypeDoc fda = enumClass.getDeclaredAnnotation(LuaTypeDoc.class);
+            this.name = fda == null || fda.name().isEmpty()? enumClass.getSimpleName() : fda.name();
+            values = List.of(enumClass.getEnumConstants());
+            descriptionKey = "enum" + toSnakeCase(name);
+        }
+
+        protected MutableComponent getTextForElement(@NotNull Enum<T> elem){
+            return Component.literal(elem.name());
+        }
+
+        @Override
+        public List<MutableComponent> getList() {
+            return values.stream().map(this::getTextForElement).toList();
+        }
+
     }
 }
