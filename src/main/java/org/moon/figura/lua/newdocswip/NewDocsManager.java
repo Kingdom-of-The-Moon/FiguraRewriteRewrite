@@ -10,7 +10,9 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.network.chat.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.UseAnim;
 import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaFunction;
@@ -24,14 +26,19 @@ import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.lua.FiguraLuaRuntime;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.MethodWrapper;
+import org.moon.figura.lua.docs.FiguraListDocs;
 import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
+import org.moon.figura.mixin.input.KeyMappingAccessor;
+import org.moon.figura.mixin.render.GameRendererAccessor;
+import org.moon.figura.model.ParentType;
 import org.moon.figura.model.rendering.texture.EntityRenderMode;
 import org.moon.figura.model.rendering.texture.FiguraTextureSet;
 import org.moon.figura.model.rendering.texture.RenderTypes;
+import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.TextUtils;
 
@@ -118,13 +125,47 @@ public class NewDocsManager {
         for (Class<?> enumClass : new Class[]{
                 RenderTypes.class,
                 FiguraTextureSet.OverrideType.class,
-                Pose.class,
-                ItemTransforms.TransformType.class,
                 Animation.PlayState.class,
                 Animation.LoopMode.class,
-                UseAnim.class,
                 EntityRenderMode.class
         }) new EnumDoc(enumClass, enums);
+        new EnumDoc<>(Pose.class, enums, "EntityPose", null);
+        new EnumDoc<>(UseAnim.class, enums, "UseAction", null);
+        new EnumDoc<>(ItemTransforms.TransformType.class, enums, "ItemRenderPositions", "item_render_type");
+        new EnumDoc<>(ParentType.class, enums){ protected MutableComponent getTextForElement(@NotNull Enum<ParentType> elem){
+            MutableComponent comp = Component.empty().append(Component.literal(elem.name()).withStyle(WHITE));
+            for (String alias : ((ParentType) elem).aliases) {
+                comp.append(" | ").append(Component.literal(alias).withStyle(GRAY));
+            }
+            return comp;
+        }};
+        new EnumDoc<>(ColorUtils.Colors.class, enums){ protected MutableComponent getTextForElement(@NotNull Enum<ColorUtils.Colors> elem){
+            MutableComponent comp = Component.empty().append(Component.literal(elem.name()).withStyle(WHITE));
+            for (String alias : ((ColorUtils.Colors) elem).alias)
+                comp.append(" | ").append(Component.literal(alias).withStyle(GRAY));
+            return comp;
+        }};
+        new EnumDoc<>(PlayerModelPart.class, enums){ protected MutableComponent getTextForElement(@NotNull Enum<PlayerModelPart> elem){
+            return Component.empty().append(Component.literal(elem.name()).withStyle(WHITE));
+        }};
+        new ListDoc(enums, "KeyIDs"){public List<MutableComponent> getList() {
+            return KeyMappingAccessor.getAll().keySet().stream().map(Component::literal).toList();
+        }};
+        new ListDoc(enums, "Keybind"){public List<MutableComponent> getList() {
+            return FiguraListDocs.KEYBINDS.stream().map(Component::literal).toList();
+        }};
+        new ListDoc(enums, "PostEffects"){
+            Set<String> effects = new LinkedHashSet<>() {{
+                for (ResourceLocation effect : GameRendererAccessor.getEffects()) {
+                    String[] split = effect.getPath().split("/");
+                    String name = split[split.length - 1];
+                    add(name.split("\\.")[0]);
+                }
+            }};
+            public List<MutableComponent> getList() {
+                return effects.stream().map(Component::literal).toList();
+            }
+        };
 
         ClassDoc globals = new ClassDoc(NewGlobals.class, root);
         globals.initFieldsAndMethods();
@@ -195,6 +236,14 @@ public class NewDocsManager {
         public boolean executes = true;
         protected String descriptionKey;
         protected LiteralCommandNode<FabricClientCommandSource> command;
+
+        public Doc(Doc parent, String name){
+            this.name = name;
+            allDocs.add(this);
+            this.parent = parent;
+            if(parent != null)
+                parent.addChild(this);
+        }
 
         public LiteralCommandNode<FabricClientCommandSource> createCommand() {
             var cmd = literal(name);
@@ -281,7 +330,7 @@ public class NewDocsManager {
             boolean b = name.toLowerCase().equals(name) || name.toUpperCase().equals(name);
             if(!(b) && name.indexOf('_') != -1) return null;
             else if (b) return name.toLowerCase();
-            else {
+            else if (!name.isBlank()){
                 Matcher matcher;
                 for(Pattern step : steps){
                     matcher = step.matcher(name);
@@ -290,8 +339,11 @@ public class NewDocsManager {
                         matcher = step.matcher(name);
                     }
                 }
+                if(Character.isUpperCase(name.charAt(0)))
+                    name = name.substring(0, 1).toLowerCase() + name.substring(1);
                 return name;
-            }
+            } else
+                return name;
         }
 
         protected String getCommandPath() {
@@ -310,10 +362,8 @@ public class NewDocsManager {
         }
 
         BaseDoc(String name, Doc parent) {
-            allDocs.add(this);
+            super(parent, name);
             this.name = name;
-            this.parent = parent;
-            if (parent != null) parent.addChild(this);
         }
     }
 
@@ -322,13 +372,12 @@ public class NewDocsManager {
         public ClassDoc superClassDoc;
 
         public ClassDoc(Class<?> clas, Doc parent) {
-            allDocs.add(this);
+            super(parent, clas.getAnnotation(LuaTypeDoc.class).value());
             this.clas = clas;
             classDocMap.put(clas, this);
-            this.name = clas.getAnnotation(LuaTypeDoc.class).name();
             this.descriptionKey = clas.getAnnotation(LuaTypeDoc.class).value();
             Class<?> t = clas.getSuperclass();
-            if ((t).isAnnotationPresent(LuaTypeDoc.class))
+            if (t.isAnnotationPresent(LuaTypeDoc.class))
                 if (classDocMap.containsKey(t))
                     superClassDoc = classDocMap.get(t);
                 else {
@@ -336,8 +385,6 @@ public class NewDocsManager {
                     classDocMap.put(t, doc);
                     superClassDoc = doc;
                 }
-            this.parent = parent;
-            parent.addChild(this);
         }
 
         void initFieldsAndMethods() {
@@ -367,14 +414,17 @@ public class NewDocsManager {
     static class FieldDoc extends Doc {
         private final Field field;
 
-        FieldDoc(Field field, Doc parent) {
-            allDocs.add(this);
+        FieldDoc(Field field, Doc parent){
+            this(field, parent, field.getDeclaredAnnotation(LuaFieldDoc.class));
+        }
+
+        private FieldDoc(Field field, Doc parent, LuaFieldDoc ass){
+            this(field, parent, ass == null || ass.value().isBlank()? field.getName() : ass.value());
+        }
+
+        private FieldDoc(Field field, Doc parent, String name) {
+            super(parent, name);
             this.field = field;
-            this.parent = parent;
-            var fda = field.getDeclaredAnnotation(LuaFieldDoc.class);
-            this.name = fda == null || fda.value().isEmpty()? field.getName() : fda.value();
-            String nameKey = toSnakeCase(name);
-            ArrayList<String> list = new ArrayList<>();
             children = List.of();
         }
 
@@ -396,13 +446,13 @@ public class NewDocsManager {
     static class MethodDoc extends Doc {
         private final LuaFunction wrapper;
 
-        public MethodDoc(LuaFunction wrapper, Doc parent) {
-            allDocs.add(this);
+        MethodDoc(LuaFunction wrapper, Doc parent){
+            this(wrapper, parent, wrapper.name());
+        }
+
+        private MethodDoc(LuaFunction wrapper, Doc parent, String name) {
+            super(parent, name);
             this.wrapper = wrapper;
-            this.parent = parent;
-            this.name = wrapper.name();
-            String nameKey = toSnakeCase(name);
-            ArrayList<String> list = new ArrayList<>();
             children = List.of();
         }
 
@@ -465,6 +515,8 @@ public class NewDocsManager {
     * PlayerModelPart
     * ColorUtils.Colors
     *
+[23:04:50] [Render thread/INFO] (Minecraft) [CHAT] \n•*+•* Figura Docs *•+*•\n\n• Type TransformType:\n  • NONE                           \n  • THIRD_PERSON_LEFT_HAND \n  • THIRD_PERSON_RIGHT_HAND\n  • FIRST_PERSON_LEFT_HAND \n  • FIRST_PERSON_RIGHT_HAND\n  • HEAD                           \n  • GUI                             \n  • GROUND                        \n  • FIXED                          \n  \n\n• Description:\n  • figura.docs.enum.transform_types
+
     * - SpecialTypes
     * GameRendererAccessor.getEffects (GameRendererAccessor.getEffects() ResourceLocation[])
     * FiguraListDocs.KEYBINDS
@@ -473,6 +525,10 @@ public class NewDocsManager {
 
     static abstract class ListDoc extends Doc {
         private int maxWidth;
+
+        public ListDoc(Doc parent, String name) {
+            super(parent, name);
+        }
 
         abstract public List<MutableComponent> getList();
 
@@ -497,7 +553,7 @@ public class NewDocsManager {
 
         @Override
         protected String getType() {
-            return "docs.text.type";
+            return "docs.text.enum";
         }
 
         public void updateMaxWidth(){
@@ -513,23 +569,31 @@ public class NewDocsManager {
     }
 
     static class EnumDoc<T extends Enum<T>> extends ListDoc {
-        private final Class<T> enumClass;
 
         private final List<Enum<T>> values;
 
         public EnumDoc(@NotNull Class<T> enumClass, Doc parent){
-            allDocs.add(this);
-            this.enumClass = enumClass;
-            this.parent = parent;
-            if (parent != null) parent.addChild(this);
-            LuaTypeDoc fda = enumClass.getDeclaredAnnotation(LuaTypeDoc.class);
-            this.name = fda == null || fda.name().isEmpty()? enumClass.getSimpleName() : fda.name();
+            this(enumClass, parent, enumClass.getDeclaredAnnotation(LuaTypeDoc.class));
+        }
+
+        private EnumDoc(@NotNull Class<T> enumClass, Doc parent, LuaTypeDoc annotation){
+            this(
+                enumClass, parent,
+                annotation == null || annotation.name().isBlank() ? enumClass.getSimpleName() : annotation.name(),
+                annotation == null || annotation.value().isBlank() ? null : annotation.value()
+            );
+        }
+
+        public EnumDoc(@NotNull Class<T> enumClass, Doc parent, String name, String value){
+            super(parent, name);
+            this.descriptionKey = "enum." + (value == null ? toSnakeCase(name) : value);
+            if(!descriptionKey.endsWith("s"))
+                descriptionKey = descriptionKey + "s";
             values = List.of(enumClass.getEnumConstants());
-            descriptionKey = "enum" + toSnakeCase(name);
         }
 
         protected MutableComponent getTextForElement(@NotNull Enum<T> elem){
-            return Component.literal(elem.name());
+            return Component.literal(elem.name()).withStyle(WHITE);
         }
 
         @Override
