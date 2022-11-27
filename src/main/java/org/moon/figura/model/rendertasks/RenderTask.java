@@ -1,11 +1,14 @@
 package org.moon.figura.model.rendertasks;
 
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import org.moon.figura.lua.LuaNotNil;
-import org.moon.figura.model.PartCustomization;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
@@ -16,7 +19,8 @@ import org.moon.figura.utils.LuaUtils;
 public abstract class RenderTask {
 
     protected boolean enabled = true;
-    protected boolean emissive = false;
+    protected Integer light = null;
+    protected Integer overlay = null;
     protected final FiguraVec3 pos = FiguraVec3.of();
     protected final FiguraVec3 rot = FiguraVec3.of();
     protected final FiguraVec3 scale = FiguraVec3.of(1, 1, 1);
@@ -45,13 +49,34 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public boolean isEmissive() {
-        return this.emissive;
+    public FiguraVec2 getLight() {
+        return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
     }
 
     @LuaWhitelist
-    public RenderTask emissive(boolean emissive) {
-        this.emissive = emissive;
+    public RenderTask light(FiguraVec2 light){
+        return light((int) light.x, (int) light.y);
+    }
+
+    @LuaWhitelist
+    public RenderTask light(int blockLiht, int skyLight) {
+        this.light = LightTexture.pack(blockLiht, skyLight);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraVec2 getOverlay() {
+        return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
+    }
+
+    @LuaWhitelist
+    public RenderTask overlay(FiguraVec2 overlay){
+        return overlay((int) overlay.x, (int) overlay.y);
+    }
+
+    @LuaWhitelist
+    public RenderTask overlay(int whiteOverlay, int hurtOverlay) {
+        this.light = OverlayTexture.pack(whiteOverlay, hurtOverlay);
         return this;
     }
 

@@ -24,6 +24,7 @@ import org.moon.figura.commands.FiguraCommands;
 import org.moon.figura.config.Config;
 import org.moon.figura.config.ConfigManager;
 import org.moon.figura.gui.ActionWheel;
+import org.moon.figura.gui.Emojis;
 import org.moon.figura.gui.PaperDoll;
 import org.moon.figura.gui.PopupMenu;
 import org.moon.figura.lua.FiguraAPIManager;
@@ -33,7 +34,7 @@ import org.moon.figura.lua.newdocswip.NewDocsManager;
 import org.moon.figura.mixin.SkullBlockEntityAccessor;
 import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.ColorUtils;
- import org.moon.figura.utils.FiguraResourceListener;
+import org.moon.figura.utils.FiguraResourceListener;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.Version;
 import org.slf4j.Logger;
@@ -76,8 +77,7 @@ public class FiguraMod implements ClientModInitializer {
         WorldRenderEvents.END.register(levelRenderer -> AvatarManager.afterWorldRender(levelRenderer.tickDelta()));
         WorldRenderEvents.AFTER_ENTITIES.register(FiguraMod::renderFirstPersonWorldParts);
         HudRenderCallback.EVENT.register(FiguraMod::hudRender);
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
-        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new FiguraResourceListener("docs", manger -> NewDocsManager.updateDescriptions()));
+        registerResourceListener(ResourceManagerHelper.get(PackType.CLIENT_RESOURCES));
     }
 
     private static void tick(Minecraft client) {
@@ -104,6 +104,12 @@ public class FiguraMod implements ClientModInitializer {
         PaperDoll.render(stack);
         ActionWheel.render(stack);
         PopupMenu.render(stack);
+    }
+
+    private static void registerResourceListener(ResourceManagerHelper managerHelper) {
+        managerHelper.registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
+        managerHelper.registerReloadListener(Emojis.RESOURCE_LISTENER);
+        managerHelper.registerReloadListener(NewDocsManager.RELOAD_LISTENER);
     }
 
     // -- Helper Functions -- //

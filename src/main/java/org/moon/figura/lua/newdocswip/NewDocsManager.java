@@ -39,6 +39,7 @@ import org.moon.figura.model.rendering.texture.EntityRenderMode;
 import org.moon.figura.model.rendering.texture.FiguraTextureSet;
 import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.ColorUtils;
+import org.moon.figura.utils.FiguraResourceListener;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.TextUtils;
 
@@ -55,7 +56,8 @@ import static org.moon.figura.utils.ColorUtils.Colors.*;
 
 public class NewDocsManager {
 
-    //class name map
+	public static final FiguraResourceListener RELOAD_LISTENER = new FiguraResourceListener("docs", manger -> NewDocsManager.updateDescriptions());
+	//class name map
     private static final Map<Class<?>, String> NAME_MAP = new HashMap<>() {{
         //Built in type names, even for things that don't have docs
         put(Double.class, "Number");

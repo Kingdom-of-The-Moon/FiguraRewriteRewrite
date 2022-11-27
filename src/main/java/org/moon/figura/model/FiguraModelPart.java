@@ -2,6 +2,7 @@ package org.moon.figura.model;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -582,6 +583,27 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     public FiguraVec2 getLight() {
         Integer light = this.customization.light;
         return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
+    }
+
+    @LuaWhitelist
+    public void setOverlay(){
+        this.customization.overlay = null;
+    }
+
+    @LuaWhitelist
+    public void setOverlay(FiguraVec2 overlay){
+        setOverlay((int) overlay.x, (int) overlay.y);
+    }
+
+    @LuaWhitelist
+    public void setOverlay(int whiteOverlay, int hurtOverlay) {
+        this.customization.overlay = OverlayTexture.pack(whiteOverlay, hurtOverlay);
+    }
+
+    @LuaWhitelist
+    public FiguraVec2 getOverlay() {
+        Integer overlay = this.customization.overlay;
+        return overlay == null ? null : FiguraVec2.of(overlay & 0xFFFF, overlay >> 16);
     }
 
     @LuaWhitelist
