@@ -124,13 +124,11 @@ public class NewDocsManager {
             doc.initFieldsAndMethods();
 
         BaseDoc enums = new BaseDoc("enums", root);
-        for (Class<?> enumClass : new Class[]{
-                RenderTypes.class,
-                FiguraTextureSet.OverrideType.class,
-                Animation.PlayState.class,
-                Animation.LoopMode.class,
-                EntityRenderMode.class
-        }) new EnumDoc(enumClass, enums);
+        new EnumDoc<>(RenderTypes.class, enums);
+        new EnumDoc<>(FiguraTextureSet.OverrideType.class, enums);
+        new EnumDoc<>(Animation.PlayState.class, enums);
+        new EnumDoc<>(Animation.LoopMode.class, enums);
+        new EnumDoc<>(EntityRenderMode.class, enums);
         new EnumDoc<>(Pose.class, enums, "EntityPose", null);
         new EnumDoc<>(UseAnim.class, enums, "UseAction", null);
         new EnumDoc<>(ItemTransforms.TransformType.class, enums, "ItemRenderPositions", "item_render_type");
@@ -150,14 +148,14 @@ public class NewDocsManager {
         new EnumDoc<>(PlayerModelPart.class, enums){ protected MutableComponent getTextForElement(@NotNull Enum<PlayerModelPart> elem){
             return Component.empty().append(Component.literal(elem.name()).withStyle(WHITE));
         }};
-        new ListDoc(enums, "KeyIDs"){public List<MutableComponent> getList() {
+        new ListDoc(enums, "KeyIDs", null){ public List<MutableComponent> getList() {
             return KeyMappingAccessor.getAll().keySet().stream().map(Component::literal).toList();
         }};
-        new ListDoc(enums, "Keybind"){public List<MutableComponent> getList() {
+        new ListDoc(enums, "Keybind", null){ public List<MutableComponent> getList() {
             return FiguraListDocs.KEYBINDS.stream().map(Component::literal).toList();
         }};
-        new ListDoc(enums, "PostEffects"){
-            Set<String> effects = new LinkedHashSet<>() {{
+        new ListDoc(enums, "PostEffects", null){
+            final Set<String> effects = new LinkedHashSet<>() {{
                 for (ResourceLocation effect : GameRendererAccessor.getEffects()) {
                     String[] split = effect.getPath().split("/");
                     String name = split[split.length - 1];
@@ -501,35 +499,14 @@ public class NewDocsManager {
         }
     }
 
-    /*
-    * - Enums
-    * RenderTypes
-    * FiguraTextureSet.OverrideType
-    * Pose
-    * ItemTransforms.TransformType
-    * Animation.PlayState
-    * Animation.LoopMode
-    * UseAnim
-    * EntityRenderMode
-    *
-    * - CustomEnum
-    * ParentType
-    * PlayerModelPart
-    * ColorUtils.Colors
-    *
-[23:04:50] [Render thread/INFO] (Minecraft) [CHAT] \n•*+•* Figura Docs *•+*•\n\n• Type TransformType:\n  • NONE                           \n  • THIRD_PERSON_LEFT_HAND \n  • THIRD_PERSON_RIGHT_HAND\n  • FIRST_PERSON_LEFT_HAND \n  • FIRST_PERSON_RIGHT_HAND\n  • HEAD                           \n  • GUI                             \n  • GROUND                        \n  • FIXED                          \n  \n\n• Description:\n  • figura.docs.enum.transform_types
-
-    * - SpecialTypes
-    * GameRendererAccessor.getEffects (GameRendererAccessor.getEffects() ResourceLocation[])
-    * FiguraListDocs.KEYBINDS
-    * KEY_IDS  (KeyMappingAccessor.getAll().keySet() Set<String>)
-    * */
-
     static abstract class ListDoc extends Doc {
         private int maxWidth;
 
-        public ListDoc(Doc parent, String name) {
+        public ListDoc(Doc parent, String name, String value) {
             super(parent, name);
+            this.descriptionKey = "enum." + (value == null ? toSnakeCase(name) : value);
+            if(!descriptionKey.endsWith("s"))
+                descriptionKey = descriptionKey + "s";
         }
 
         abstract public List<MutableComponent> getList();
@@ -587,10 +564,7 @@ public class NewDocsManager {
         }
 
         public EnumDoc(@NotNull Class<T> enumClass, Doc parent, String name, String value){
-            super(parent, name);
-            this.descriptionKey = "enum." + (value == null ? toSnakeCase(name) : value);
-            if(!descriptionKey.endsWith("s"))
-                descriptionKey = descriptionKey + "s";
+            super(parent, name, value);
             values = List.of(enumClass.getEnumConstants());
         }
 
