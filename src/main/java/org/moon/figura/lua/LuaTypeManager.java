@@ -5,8 +5,6 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
-import javax.script.ScriptEngineManager;
-import javax.script.SimpleBindings;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Function;
@@ -136,8 +134,8 @@ public class LuaTypeManager {
         });
     }
 
-    public String setTypeName(Class<?> clazz, String name){
-        return namesCache.computeIfAbsent(clazz, unnamed -> name);
+    public void setTypeName(Class<?> clazz, String name){
+        namesCache.computeIfAbsent(clazz, unnamed -> name);
     }
 
     private LuaValue wrap(Object instance) {

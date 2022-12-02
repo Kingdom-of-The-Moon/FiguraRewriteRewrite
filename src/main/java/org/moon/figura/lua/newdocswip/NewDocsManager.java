@@ -101,14 +101,18 @@ public class NewDocsManager {
     private static final List<Doc> allDocs                   = new ArrayList<>();
     private static final Map<Class<?>, ClassDoc> classDocMap = new HashMap<>();
 
-    private static BaseDoc root;
+    private static final BaseDoc root = new BaseDoc("docs_new");
+    public static final BaseDoc extensions = new BaseDoc("extensions", root);
 
     private static FiguraLuaRuntime runtime;
 
     public static void init() {
+        root.children.clear();
+        root.addChild(extensions);
         allDocs.clear();
+        allDocs.add(root);
+        allDocs.add(extensions);
         classDocMap.clear();
-        root = new BaseDoc("docs_new");
         runtime = new FiguraLuaRuntime(new Avatar(UUID.nameUUIDFromBytes(new byte[]{0, 0, 0, 0})), new HashMap<>());
         runtime.typeManager.generateMetatableFor(NewGlobals.class);
         runtime.typeManager.generateMetatableFor(NewMathDocs.class);
@@ -234,8 +238,8 @@ public class NewDocsManager {
         public String name;
         public List<Doc> children = new ArrayList<>();
         public boolean executes = true;
-        protected String descriptionKey;
-        protected LiteralCommandNode<FabricClientCommandSource> command;
+        public String descriptionKey;
+        public LiteralCommandNode<FabricClientCommandSource> command;
 
         public Doc(Doc parent, String name){
             this.name = name;
@@ -361,7 +365,7 @@ public class NewDocsManager {
             this(name, null);
         }
 
-        BaseDoc(String name, Doc parent) {
+        public BaseDoc(String name, Doc parent) {
             super(parent, name);
             this.name = name;
         }
@@ -414,7 +418,7 @@ public class NewDocsManager {
     static class FieldDoc extends Doc {
         private final Field field;
 
-        FieldDoc(Field field, Doc parent){
+        public FieldDoc(Field field, Doc parent){
             this(field, parent, field.getDeclaredAnnotation(LuaFieldDoc.class));
         }
 
@@ -446,7 +450,7 @@ public class NewDocsManager {
     static class MethodDoc extends Doc {
         private final LuaFunction wrapper;
 
-        MethodDoc(LuaFunction wrapper, Doc parent){
+        public MethodDoc(LuaFunction wrapper, Doc parent){
             this(wrapper, parent, wrapper.name());
         }
 

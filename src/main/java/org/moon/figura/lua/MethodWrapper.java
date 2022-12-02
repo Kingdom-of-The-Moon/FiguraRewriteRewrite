@@ -33,7 +33,7 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
         MethodWrapper wrapper = switch (methods.length) {
             case 0 -> throw new RuntimeException();
             case 1 -> Single.of(manager, methods[0]);
-            default -> MultiMethodWrapper.of(manager, methods);
+            default -> Multi.of(manager, methods);
         };
         wrapper.name = methods[0].getName();
         return wrapper;
@@ -163,12 +163,12 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
         }
     }
 
-    public static final class MultiMethodWrapper extends MethodWrapper {
+    public static final class Multi extends MethodWrapper {
 
         private final Method[] methods;
         private final MethodTree tree;
 
-        private MultiMethodWrapper(LuaTypeManager manager, Method... methods) {
+        private Multi(LuaTypeManager manager, Method... methods) {
             super(manager, methods[0].getDeclaringClass(), Modifier.isStatic(methods[0].getModifiers()));
             this.methods = methods;
             for (Method method : methods) {
@@ -181,8 +181,8 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             tree = new MethodTree(methods);
         }
 
-        public static MultiMethodWrapper of(LuaTypeManager manager, Method... methods) {
-            return new MultiMethodWrapper(manager, methods);
+        public static Multi of(LuaTypeManager manager, Method... methods) {
+            return new Multi(manager, methods);
         }
 
         @Override
@@ -197,17 +197,14 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             Object caller = getCaller(v);
             List<MethodTree.Node> nodes = new ArrayList<>();
             nodes.add(tree.root);
-            if (v.isEmpty()) {
-                if (tree.root.method == null)
-                    exhaustEmptyAlternatives(values, nodes);
-            } else {
+            if (!v.isEmpty()) {
                 while (!v.isEmpty()) {
                     List<MethodTree.Node> nextNodes = new ArrayList<>();
                     LuaValue value = v.poll();
                     assert value != null;
                     for (MethodTree.Node branch : nodes) {
                         var b = branch.children.entrySet().stream().filter(
-                                entry -> manager.checkType(value, entry.getKey().getType()) && !((value.isnil()) && entry.getKey().isAnnotationPresent(LuaNotNil.class))
+                                entry -> manager.checkType(value, entry.getKey().getType()) && !(value.isnil() && entry.getKey().isAnnotationPresent(LuaNotNil.class))
                         );
                         if (branch.hasStrNum && value.isstring() && value.isnumber())
                             b = b.filter(entry -> manager.checkTypeStrict(value, entry.getKey().getType()));
