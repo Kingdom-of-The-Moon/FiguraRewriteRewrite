@@ -41,7 +41,7 @@ public class Page {
 
         //if failed to find a null slot, that means the page is full
         if (index == -1)
-            throw new LuaError("Pages have a limit of 8 actions!");
+            throw new LuaError("Reached page limit of 8 actions!");
 
         return index;
     }
@@ -65,7 +65,9 @@ public class Page {
 
     @LuaWhitelist
     public void setAction(int index, Action action) {
-        if (index < 1 || index > 8)
+        if (index == -1)
+            index = this.checkIndex(null) + 1; //"why just not accept null" you might say, because -1 is more elegant for this, as it will return the latest available index
+        else if (index < 1 || index > 8)
             throw new LuaError("Index must be between 1 and 8!");
         this.actions[index - 1] = action;
     }

@@ -22,7 +22,7 @@ public class RendererAPI {
 
     private final UUID owner;
 
-    public Float shadowRadius;
+    public Float shadowRadius, fov;
 
     @LuaWhitelist
     public boolean renderFire = true;
@@ -176,6 +176,16 @@ public class RendererAPI {
     @LuaWhitelist
     public void setPostEffect(String effect) {
         this.postShader = effect == null ? null : new ResourceLocation("shaders/post/" + effect.toLowerCase() + ".json");
+    }
+
+    @LuaWhitelist
+    public void setFOV(Float fov) {
+        this.fov = fov;
+    }
+
+    @LuaWhitelist
+    public Float getFOV() {
+        return this.fov;
     }
 
     @LuaWhitelist

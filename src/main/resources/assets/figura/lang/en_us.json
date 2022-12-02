@@ -361,6 +361,9 @@
   "figura.config.panic_button": "Panic Button",
   "figura.config.panic_button.tooltip": "Stop the rendering of all avatars",
 
+  "figura.config.wardrobe_button": "Wardrobe Button",
+  "figura.config.wardrobe_button.tooltip": "Opens the Figura Wardrobe screen",
+
   "figura.config.button_location": "Menu Button Location",
   "figura.config.button_location.tooltip": "Location of the figura button",
   "figura.config.button_location.1": "Icon",
@@ -542,7 +545,7 @@
   "figura.docs.wheel_page": "An Action Wheel container which is used to store up to 8 actions.",
   "figura.docs.wheel_page.new_action": "Adds a new Action on the selected Page's index. If no index is given it is added in the first available index.",
   "figura.docs.wheel_page.get_action": "Gets an Action from the Page's given index.",
-  "figura.docs.wheel_page.set_action": "Sets an Action in the Page's given index.",
+  "figura.docs.wheel_page.set_action": "Sets an Action in the Page's given index. If index is -1, the action will be set in the latest empty index.",
 
   "figura.docs.wheel_action": "An action in the Figura Action Wheel. Actions are either interacted by clicking and scrolling, which also being able to be toggleable.",
   "figura.docs.wheel_action.left_click": "Function that is executed when the left mouse button is clicked.",
@@ -612,7 +615,7 @@
 
 
   "figura.docs.avatar": "A global API containing functions to interact with your avatar's metadata, and also to get information about the current script environment.",
-  "figura.docs.avatar.store": "Store the given key-value pair inside your current avatar's metadata. Someone else can get this information from a different script with the playerVars() function in World. The key must be a string.",
+  "figura.docs.avatar.store": "Store the given key-value pair inside your current avatar's metadata. Someone else can get this information from a different script with the avatarVars() function in World. The key must be a string.",
   "figura.docs.avatar.get_current_instructions": "Gets the current number of instructions that have been executed by your avatar. Resets to 0 at the beginning of certain events.",
   "figura.docs.avatar.get_color": "Gets the current color string of your avatar, used as your avatar theme.",
   "figura.docs.avatar.set_color": "Sets the current color string of your avatar, used as your avatar theme.",
@@ -737,6 +740,7 @@
   "figura.docs.client.compare_versions": "Compares two versions if they are less than (-1), equals (0) or greater than (1).",
   "figura.docs.client.int_uuid_to_string": "Converts an int array UUID (as 4 separated arguments) into its hexadecimal string representation.",
   "figura.docs.client.get_viewer": "Returns the player entity from the running client.",
+  "figura.docs.client.get_server_data": "Returns a table with information of the current connected server (also for singleplayer worlds).",
 
 
   "figura.docs.config": "A global API used to save and load avatar data between game sessions.",
@@ -1106,7 +1110,7 @@
   "figura.docs.renderer.render_crosshair": "Toggles whether or not if your crosshair should render. True by default.",
   "figura.docs.renderer.force_paperdoll": "Toggles if the paperdoll should render regardless of the player doing an action. If the paperdoll is disabled, or set to always render, nothing will change. False by default.",
   "figura.docs.renderer.set_shadow_radius": "Sets the radius of your shadow. The default value is nil, which means to use the vanilla default of 0.5 for players. The maximum value is 12.",
-  "figura.docs.renderer.get_shadow_radius": "Gets the radius of your shadow. The default value is nil, which means to use the vanilla default of 0.5 for players.",
+  "figura.docs.renderer.get_shadow_radius": "Gets the radius of your shadow.",
   "figura.docs.renderer.is_first_person": "Checks if your camera is in the first person view.",
   "figura.docs.renderer.is_camera_backwards": "Checks if your camera is in the backwards third person view.",
   "figura.docs.renderer.get_camera_pos": "Gets the position offset for the camera.",
@@ -1120,6 +1124,8 @@
   "figura.docs.renderer.get_camera_offset_rot": "Gets the offset rotation for the camera.",
   "figura.docs.renderer.offset_camera_rot": "Sets the offset rotation for the camera. Nil values for rotation are assumed to be 0. Angles are given in degrees. For absolute rotation values, check out the non-offset rot function.",
   "figura.docs.renderer.set_post_effect": "Sets the current rendering effect. Same as the discontinued Super Secret Settings.",
+  "figura.docs.renderer.set_fov": "Sets the multiplier of your fov. The default value is nil, which means no changes will be applied to your fov.",
+  "figura.docs.renderer.get_fov": "Gets the multiplier of your fov.",
 
 
   "figura.docs.sounds": "A global API which is used to play Minecraft sounds. Accessed using the name \"sounds\".",
