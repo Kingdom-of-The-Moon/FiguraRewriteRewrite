@@ -86,7 +86,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public void setActionBar(@LuaNotNil String text){
+    public void setActionbar(@LuaNotNil String text){
         setActionbar(text, false);
     }
 

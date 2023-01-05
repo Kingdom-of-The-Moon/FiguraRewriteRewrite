@@ -1308,8 +1308,6 @@
   "figura.docs.world.new_item": "Parses and create a new ItemStack from the given string. A count and damage can be given, to be applied on this itemstack.",
   "figura.docs.world.exists": "Checks whether or not a world currently exists. This will almost always be true, but might be false on some occasions such as while travelling between dimensions.",
 
-  "figura.doc_template.body": "%s\n\n%s\n\t%s\n%s\n%s\n\t• %s",
-  "figura.doc_template.desc": "• Description:",
   "figura.doc_template.header": "\n•*+•* %s Docs *•+*•",
   "figura.doc_template.bullet": "• %s"
 }

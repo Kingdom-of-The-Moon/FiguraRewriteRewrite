@@ -227,12 +227,11 @@ public class NewDocsManager {
     }
 
     abstract static class Doc implements Command<FabricClientCommandSource> {
-        public static final String BODY_KEY = "doc_template.body";
         public static final MutableComponent HEADER = FiguraText.of("doc_template.header", FiguraText.of()).withStyle(FRAN_PINK.style).withStyle(UNDERLINE);
         public static final MutableComponent GLOBAL = FiguraText.of("docs.text.global");
         public static final MutableComponent KEY = FiguraText.of("docs.text.key");
         public static final MutableComponent VALUE = FiguraText.of("docs.text.value");
-        public static final MutableComponent DESC = FiguraText.of("doc_template.desc", FiguraText.of()).withStyle(CHLOE_PURPLE.style);
+        public static final MutableComponent DESC = getBullet("docs.description").withStyle(CHLOE_PURPLE.style);
         public static final String BULLET_KEY = "doc_template.bullet";
         public Doc parent;
         public String name;
@@ -269,11 +268,11 @@ public class NewDocsManager {
             return 0;
         }
 
-        protected MutableComponent getBullet(Object text){
+        protected static MutableComponent getBullet(Object text){
             return FiguraText.of(BULLET_KEY, text);
         }
 
-        protected MutableComponent getSyntax(){
+        protected MutableComponent getExtra(){
             return Component.empty();
         }
 
@@ -305,13 +304,15 @@ public class NewDocsManager {
                     secondBullet.append(getBullet(VALUE).append(" ").append(getTypeNameText((Class<?>) iter.next())));
                 }
             }
-            return FiguraText.of(
-                    BODY_KEY,
-                    HEADER,
-                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style),
-                    getBullet(secondBullet),
-                    getSyntax(),
-                    DESC,
+            return Component.empty().append(
+                    HEADER
+            ).append("\n\n").append(
+                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style)
+            ).append("\n\t").append(
+                    getBullet(secondBullet)
+            ).append("\n").append(
+                    getExtra()
+            ).append("\n").append(DESC).append(
                     FiguraText.of("docs." + descriptionKey)
             ).withStyle(MAYA_BLUE.style);
         }
@@ -461,7 +462,7 @@ public class NewDocsManager {
         }
 
         @Override
-        protected MutableComponent getSyntax() {
+        protected MutableComponent getExtra() {
             MutableComponent syntax = Component.literal("\n").append(getBullet(FiguraText.of("docs.text.syntax")).append(":\n\t").withStyle(CHLOE_PURPLE.style));
             if(wrapper instanceof MethodWrapper figuraFunction){
                 var prefix = Component.empty();
@@ -519,24 +520,27 @@ public class NewDocsManager {
         protected MutableComponent getPrintText() {
             MutableComponent name = getName();
             MutableComponent firstBullet = FiguraText.of(getType()).append(" ").append(name.copy());
-            MutableComponent secondBullet = Component.empty();
+            MutableComponent listText = Component.empty();
             for(FormattedText line : getPaddedList()) {
-                secondBullet.append(getBullet(TextUtils.formattedTextToText(line))).append("\n\t");
+                listText.append(getBullet(TextUtils.formattedTextToText(line))).append("\n\t");
             }
-            return FiguraText.of(
-                    BODY_KEY,
-                    HEADER,
-                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style),
-                    secondBullet,
-                    getSyntax(),
-                    DESC,
-                    FiguraText.of("docs." + descriptionKey)
+
+            return Component.empty().append(
+                    HEADER
+            ).append("\n\n").append(
+                    getBullet(firstBullet).append(":").withStyle(CHLOE_PURPLE.style)
+            ).append("\n").append(DESC).append(":\n\t").append(
+                    getBullet("docs." + descriptionKey)
+            ).append("\n").append(
+                    getExtra()
+            ).append("\n\t").append(
+                    getBullet(listText)
             ).withStyle(MAYA_BLUE.style);
         }
 
         @Override
         protected String getType() {
-            return "docs.text.enum";
+            return "docs.enum";
         }
 
         public void updateMaxWidth(){

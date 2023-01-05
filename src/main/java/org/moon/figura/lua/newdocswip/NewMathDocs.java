@@ -51,7 +51,7 @@ public class NewMathDocs {
     public static double map(double value, double oldMin, double oldMax, double newMin, double newMax) { return 0; }
 
     @LuaWhitelist
-    public static double shorAngle(double from, double to) { return 0; }
+    public static double shortAngle(double from, double to) { return 0; }
 
     @LuaWhitelist
     public static double lerpAngle(double a, double b, double t) { return 0; }
