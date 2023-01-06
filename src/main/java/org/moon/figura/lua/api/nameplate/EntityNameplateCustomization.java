@@ -1,7 +1,10 @@
 package org.moon.figura.lua.api.nameplate;
 
+import net.minecraft.client.renderer.LightTexture;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec4;
 import org.moon.figura.utils.ColorUtils;
@@ -16,15 +19,11 @@ public class EntityNameplateCustomization extends NameplateCustomization {
 
     private FiguraVec3 position;
     private FiguraVec3 scale;
-    public Integer background;
+    public Integer background, outlineColor, light;
     public Double alpha;
 
-    @LuaWhitelist
     public boolean visible = true;
-    @LuaWhitelist
-    public boolean shadow;
-    @LuaWhitelist
-    public boolean outline;
+    public boolean shadow, outline;
 
     @LuaWhitelist
     public FiguraVec3 getPos() {
@@ -32,12 +31,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
-    public void setPos() {
-        this.position = null;
-    }
-
-    @LuaWhitelist
-    public void setPos(Double x, Double y, Double z) {
+    public void setPos(@LuaNotNil double x, double y, double z) {
         setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
@@ -47,77 +41,167 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    public EntityNameplateCustomization pos(@LuaNotNil double x, double y, double z) {
+        return pos(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    public EntityNameplateCustomization pos(FiguraVec3 pos){
+        setPos(pos);
+        return this;
+    }
+
+    @LuaWhitelist
     public FiguraVec3 getScale() {
         return this.scale;
     }
 
     @LuaWhitelist
-    public void setScale() {
-        this.scale = null;
-    }
-
-    @LuaWhitelist
-    public void setScale(Double x, Double y, Double z) {
+    public void setScale(@LuaNotNil Double x, Double y, Double z) {
         setScale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
     }
 
     @LuaWhitelist
     public void setScale(FiguraVec3 scale) {
-        this.scale = scale.copy();
+        this.scale = scale == null ? null : scale.copy();
     }
 
     @LuaWhitelist
-    public void setBackgroundColor() {
-        this.background = null;
-        this.alpha = null;
+    public EntityNameplateCustomization scale(@LuaNotNil Double x, Double y, Double z) {
+        return scale(LuaUtils.freeVec3("scale", x, y, z, 1, 1, 1));
+    }
+    
+    @LuaWhitelist
+    public EntityNameplateCustomization scale(FiguraVec3 scale) {
+        setScale(scale);
+        return this;
     }
 
     @LuaWhitelist
-    public void setBackgroundColor(Double r, Double g, Double b) {
-        setBackgroundColor(LuaUtils.freeVec3("setBackgroundColor", r, g, b));
+    public void setBackgroundColor(Double r, double g, double b, Double a) {
+        setBackgroundColor(r == null ? null : FiguraVec3.oneUse(r, g, b), a);
     }
 
     @LuaWhitelist
-    public void setBackgroundColor(FiguraVec3 rgb) {
-        this.background = ColorUtils.rgbToInt(rgb);
-        this.alpha = null;
-    }
-
-    @LuaWhitelist
-    public void setBackgroundColor(Double r, Double g, Double b, Double a) {
-        setBackgroundColor(LuaUtils.freeVec3("setBackgroundColor", r, g, b), a);
-    }
-
-    @LuaWhitelist
-    public void setBackgroundColor(FiguraVec4 rgba) {
+    public void setBackgroundColor(@LuaNotNil FiguraVec4 rgba) {
         setBackgroundColor(FiguraVec3.oneUse(rgba.x, rgba.y, rgba.z), rgba.w);
     }
 
     @LuaWhitelist
-    public void setBackgroundColor(FiguraVec3 rgb, Double a) {
-        this.background = ColorUtils.rgbToInt(rgb);
+    public void setBackgroundColor(@LuaNotNil FiguraVec3 rgb, Double a) {
+        this.background = rgb == null ? null : ColorUtils.rgbToInt(rgb);
         this.alpha = a;
     }
 
     @LuaWhitelist
-    public Object __index(String arg) {
-        if (arg == null) return null;
-        return switch (arg) {
-            case "visible" -> visible;
-            case "shadow" -> shadow;
-            case "outline" -> outline;
-            default -> null;
-        };
+    public EntityNameplateCustomization backgroundColor(Double r, double g, double b, Double a) {
+        return backgroundColor(r == null ? null : FiguraVec3.oneUse(r, g, b), a);
     }
 
     @LuaWhitelist
-    public void __newindex(String key, boolean value) {
-        if (key == null) return;
-        switch (key) {
-            case "visible" -> visible = value;
-            case "shadow" -> shadow = value;
-            case "outline" -> outline = value;
-        }
+    public EntityNameplateCustomization backgroundColor(@LuaNotNil FiguraVec4 rgba) {
+        return backgroundColor(FiguraVec3.oneUse(rgba.x, rgba.y, rgba.z), rgba.w);
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization backgroundColor(@LuaNotNil FiguraVec3 rgb, Double a) {
+        setBackgroundColor(rgb, a);
+        return this;
+    }
+
+    @LuaWhitelist
+    public void setOutlineColor(Double r, double g, double b) {
+        setOutlineColor(FiguraVec3.oneUse(r, g, b));
+    }
+
+    @LuaWhitelist
+    public void setOutlineColor(@LuaNotNil FiguraVec3 rgb) {
+        this.outlineColor = ColorUtils.rgbToInt(rgb);
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization outlineColor(double r, double g, double b) {
+        return outlineColor(FiguraVec3.oneUse(r, g, b));
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization outlineColor(@LuaNotNil FiguraVec3 rgb) {
+        setOutlineColor(rgb);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraVec2 getLight() {
+        return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
+    }
+
+    @LuaWhitelist
+    public void setLight(@LuaNotNil FiguraVec2 light){
+        setLight(light.x, light.y);
+    }
+    
+    @LuaWhitelist
+    public void setLight(Double blockLight, double skyLight) {
+        this.light = blockLight == null ? null : LightTexture.pack(blockLight.intValue(), (int) skyLight);
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization light(@LuaNotNil FiguraVec2 light) {
+        return light(light.x, light.y);
+    }
+    
+    @LuaWhitelist
+    public EntityNameplateCustomization light(Double blockLight, double skyLight) {
+        setLight(blockLight, skyLight);
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean isVisible() {
+        return visible;
+    }
+
+    @LuaWhitelist
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization visible(boolean visible) {
+        setVisible(visible);
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean hasOutline() {
+        return outline;
+    }
+
+    @LuaWhitelist
+    public void setOutline(boolean outline) {
+        this.outline = outline;
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization outline(boolean outline) {
+        setOutline(outline);
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean hasShadow() {
+        return shadow;
+    }
+
+    @LuaWhitelist
+    public void setShadow(boolean shadow) {
+        this.shadow = shadow;
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization shadow(boolean shadow) {
+        setShadow(shadow);
+        return this;
     }
 
     @Override

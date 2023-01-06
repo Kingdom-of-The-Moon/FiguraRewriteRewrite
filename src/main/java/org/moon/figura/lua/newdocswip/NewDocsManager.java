@@ -395,16 +395,21 @@ public class NewDocsManager {
         void initFieldsAndMethods() {
             boolean bl = clas.getAnnotation(LuaTypeDoc.class).blacklist();
             for (Field field : clas.getDeclaredFields())
-                if (field.isAnnotationPresent(LuaWhitelist.class) && field.isAnnotationPresent(LuaFieldDoc.class) == bl)
+                if (field.isAnnotationPresent(LuaWhitelist.class) && field.isAnnotationPresent(LuaFieldDoc.class) && bl == "".equals(field.getAnnotation(LuaFieldDoc.class).value()))
                     addChild(new FieldDoc(field, this));
             LuaTable index = runtime.typeManager.getIndexFor(clas);
             if(index != null)
                 for (LuaValue value : Arrays.stream(index.keys()).map(index::rawget).toArray(LuaValue[]::new)){
+                    String[] name = new String[1];
                     if (
                             value instanceof LuaFunction wrapper && (
-                                    !(wrapper instanceof MethodWrapper methodWrapper) || methodWrapper.getMethods().stream().anyMatch(method -> method.isAnnotationPresent(LuaMethodDoc.class)) == bl
+                                    !(wrapper instanceof MethodWrapper methodWrapper) || methodWrapper.getMethods().stream().anyMatch(method -> {
+                                        String[] strings = method.getAnnotation(LuaMethodDoc.class).value().split("\\.");
+                                        name[0] = strings[strings.length - 1];
+                                        return "".equals(name[0]);
+                                    }) == bl
                             )
-                    ) addChild(new MethodDoc(wrapper, this));
+                    ) addChild(new MethodDoc(wrapper, this, name[0] == null ? wrapper.name() : name[0]));
                 }
             else
                 FiguraMod.LOGGER.warn("Index table for class {} does not exist, maybe it has not been initialised properly?", clas);

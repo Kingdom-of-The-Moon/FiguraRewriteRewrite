@@ -26,6 +26,10 @@ public class ItemTask extends RenderTask {
     private boolean left = false;
     private int cachedComplexity;
 
+    public ItemTask(String name) {
+        super(name);
+    }
+
     @Override
     public boolean render(PartCustomization.Stack stack, MultiBufferSource buffer, int light, int overlay) {
         if (!enabled || item == null || item.isEmpty())
@@ -47,6 +51,16 @@ public class ItemTask extends RenderTask {
     @Override
     public int getComplexity() {
         return cachedComplexity;
+    }
+
+    @LuaWhitelist
+    public void setItem(String itemId){
+        item(LuaUtils.parseItemStack("item", itemId));
+    }
+
+    @LuaWhitelist
+    public void setItem(@LuaNotNil ItemStackAPI item){
+        item(LuaUtils.parseItemStack("item", item));
     }
 
     @LuaWhitelist
@@ -73,18 +87,23 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask renderType(@LuaNotNil String renderType) {
+    public void setRenderType(@LuaNotNil String renderType) {
         try {
             this.renderType = ItemTransforms.TransformType.valueOf(renderType.toUpperCase());
             this.left = this.renderType == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND || this.renderType == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
-            return this;
         } catch (Exception ignored) {
             throw new LuaError("Illegal RenderType: \"" + renderType + "\".");
         }
     }
 
+    @LuaWhitelist
+    public RenderTask renderType(@LuaNotNil String type) {
+        setRenderType(type);
+        return this;
+    }
+
     @Override
     public String toString() {
-        return "Item Render Task";
+        return name + " (Item Render Task)";
     }
 }

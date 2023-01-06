@@ -22,11 +22,10 @@ import org.moon.figura.lua.NbtToLua;
 import org.moon.figura.lua.api.world.BlockStateAPI;
 import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.api.world.WorldAPI;
-import org.moon.figura.lua.docs.LuaMetamethodDoc;
-import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.mixin.EntityAccessor;
 import org.moon.figura.utils.EntityUtils;
 
 import java.util.UUID;
@@ -269,6 +268,12 @@ public class EntityAPI<T extends Entity> {
     }
 
     @LuaWhitelist
+    public boolean isCrouching() {
+        checkEntity();
+        return entity.isCrouching();
+    }
+
+    @LuaWhitelist
     public ItemStackAPI getItem(int index) {
         checkEntity();
         if (--index < 0)
@@ -296,6 +301,18 @@ public class EntityAPI<T extends Entity> {
     public boolean isOnFire() {
         checkEntity();
         return entity.displayFireAnimation();
+    }
+
+    @LuaWhitelist
+    public boolean isAlive() {
+        checkEntity();
+        return entity.isAlive();
+    }
+
+    @LuaWhitelist
+    public int getPermissionLevel() {
+        checkEntity();
+        return ((EntityAccessor) entity).getPermissionLevel();
     }
 
     @LuaWhitelist

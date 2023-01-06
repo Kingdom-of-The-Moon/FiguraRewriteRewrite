@@ -26,18 +26,14 @@ public class FiguraKeybind {
 
     private InputConstants.Key key;
     private boolean isDown, override;
+    private boolean enabled = true;
+    private boolean gui;
 
     @LuaWhitelist
-    public LuaFunction onPress;
+    public LuaFunction press;
 
     @LuaWhitelist
-    public LuaFunction onRelease;
-
-    @LuaWhitelist
-    public boolean enabled = true;
-
-    @LuaWhitelist
-    public boolean gui;
+    public LuaFunction release;
 
     public FiguraKeybind(Avatar owner, String name, InputConstants.Key key) {
         this.owner = owner;
@@ -56,10 +52,10 @@ public class FiguraKeybind {
             Varargs result = null;
 
             if (bl) {
-                if (onPress != null)
-                    result = owner.run(onPress, owner.tick, this);
-            } else if (onRelease != null) {
-                result = owner.run(onRelease, owner.tick, this);
+                if (press != null)
+                    result = owner.run(press, owner.tick, this);
+            } else if (release != null) {
+                result = owner.run(release, owner.tick, this);
             }
 
             override = result != null && result.arg(1).isboolean() && result.checkboolean(1);
@@ -117,8 +113,36 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    public void setOnPress(LuaFunction function) {
+        this.press = function;
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind onPress(LuaFunction function) {
+        setOnPress(function);
+        return this;
+    }
+
+    @LuaWhitelist
+    public void setOnRelease(LuaFunction function) {
+        this.release = function;
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind onRelease(LuaFunction function) {
+        setOnRelease(function);
+        return this;
+    }
+
+    @LuaWhitelist
     public void setKey(@LuaNotNil String key) {
         this.key = parseStringKey(key);
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind key(@LuaNotNil String key) {
+        setKey(key);
+        return this;
     }
 
     @LuaWhitelist
@@ -147,32 +171,53 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    @LuaWhitelist
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind enabled(boolean enabled) {
+        setEnabled(enabled);
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean hasGUI() {
+        return this.gui;
+    }
+
+    @LuaWhitelist
+    public void setGUI(boolean enabled) {
+        this.gui = enabled;
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind gui(boolean enabled) {
+        setGUI(enabled);
+        return this;
+    }
+
+    @LuaWhitelist
     public Object __index(String arg) {
         if (arg == null) return null;
         return switch (arg) {
-            case "onPress" -> onPress;
-            case "onRelease" -> onRelease;
-            case "enabled" -> enabled;
-            case "gui" -> gui;
+            case "press" -> press;
+            case "release" -> release;
             default -> null;
         };
     }
 
     @LuaWhitelist
-    public void __newindex(String key, LuaFunction function){
+    public void __newindex(String key, LuaFunction function) {
         if (key == null) return;
         switch (key) {
-            case "onPress" -> onPress = function;
-            case "onRelease" -> onRelease = function;
-        }
-    }
-
-    @LuaWhitelist
-    public void __newindex(String key, boolean value) {
-        if (key == null) return;
-        switch (key) {
-            case "enabled" -> enabled = value;
-            case "gui" -> gui = value;
+            case "press" -> press = function;
+            case "release" -> release = function;
         }
     }
 

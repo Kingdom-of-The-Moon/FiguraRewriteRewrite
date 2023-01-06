@@ -142,7 +142,7 @@ public class TextUtils {
         List<Component> splitText = TextUtils.splitText(text, "\n");
 
         //get the possible tooltip width
-        int left = mousePos - 16;
+        int left = mousePos - 12;
         int right = screenWidth - mousePos - 12;
 
         //get largest text size
@@ -267,6 +267,15 @@ public class TextUtils {
             builder.append(Component.literal(string).withStyle(style));
             return Optional.empty();
         }, Style.EMPTY);
+        return builder;
+    }
+
+    public static Component reverse(Component text) {
+        MutableComponent builder = Component.empty();
+        for (Component entry : text.toFlatList(text.getStyle())) {
+            StringBuilder str = new StringBuilder(entry.getString()).reverse();
+            builder = Component.literal(str.toString()).withStyle(entry.getStyle()).append(builder);
+        }
         return builder;
     }
 }

@@ -50,6 +50,16 @@ public class ItemStackAPI {
     }
 
     @LuaWhitelist
+    public String getID() {
+        return id;
+    }
+
+    @LuaWhitelist
+    public LuaTable getTag() {
+        return tag;
+    }
+
+    @LuaWhitelist
     public int getCount() {
         return itemStack.getCount();
     }

@@ -31,7 +31,7 @@ public class Animation {
     // -- player variables -- //
 
     private final TimeController controller = new TimeController();
-    protected PlayState playState = PlayState.STOPPED;
+    public PlayState playState = PlayState.STOPPED;
     private float time = 0f;
     private boolean inverted = false;
     private float lastTime = 0f;
@@ -125,21 +125,6 @@ public class Animation {
         }
     }
 
-    public static Map<String, Map<String, Animation>> getTableForAnimations(Avatar avatar) {
-        HashMap<String, Map<String, Animation>> root = new HashMap<>();
-        for (Animation animation : avatar.animations.values()) {
-            //get or create animation table
-            Map<String, Animation> animations = root.get(animation.modelName);
-            if (animations == null)
-                animations = new HashMap<>();
-
-            //put animation on the model table
-            animations.put(animation.name, animation);
-            root.put(animation.modelName, animations);
-        }
-        return root;
-    }
-
     // -- lua methods -- //
 
     @LuaWhitelist
@@ -177,11 +162,17 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public void setPlaying(boolean bool) {
-        if (bool)
+    public void setPlaying(boolean playing) {
+        if (playing)
             play();
         else
             stop();
+    }
+
+    @LuaWhitelist
+    public Animation playing(boolean playing) {
+        setPlaying(playing);
+        return this;
     }
 
     @LuaWhitelist
@@ -195,6 +186,12 @@ public class Animation {
         this.lastTime = time;
         this.frameTime = Math.max(time, this.offset);
     }
+    
+    @LuaWhitelist
+    public Animation time(float time) {
+        setTime(time);
+        return this;
+    }
 
     @LuaWhitelist
     public String getPlayState() {
@@ -202,8 +199,13 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public Animation newCode(float time, @LuaNotNil String data) {
+    public void newCode(float time, @LuaNotNil String data) {
         codeFrames.put(Math.max(time, 0f), data);
+    }
+    
+    @LuaWhitelist
+    public Animation code(float time, @LuaNotNil String data) {
+        newCode(time, data);
         return this;
     }
 
@@ -211,10 +213,15 @@ public class Animation {
     public float getBlend() {
         return this.blend;
     }
+    
+    @LuaWhitelist
+    public void setBlend(float blend) {
+        this.blend = blend;
+    }
 
     @LuaWhitelist
     public Animation blend(float blend) {
-        this.blend = blend;
+        setBlend(blend);
         return this;
     }
 
@@ -222,10 +229,15 @@ public class Animation {
     public float getOffset() {
         return this.offset;
     }
+    
+    @LuaWhitelist
+    public void setOffset(float offset) {
+        this.offset = offset;
+    }
 
     @LuaWhitelist
     public Animation offset(float offset) {
-        this.offset = offset;
+        setOffset(offset);
         return this;
     }
 
@@ -233,10 +245,15 @@ public class Animation {
     public float getStartDelay() {
         return this.startDelay;
     }
+    
+    @LuaWhitelist
+    public void setStartDelay(float delay) {
+        this.startDelay = delay;
+    }
 
     @LuaWhitelist
     public Animation startDelay(float delay) {
-        this.startDelay = delay;
+        setStartDelay(delay);
         return this;
     }
 
@@ -244,10 +261,15 @@ public class Animation {
     public float getLoopDelay() {
         return this.loopDelay;
     }
+    
+    @LuaWhitelist
+    public void setLoopDelay(float delay) {
+        this.loopDelay = delay;
+    }
 
     @LuaWhitelist
     public Animation loopDelay(float delay) {
-        this.loopDelay = delay;
+        setLoopDelay(delay);
         return this;
     }
 
@@ -255,16 +277,26 @@ public class Animation {
     public float getLength() {
         return this.length;
     }
+    
+    @LuaWhitelist
+    public void setLength(float length) {
+        this.length = length;
+    }
 
     @LuaWhitelist
     public Animation length(float length) {
-        this.length = length;
+        setLength(length);
         return this;
     }
 
     @LuaWhitelist
-    public Animation override(boolean override) {
+    public void setOverride(boolean override) {
         this.override = override ? 7 : 0;
+    }
+
+    @LuaWhitelist
+    public Animation override(boolean override) {
+        setOverride(override);
         return this;
     }
 
@@ -284,20 +316,35 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public Animation overrideRot(boolean override) {
+    public void setOverrideRot(boolean override) {
         this.override = override ? this.override | 1 : this.override & 6;
+    }
+
+    @LuaWhitelist
+    public Animation overrideRot(boolean override) {
+        setOverrideRot(override);
         return this;
+    }
+
+    @LuaWhitelist
+    public void setOverridePos(boolean override) {
+        this.override = override ? this.override | 2 : this.override & 5;
     }
 
     @LuaWhitelist
     public Animation overridePos(boolean override) {
-        this.override = override ? this.override | 2 : this.override & 5;
+        setOverridePos(override);
         return this;
     }
 
     @LuaWhitelist
-    public Animation overrideScale(boolean override) {
+    public void setOverrideScale(boolean override) {
         this.override = override ? this.override | 4 : this.override & 3;
+    }
+
+    @LuaWhitelist
+    public Animation overrideScale(boolean override) {
+        setOverrideScale(override);
         return this;
     }
 
@@ -307,13 +354,18 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public Animation loop(@LuaNotNil String loop) {
+    public void setLoop(@LuaNotNil String loop) {
         try {
             this.loop = LoopMode.valueOf(loop.toUpperCase());
-            return this;
         } catch (Exception ignored) {
             throw new LuaError("Illegal LoopMode: \"" + loop + "\".");
         }
+    }
+
+    @LuaWhitelist
+    public Animation loop(@LuaNotNil String loop) {
+        setLoop(loop);
+        return this;
     }
 
     @LuaWhitelist
@@ -322,8 +374,13 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public Animation priority(int priority) {
+    public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    @LuaWhitelist
+    public Animation priority(int priority) {
+        setPriority(priority);
         return this;
     }
 
@@ -333,11 +390,21 @@ public class Animation {
     }
 
     @LuaWhitelist
-    public Animation speed(Float speed) {
+    public void setSpeed(Float speed) {
         if (speed == null) speed = 1f;
         this.speed = speed;
         this.inverted = speed < 0;
+    }
+
+    @LuaWhitelist
+    public Animation speed(Float speed) {
+        setSpeed(speed);
         return this;
+    }
+
+    @LuaWhitelist
+    public String getName() {
+        return name;
     }
 
     @LuaWhitelist

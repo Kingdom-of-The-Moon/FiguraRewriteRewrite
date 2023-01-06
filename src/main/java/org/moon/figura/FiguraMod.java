@@ -2,7 +2,6 @@ package org.moon.figura;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -34,16 +33,16 @@ import org.moon.figura.lua.newdocswip.NewDocsManager;
 import org.moon.figura.mixin.SkullBlockEntityAccessor;
 import org.moon.figura.trust.TrustManager;
 import org.moon.figura.utils.ColorUtils;
-import org.moon.figura.utils.FiguraResourceListener;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.Version;
+import org.moon.figura.wizards.AvatarWizard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.UUID;
 
 public class FiguraMod implements ClientModInitializer {
@@ -52,8 +51,7 @@ public class FiguraMod implements ClientModInitializer {
     public static final String MOD_NAME = "Figura";
     public static final Version VERSION = new Version(FabricLoader.getInstance().getModContainer(FiguraMod.MOD_ID).get().getMetadata().getVersion().getFriendlyString());
     public static final boolean DEBUG_MODE = Math.random() + 1 < 0;
-    public static final LocalDate DATE = LocalDate.now();
-    public static final boolean CHEESE_DAY = DATE.getDayOfMonth() == 1 && DATE.getMonthValue() == 4;
+    public static final Calendar CALENDAR = Calendar.getInstance();
     public static final Path GAME_DIR = FabricLoader.getInstance().getGameDir().normalize();
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
@@ -72,7 +70,6 @@ public class FiguraMod implements ClientModInitializer {
         FiguraCommands.init();
 
         //register events
-        ClientTickEvents.START_CLIENT_TICK.register(FiguraMod::tick);
         WorldRenderEvents.START.register(levelRenderer -> AvatarManager.onWorldRender(levelRenderer.tickDelta()));
         WorldRenderEvents.END.register(levelRenderer -> AvatarManager.afterWorldRender(levelRenderer.tickDelta()));
         WorldRenderEvents.AFTER_ENTITIES.register(FiguraMod::renderFirstPersonWorldParts);
@@ -80,11 +77,16 @@ public class FiguraMod implements ClientModInitializer {
         registerResourceListener(ResourceManagerHelper.get(PackType.CLIENT_RESOURCES));
     }
 
-    private static void tick(Minecraft client) {
+    public static void tick() {
+        pushProfiler("network");
         NetworkStuff.tick();
+        popPushProfiler("files");
         LocalAvatarLoader.tickWatchedKey();
+        popPushProfiler("avatars");
         AvatarManager.tickLoadedAvatars();
+        popPushProfiler("chatPrint");
         FiguraLuaPrinter.printChatFromQueue();
+        popProfiler();
         ticks++;
     }
 
@@ -101,15 +103,25 @@ public class FiguraMod implements ClientModInitializer {
         if (AvatarManager.panic)
             return;
 
+        pushProfiler(MOD_ID);
+
+        pushProfiler("paperdoll");
         PaperDoll.render(stack);
+
+        popPushProfiler("actionWheel");
         ActionWheel.render(stack);
+
+        popPushProfiler("popupMenu");
         PopupMenu.render(stack);
+
+        popProfiler(2);
     }
 
     private static void registerResourceListener(ResourceManagerHelper managerHelper) {
         managerHelper.registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
         managerHelper.registerReloadListener(Emojis.RESOURCE_LISTENER);
         managerHelper.registerReloadListener(NewDocsManager.RELOAD_LISTENER);
+        managerHelper.registerReloadListener(AvatarWizard.RESOURCE_LISTENER);
     }
 
     // -- Helper Functions -- //
@@ -186,5 +198,29 @@ public class FiguraMod implements ClientModInitializer {
         Avatar avatar = AvatarManager.getAvatarForPlayer(getLocalPlayerUUID());
         int color = avatar != null ? ColorUtils.rgbToInt(ColorUtils.userInputHex(avatar.color, ColorUtils.Colors.FRAN_PINK.vec)) : ColorUtils.Colors.FRAN_PINK.hex;
         return Style.EMPTY.withColor(color);
+    }
+
+    // -- profiler -- //
+
+    public static void pushProfiler(String name) {
+        Minecraft.getInstance().getProfiler().push(name);
+    }
+
+    public static void pushProfiler(Avatar avatar) {
+        Minecraft.getInstance().getProfiler().push(avatar.entityName.isBlank() ? avatar.owner.toString() : avatar.entityName);
+    }
+
+    public static void popPushProfiler(String name) {
+        Minecraft.getInstance().getProfiler().popPush(name);
+    }
+
+    public static void popProfiler() {
+        Minecraft.getInstance().getProfiler().pop();
+    }
+
+    public static void popProfiler(int times) {
+        var profiler = Minecraft.getInstance().getProfiler();
+        for (int i = 0; i < times; i++)
+            profiler.pop();
     }
 }

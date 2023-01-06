@@ -234,7 +234,10 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             Method method = match.method;
             Object[] params = new Object[values.size()];
             for (int i = values.size() - 1; i >= 0; i--) {
-                params[i] = manager.luaToJava(values.get(i), match.param.getType());
+                LuaValue value = values.get(i);
+                if(value == null || value.isnil())
+                    value = getDefault(match.param.getType());
+                params[i] = manager.luaToJava(value, match.param.getType());
                 match = match.parent;
             }
             return wrapCall(method, caller, params);

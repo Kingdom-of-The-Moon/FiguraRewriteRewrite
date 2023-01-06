@@ -4,10 +4,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MobType;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.LivingEntityAccessor;
 
@@ -152,6 +151,59 @@ public class LivingEntityAPI<T extends LivingEntity> extends EntityAPI<T> {
     public int getSwingDuration() {
       checkEntity();
       return ((LivingEntityAccessor) entity).getSwingDuration();
+    }
+
+    @LuaWhitelist
+    public float getAbsorptionAmount() {
+        checkEntity();
+        return entity.getAbsorptionAmount();
+    }
+
+    @LuaWhitelist
+    public boolean isSensitiveToWater() {
+        checkEntity();
+        return entity.isSensitiveToWater();
+    }
+
+    @LuaWhitelist
+    public String getEntityCategory() {
+        checkEntity();
+
+        MobType mobType = entity.getMobType(); //why it is not an enum
+        if (mobType == MobType.ARTHROPOD)
+            return "ARTHROPOD";
+        if (mobType == MobType.UNDEAD)
+            return "UNDEAD";
+        if (mobType == MobType.WATER)
+            return "WATER";
+        if (mobType == MobType.ILLAGER)
+            return "ILLAGER";
+
+        return "UNDEFINED";
+    }
+
+    @LuaWhitelist
+    public boolean isGliding() {
+        checkEntity();
+        return entity.isFallFlying();
+    }
+
+    @LuaWhitelist
+    public boolean isBlocking() {
+        checkEntity();
+        return entity.isBlocking();
+    }
+
+    @LuaWhitelist
+    public boolean isVisuallySwimming() {
+        checkEntity();
+        return entity.isVisuallySwimming();
+    }
+
+    @LuaWhitelist
+    public boolean riptideSpinning() {
+        checkEntity();
+        return entity.isAutoSpinAttack();
     }
 
     @Override

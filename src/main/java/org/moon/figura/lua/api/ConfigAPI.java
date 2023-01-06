@@ -235,16 +235,22 @@ public class ConfigAPI {
 
 
     @LuaWhitelist
-    public void name(@LuaNotNil String name) {
+    public void setName(@LuaNotNil String name) {
         if (!isHost) return;
         this.name = name;
         this.loaded = false;
     }
 
     @LuaWhitelist
-    public void save(@LuaNotNil String key, LuaValue val) {
+    public ConfigAPI name(@LuaNotNil String name) {
+        setName(name);
+        return this;
+    }
+
+    @LuaWhitelist
+    public ConfigAPI save(@LuaNotNil String key, LuaValue val) {
         if (!isHost)
-            return;
+            return this;
 
         if (!loaded) {
             init();
@@ -254,6 +260,8 @@ public class ConfigAPI {
         val = val != null && (val.isboolean() || val.isstring() || val.isnumber() || val.istable() || val.isuserdata(FiguraVector.class) || val.isuserdata(FiguraMatrix.class)) ? val : LuaValue.NIL;
         luaTable.set(key, val);
         write();
+
+        return this;
     }
 
     public LuaTable load(){
@@ -261,7 +269,7 @@ public class ConfigAPI {
     }
 
     @LuaWhitelist
-    public Object load(@LuaNotNil String key) {
+    public LuaValue load(@LuaNotNil String key) {
         if (!isHost)
             return null;
 

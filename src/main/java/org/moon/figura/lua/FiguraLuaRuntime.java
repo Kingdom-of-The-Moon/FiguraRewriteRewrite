@@ -22,6 +22,7 @@ import org.moon.figura.lua.api.keybind.KeybindAPI;
 import org.moon.figura.lua.api.nameplate.NameplateAPI;
 import org.moon.figura.lua.api.ping.PingAPI;
 import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
+import org.moon.figura.trust.Trust;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,7 +114,7 @@ public class FiguraLuaRuntime {
     }
 
     public Entity getUser() {
-        return entityAPI == null ? null : entityAPI.getEntity();
+        return entityAPI != null && entityAPI.isLoaded() ? entityAPI.getEntity() : null;
     }
 
     // init runtime //
@@ -138,7 +139,7 @@ public class FiguraLuaRuntime {
             if (loadingScripts.contains(name))
                 throw new LuaError("Detected circular dependency in script " + loadingScripts.peek());
             if (scripts.get(name) == null && arg(2).isfunction())
-                return arg.checkfunction(2).call();
+                return arg.checkfunction(2).invoke(LuaValue.valueOf(name));
 
             return INIT_SCRIPT.apply(name);
         }
@@ -250,7 +251,10 @@ public class FiguraLuaRuntime {
         this.loadingScripts.push(name);
 
         //load
-        Varargs value = userGlobals.load(src, name).invoke(LuaValue.valueOf(name));
+        int split = name.lastIndexOf('.');
+        String path = split == -1 ? "" : name.substring(0, split);
+        String fileName = split == -1 ? name : name.substring(split + 1);
+        Varargs value = userGlobals.load(src, name).invoke(LuaValue.varargsOf(LuaValue.valueOf(path), LuaValue.valueOf(fileName)));
         if (value == LuaValue.NIL)
             value = LuaValue.TRUE;
 
@@ -300,6 +304,7 @@ public class FiguraLuaRuntime {
         public LuaValue call() {
             FiguraMod.LOGGER.warn("Avatar {} bypassed resource limits with {} instructions", owner.owner, getInstructions());
             LuaError error = new LuaError("Script overran resource limits!");
+            owner.trustIssues.add(Trust.INIT_INST);
             setInstructionLimit(1);
             throw error;
         }

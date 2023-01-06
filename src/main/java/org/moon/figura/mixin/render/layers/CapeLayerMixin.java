@@ -39,7 +39,7 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
             return;
 
         avatar = AvatarManager.getAvatar(entity);
-        if (avatar == null || avatar.luaRuntime == null)
+        if (avatar == null)
             return;
 
         //Acquire reference to fake cloak
@@ -53,22 +53,21 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
         double d = Mth.lerp(tickDelta, entity.xCloakO, entity.xCloak) - Mth.lerp(tickDelta, entity.xo, entity.getX());
         double e = Mth.lerp(tickDelta, entity.yCloakO, entity.yCloak) - Mth.lerp(tickDelta, entity.yo, entity.getY());
         double m = Mth.lerp(tickDelta, entity.zCloakO, entity.zCloak) - Mth.lerp(tickDelta, entity.zo, entity.getZ());
-        //Change n to use lerp, to "fix" https://bugs.mojang.com/browse/MC-127749
-        //float n = abstractClientPlayer.yBodyRotO + (abstractClientPlayer.yBodyRot - abstractClientPlayer.yBodyRotO);
-        float n = Mth.lerp(tickDelta, entity.yBodyRotO, entity.yBodyRot);
-        double o = Mth.sin(n * ((float) Math.PI / 180));
-        double p = -Mth.cos(n * ((float) Math.PI / 180));
-        float q = (float) e * 10.0f;
-        q = Mth.clamp(q, -6.0f, 32.0f);
-        float r = (float) (d * o + m * p) * 100.0f;
-        r = Mth.clamp(r, 0.0f, 150.0f);
-        float s = (float) (d * p - m * o) * 100.0f;
-        s = Mth.clamp(s, -20.0f, 20.0f);
-        if (r < 0.0f) {
-            r = 0.0f;
-        }
+        //Change n to use lerp, to "fix" https://bugs.mojang.com/browse/MC-127749 //Fran: we cant, check my comment in the issue
+        //float n = Mth.lerp(tickDelta, entity.yBodyRotO, entity.yBodyRot);
+        float n = entity.yBodyRotO + (entity.yBodyRot - entity.yBodyRotO);
+        n = (float) Math.toRadians(n);
+        double o = Mth.sin(n);
+        double p = -Mth.cos(n);
+        float q = (float) e * 10f;
+        q = Mth.clamp(q, -6f, 32f);
+        float r = (float) (d * o + m * p) * 100f;
+        r = Mth.clamp(r, 0f, 150f);
+        float s = (float) (d * p - m * o) * 100f;
+        s = Mth.clamp(s, -20f, 20f);
+        r = Math.max(r, 0f);
         float t = Mth.lerp(tickDelta, entity.oBob, entity.bob);
-        q += Mth.sin(Mth.lerp(tickDelta, entity.walkDistO, entity.walkDist) * 6.0f) * 32.0f * t;
+        q += Mth.sin(Mth.lerp(tickDelta, entity.walkDistO, entity.walkDist) * 6f) * 32f * t;
 
         //Just going to ignore the fact that vanilla uses XZY rotation order for capes...
         //As a result, the cape rotation is slightly off.
@@ -81,7 +80,7 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
         //If someone wants to spend the time to correct these inaccuracies for us, feel free to make a pull request.
 
         //pos
-        if (itemStack.isEmpty()) {
+        if (itemStack.isEmpty() || (avatar.luaRuntime != null && !avatar.luaRuntime.vanilla_model.CHESTPLATE_BODY.checkVisible())) {
             if (entity.isCrouching()) {
                 q += 25f;
                 fakeCloak.y = 2.25f;
@@ -107,13 +106,14 @@ public abstract class CapeLayerMixin extends RenderLayer<AbstractClientPlayer, P
         );
 
         //Copy rotations from fake cloak
-        avatar.luaRuntime.vanilla_model.CAPE.store(getParentModel());
-
-        //Setup visibility for real cloak
-        if (avatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
-            avatar.luaRuntime.vanilla_model.CAPE.alter(getParentModel());
+        if (avatar.luaRuntime != null)
+            avatar.luaRuntime.vanilla_model.CAPE.save(getParentModel());
 
         avatar.capeRender(entity, multiBufferSource, poseStack, light, tickDelta, fakeCloak);
+
+        //Setup visibility for real cloak
+        if (avatar.luaRuntime != null && avatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
+            avatar.luaRuntime.vanilla_model.CAPE.change(getParentModel());
     }
 
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/client/player/AbstractClientPlayer;FFFFFF)V", at = @At("RETURN"))

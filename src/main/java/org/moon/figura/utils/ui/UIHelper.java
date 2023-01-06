@@ -425,17 +425,9 @@ public class UIHelper extends GuiComponent {
     }
 
     public static void renderOutlineText(PoseStack stack, Font textRenderer, Component text, int x, int y, int color, int outline) {
-        Component outlineText = TextUtils.replaceStyle(TextUtils.replaceInText(text, "§.", ""), Style.EMPTY.withColor(outline));
-        for (int i = -1; i <= 1; ++i) {
-            for (int j = -1; j <= 1; ++j) {
-                textRenderer.draw(stack, outlineText, x + i, y + j, outline);
-            }
-        }
-
-        stack.pushPose();
-        stack.translate(0f, 0f, 0.001f);
-        textRenderer.draw(stack, text, x, y, color);
-        stack.popPose();
+        MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+        textRenderer.drawInBatch8xOutline(text.getVisualOrderText(), x, y, color, outline, stack.last().pose(), bufferSource, LightTexture.FULL_BRIGHT);
+        bufferSource.endBatch();
     }
 
     public static void renderTooltip(PoseStack stack, Component tooltip, int mouseX, int mouseY, boolean background) {
@@ -456,7 +448,7 @@ public class UIHelper extends GuiComponent {
 
         int width = TextUtils.getWidth(text, font);
         if (x + width > screenX)
-            x = Math.max(x - 28 - width, 0);
+            x = Math.max(x - 24 - width, 0);
 
         //render
         stack.pushPose();

@@ -34,6 +34,10 @@ public class TextTask extends RenderTask {
 
     private int cachedComplexity;
 
+    public TextTask(String name) {
+        super(name);
+    }
+
     @Override
     public boolean render(PartCustomization.Stack stack, MultiBufferSource buffer, int light, int overlay) {
         if (!enabled || text == null || text.size() == 0)
@@ -67,16 +71,15 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask text(){
-        text = null;
-        return this;
+    public void setText(String text) {
+        this.text = text == null ? null : TextUtils.splitText(Badges.noBadges4U(TextUtils.tryParseJson(text)), "\n");
+        if (text != null)
+            this.cachedComplexity = text.length() + 1;
     }
 
     @LuaWhitelist
     public RenderTask text(String text) {
-        this.text = text == null ? null : TextUtils.splitText(Badges.noBadges4U(TextUtils.tryParseJson(text)), "\n");
-        if (text != null)
-            this.cachedComplexity = text.length() + 1;
+        setText(text);
         return this;
     }
 
@@ -86,8 +89,13 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask centered(boolean centered) {
+    public void setCentered(boolean centered) {
         this.centered = centered;
+    }
+
+    @LuaWhitelist
+    public RenderTask centered(boolean centered) {
+        setCentered(centered);
         return this;
     }
 
@@ -97,8 +105,13 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask right(boolean right) {
+    public void setRight(boolean right) {
         this.rtl = right;
+    }
+
+    @LuaWhitelist
+    public RenderTask right(boolean right) {
+        setRight(right);
         return this;
     }
 
@@ -108,8 +121,13 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask shadow(boolean shadow) {
+    public void setShadow(boolean shadow) {
         this.shadow = shadow;
+    }
+
+    @LuaWhitelist
+    public RenderTask shadow(boolean shadow) {
+        setShadow(shadow);
         return this;
     }
 
@@ -119,8 +137,13 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask outline(boolean outline) {
+    public void setOutline(boolean outline) {
         this.outline = outline;
+    }
+
+    @LuaWhitelist
+    public RenderTask outline(boolean outline) {
+        setOutline(outline);
         return this;
     }
 
@@ -128,20 +151,30 @@ public class TextTask extends RenderTask {
     public FiguraVec3 getOutlineColor() {
         return this.outlineColor;
     }
+    
+    @LuaWhitelist
+    public void setOutlineColor(double r, double g, double b){
+        setOutlineColor(FiguraVec3.oneUse(r, g, b));
+    }
+    
+    @LuaWhitelist
+    public void setOutlineColor(@LuaNotNil FiguraVec3 color){
+        this.outlineColor = color.copy();
+    }
 
     @LuaWhitelist
-    public TextTask outlineColor(Double r, Double g, Double b){
-        return outlineColor(LuaUtils.freeVec3("outlineColor", r, g, b));
+    public TextTask outlineColor(double r, double g, double b){
+        return outlineColor(FiguraVec3.oneUse(r, g, b));
     }
 
     @LuaWhitelist
     public TextTask outlineColor(@LuaNotNil FiguraVec3 color) {
-        this.outlineColor = color;
+        setOutlineColor(color);
         return this;
     }
 
     @Override
     public String toString() {
-        return "Text Render Task";
+        return name + " (Text Render Task)";
     }
 }

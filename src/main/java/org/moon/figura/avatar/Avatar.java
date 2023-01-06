@@ -21,7 +21,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.luaj.vm2.LuaFunction;
@@ -77,6 +79,7 @@ public class Avatar {
 
     //properties
     public final UUID owner;
+    public final EntityType<?> entityType;
     public CompoundTag nbt;
     public boolean loaded = true;
     public final boolean isHost;
@@ -103,8 +106,10 @@ public class Avatar {
     public final Map<Integer, Animation> animations = new HashMap<>();
 
     //runtime status
-    public boolean hasTexture = false;
-    public boolean scriptError = false;
+    public boolean hasTexture, scriptError;
+    public Component errorText;
+    public Set<Trust> trustIssues = new HashSet<>();
+    public Set<Trust> trustsToTick = new HashSet<>();
     public int versionStatus = 0;
 
     //limits
@@ -113,10 +118,11 @@ public class Avatar {
     public final Instructions init, render, worldRender, tick, worldTick;
     public final RefilledNumber particlesRemaining, soundsRemaining;
 
-    public Avatar(UUID owner) {
+    private Avatar(UUID owner, EntityType<?> type, String name) {
         this.owner = owner;
-        this.isHost = FiguraMod.isLocal(owner);
-        this.trust = TrustManager.get(owner);
+        this.entityType = type;
+        this.isHost = type == EntityType.PLAYER && FiguraMod.isLocal(owner);
+        this.trust = type == EntityType.PLAYER ? TrustManager.get(owner) : TrustManager.getMobTrust(owner);
         this.complexity = new Instructions(trust.get(Trust.COMPLEXITY));
         this.init = new Instructions(trust.get(Trust.INIT_INST));
         this.render = new Instructions(trust.get(Trust.RENDER_INST));
@@ -125,9 +131,15 @@ public class Avatar {
         this.worldTick = new Instructions(trust.get(Trust.WORLD_TICK_INST));
         this.particlesRemaining = new RefilledNumber(trust.get(Trust.PARTICLES));
         this.soundsRemaining = new RefilledNumber(trust.get(Trust.SOUNDS));
-
-        String name = EntityUtils.getNameForUUID(owner);
         this.entityName = name == null ? "" : name;
+    }
+
+    public Avatar(UUID owner) {
+        this(owner, EntityType.PLAYER, EntityUtils.getNameForUUID(owner));
+    }
+
+    public Avatar(Entity entity) {
+        this(entity.getUUID(), entity.getType(), entity.getName().getString());
     }
 
     public void load(CompoundTag nbt) {
@@ -186,21 +198,27 @@ public class Avatar {
         });
     }
 
-    private void checkUser() {
-        if (luaRuntime != null && luaRuntime.getUser() == null) {
+    public void tick() {
+        if (scriptError || luaRuntime == null || !loaded)
+            return;
+
+        //fetch this avatar entity
+        if (luaRuntime.getUser() == null) {
             Entity entity = EntityUtils.getEntityByUUID(owner);
             if (entity != null) {
                 luaRuntime.setUser(entity);
                 run("ENTITY_INIT", init.post());
             }
         }
-    }
 
-    public void tick() {
-        if (scriptError || luaRuntime == null || !loaded)
-            return;
-
-        checkUser();
+        //tick trusts
+        for (Trust t : trustsToTick) {
+            if (trust.get(t) > 0) {
+                trustIssues.remove(t);
+            } else {
+                trustIssues.add(t);
+            }
+        }
 
         //sound
         particlesRemaining.set(trust.get(Trust.PARTICLES));
@@ -211,14 +229,24 @@ public class Avatar {
         soundsRemaining.tick();
 
         //call events
+        FiguraMod.pushProfiler("worldTick");
         worldTick.reset(trust.get(Trust.WORLD_TICK_INST));
         run("WORLD_TICK", worldTick);
 
+        FiguraMod.popPushProfiler("tick");
         tick.reset(trust.get(Trust.TICK_INST));
         tickEvent();
+
+        FiguraMod.popProfiler();
     }
 
     public void render(float delta) {
+        if (complexity.remaining <= 0) {
+            trustIssues.add(Trust.COMPLEXITY);
+        } else {
+            trustIssues.remove(Trust.COMPLEXITY);
+        }
+
         complexity.reset(trust.get(Trust.COMPLEXITY));
 
         if (scriptError || luaRuntime == null || !loaded)
@@ -374,17 +402,28 @@ public class Avatar {
         return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
     }
 
+    public boolean mousePressEvent(int button, int action, int modifiers) {
+        Varargs result = loaded ? run("MOUSE_PRESS", tick, button, action, modifiers) : null;
+        return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
+    }
+
+    public boolean keyPressEvent(int key, int action, int modifiers) {
+        Varargs result = loaded ? run("KEY_PRESS", tick, key, action, modifiers) : null;
+        return result != null && result.arg(1).isboolean() && result.arg(1).checkboolean();
+    }
+
     // -- rendering events -- //
 
     private void render() {
-        if (renderMode != EntityRenderMode.RENDER) {
-            int prev = complexity.remaining;
-            complexity.remaining = trust.get(Trust.COMPLEXITY);
-            renderer.render();
-            complexity.remaining = prev;
-        } else {
+        if (renderMode == EntityRenderMode.RENDER || renderMode == EntityRenderMode.FIRST_PERSON) {
             complexity.use(renderer.render());
+            return;
         }
+
+        int prev = complexity.remaining;
+        complexity.remaining = trust.get(Trust.COMPLEXITY);
+        renderer.render();
+        complexity.remaining = prev;
     }
 
     public void render(Entity entity, float yaw, float delta, float alpha, PoseStack matrices, MultiBufferSource bufferSource, int light, int overlay, LivingEntityRenderer<?, ?> entityRenderer, PartFilterScheme filter, boolean translucent, boolean glowing) {
@@ -445,6 +484,10 @@ public class Avatar {
         if (renderer == null || !loaded)
             return;
 
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("capeRender");
+
         renderer.vanillaModelData.update(ParentType.Cape, cloak);
         renderer.entity = entity;
         renderer.currentFilterScheme = PartFilterScheme.CAPE;
@@ -456,11 +499,17 @@ public class Avatar {
         renderer.overlay = OverlayTexture.NO_OVERLAY;
 
         render();
+
+        FiguraMod.popProfiler(3);
     }
 
     public void elytraRender(Entity entity, MultiBufferSource bufferSource, PoseStack stack, int light, float tickDelta, EntityModel<?> model) {
         if (renderer == null || !loaded)
             return;
+
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("elytraRender");
 
         renderer.entity = entity;
         renderer.bufferSource = bufferSource;
@@ -471,19 +520,27 @@ public class Avatar {
         renderer.overlay = OverlayTexture.NO_OVERLAY;
 
         //left
+        FiguraMod.pushProfiler("leftWing");
         renderer.vanillaModelData.update(ParentType.LeftElytra, model);
         renderer.currentFilterScheme = PartFilterScheme.LEFT_ELYTRA;
         render();
 
         //right
+        FiguraMod.popPushProfiler("rightWing");
         renderer.vanillaModelData.update(ParentType.RightElytra, model);
         renderer.currentFilterScheme = PartFilterScheme.RIGHT_ELYTRA;
         render();
+
+        FiguraMod.popProfiler(4);
     }
 
     public void firstPersonWorldRender(Entity watcher, MultiBufferSource bufferSource, PoseStack matrices, Camera camera, float tickDelta) {
         if (renderer == null || !loaded)
             return;
+
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("firstPersonWorldRender");
 
         int light = Minecraft.getInstance().getEntityRenderDispatcher().getPackedLightCoords(watcher, tickDelta);
         Vec3 camPos = camera.getPosition();
@@ -494,11 +551,17 @@ public class Avatar {
         worldRender(watcher, camPos.x, camPos.y, camPos.z, matrices, bufferSource, light, tickDelta);
 
         renderMode = oldMode;
+
+        FiguraMod.popProfiler(3);
     }
 
     public void firstPersonRender(PoseStack stack, MultiBufferSource bufferSource, Player player, PlayerRenderer playerRenderer, ModelPart arm, int light, int overlay, float tickDelta) {
         if (renderer == null || !loaded)
             return;
+
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("firstPersonRender");
 
         PartFilterScheme filter = arm == playerRenderer.getModel().leftArm ? PartFilterScheme.LEFT_ARM : PartFilterScheme.RIGHT_ARM;
         boolean config = Config.ALLOW_FP_HANDS.asBool();
@@ -514,11 +577,17 @@ public class Avatar {
         stack.popPose();
 
         renderer.allowHiddenTransforms = true;
+
+        FiguraMod.popProfiler(3);
     }
 
     public void hudRender(PoseStack stack, MultiBufferSource bufferSource, Entity entity, float tickDelta) {
         if (renderer == null || !loaded)
             return;
+
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("hudRender");
 
         renderer.currentFilterScheme = PartFilterScheme.HUD;
         renderer.entity = entity;
@@ -542,6 +611,8 @@ public class Avatar {
         stack.popPose();
 
         Lighting.setupFor3DItems();
+
+        FiguraMod.popProfiler(3);
     }
 
     public boolean skullRender(PoseStack stack, MultiBufferSource bufferSource, int light, Direction direction, float yaw) {
@@ -620,7 +691,7 @@ public class Avatar {
         renderer.allowPivotParts = true;
 
         stack.popPose();
-        return comp > 0 && luaRuntime != null && !luaRuntime.vanilla_model.HEAD.getVisible();
+        return comp > 0 && luaRuntime != null && !luaRuntime.vanilla_model.HEAD.checkVisible();
     }
 
     public boolean renderPortrait(PoseStack stack, int x, int y, int screenSize, float modelScale, boolean scissors) {
@@ -718,10 +789,16 @@ public class Avatar {
         if (renderer == null || !loaded)
             return;
 
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(this);
+        FiguraMod.pushProfiler("updateMatrices");
+
         renderer.currentFilterScheme = PartFilterScheme.MODEL;
         renderer.matrices = stack;
         renderer.vanillaModelData.update(entityRenderer);
         renderer.updateMatrices();
+
+        FiguraMod.popProfiler(3);
     }
 
     // -- animations -- //
@@ -735,6 +812,12 @@ public class Avatar {
         for (Animation animation : animations.values())
             limit = AnimationPlayer.tick(animation, limit);
         animationComplexity = animationsLimit - limit;
+
+        if (limit <= 0) {
+            trustIssues.add(Trust.BB_ANIMATIONS);
+        } else {
+            trustIssues.remove(Trust.BB_ANIMATIONS);
+        }
     }
 
     public void clearAnimations() {

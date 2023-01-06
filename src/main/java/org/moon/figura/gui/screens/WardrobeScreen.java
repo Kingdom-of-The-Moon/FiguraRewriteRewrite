@@ -23,6 +23,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
 
     public static final Component TITLE = FiguraText.of("gui.panels.title.wardrobe");
 
+    private LoadingErrorWidget loadingErrorWidget;
     private StatusWidget statusWidget;
     private AvatarInfoWidget avatarInfo;
     private Label panic;
@@ -54,7 +55,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
 
         // -- left -- //
 
-        AvatarList avatarList = new AvatarList(4, 28, third, height - 36);
+        AvatarList avatarList = new AvatarList(4, 28, third, height - 36, this);
         addRenderableWidget(avatarList);
 
         // -- middle -- //
@@ -95,6 +96,8 @@ public class WardrobeScreen extends AbstractPanelScreen {
         statusWidget = new StatusWidget(entity.x + entity.width - 64, 0, 64);
         statusWidget.y = entity.y - statusWidget.height - 4;
         addRenderableOnly(statusWidget);
+
+        addRenderableOnly(loadingErrorWidget = new LoadingErrorWidget(statusWidget.x - 18, statusWidget.y, 14));
 
         // -- bottom -- //
 
@@ -152,6 +155,7 @@ public class WardrobeScreen extends AbstractPanelScreen {
     public void tick() {
         //children tick
         super.tick();
+        loadingErrorWidget.tick();
         statusWidget.tick();
         avatarInfo.tick();
 

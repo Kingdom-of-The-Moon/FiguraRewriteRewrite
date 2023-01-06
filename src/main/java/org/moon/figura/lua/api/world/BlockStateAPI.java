@@ -64,6 +64,16 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
+    public String getID() {
+        return id;
+    }
+
+    @LuaWhitelist
+    public LuaTable getProperties() {
+        return properties;
+    }
+
+    @LuaWhitelist
     public FiguraVec3 getPos() {
         return FiguraVec3.fromBlockPos(getBlockPos());
     }
@@ -76,7 +86,17 @@ public class BlockStateAPI {
     @LuaWhitelist
     public void setPos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
-        pos.free();
+    }
+
+    @LuaWhitelist
+    public BlockStateAPI pos(Double x, Double y, Double z){
+        return pos(LuaUtils.freeVec3("setPos", x, y, z));
+    }
+
+    @LuaWhitelist
+    public BlockStateAPI pos(FiguraVec3 pos) {
+        this.pos = pos.asBlockPos();
+        return this;
     }
 
     @LuaWhitelist

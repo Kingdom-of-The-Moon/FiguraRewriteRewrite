@@ -3,6 +3,7 @@ package org.moon.figura.model;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -39,6 +40,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
 
     public final PartCustomization customization;
     public ParentType parentType = ParentType.None;
+    private Boolean vanillaVisible = null;
 
     private final Map<String, FiguraModelPart> childCache = new HashMap<>();
     public final List<FiguraModelPart> children;
@@ -92,6 +94,8 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
             return;
 
         //apply vanilla transforms
+        vanillaVisible = partData.visible;
+
         FiguraVec3 defaultPivot = parentType.offset.copy();
 
         defaultPivot.sub(partData.pos);
@@ -232,13 +236,24 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void setPos(Double x, Double y, Double z){
+    public void setPos(double x, double y, double z){
         setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
     @LuaWhitelist
     public void setPos(@LuaNotNil FiguraVec3 pos) {
         this.customization.setPos(pos);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart pos(double x, double y, double z) {
+        return pos(FiguraVec3.oneUse(x, y, z));
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart pos(@LuaNotNil FiguraVec3 pos) {
+        setPos(pos);
+        return this;
     }
 
     @LuaWhitelist
@@ -252,8 +267,8 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void setRot(Double x, Double y, Double z){
-        setRot(LuaUtils.freeVec3("setRot", x, y, z));
+    public void setRot(double x, double y, double z){
+        setRot(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
@@ -262,18 +277,40 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    public FiguraModelPart rot(double x, double y, double z) {
+        return rot(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    public FiguraModelPart rot(@LuaNotNil FiguraVec3 rot) {
+        setRot(rot);
+        return this;
+    }
+
+    @LuaWhitelist
     public FiguraVec3 getOffsetRot() {
         return this.customization.getOffsetRot();
     }
 
     @LuaWhitelist
-    public void offsetRot(Double x, Double y, Double z){
-        offsetRot(LuaUtils.freeVec3("offsetRot", x, y, z));
+    public void setOffsetRot(double x, double y, double z){
+        setOffsetRot(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
-    public void offsetRot(@LuaNotNil FiguraVec3 offsetRot) {
+    public void setOffsetRot(@LuaNotNil FiguraVec3 offsetRot) {
         this.customization.offsetRot(offsetRot);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart offsetRot(double x, double y, double z) {
+        return offsetRot(FiguraVec3.oneUse(x, y, z));
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart offsetRot(@LuaNotNil FiguraVec3 offsetRot) {
+        setOffsetRot(offsetRot);
+        return this;
     }
 
     @LuaWhitelist
@@ -295,6 +332,17 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     public void setScale(@LuaNotNil FiguraVec3 scale) {
         this.customization.setScale(scale);
     }
+    
+    @LuaWhitelist
+    public FiguraModelPart scale(Double x, Double y, Double z) {
+        return scale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
+    }
+    
+    @LuaWhitelist
+    public FiguraModelPart scale(@LuaNotNil FiguraVec3 scale) {
+        setScale(scale);
+        return this;
+    }
 
     @LuaWhitelist
     public FiguraVec3 getAnimScale() {
@@ -307,13 +355,24 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void setPivot (Double x, Double y, Double z){
-        setPivot(LuaUtils.freeVec3("setPivot", x, y, z));
+    public void setPivot (double x, double y, double z){
+        setPivot(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
     public void setPivot(@LuaNotNil FiguraVec3 pivot) {
         this.customization.setPivot(pivot);
+    }
+    
+    @LuaWhitelist
+    public FiguraModelPart pivot(double x, double y, double z) {
+        return pivot(FiguraVec3.oneUse(x, y, z));
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart pivot(@LuaNotNil FiguraVec3 pivot) {
+        setPivot(pivot);
+        return this;
     }
 
     @LuaWhitelist
@@ -322,13 +381,24 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void offsetPivot(Double x, Double y, Double z){
-        offsetPivot(LuaUtils.freeVec3("offsetPivot", x, y, z));
+    public void setOffsetPivot(double x, double y, double z){
+        setOffsetPivot(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
-    public void offsetPivot(@LuaNotNil FiguraVec3 vec) {
+    public void setOffsetPivot(@LuaNotNil FiguraVec3 vec) {
         this.customization.offsetPivot(vec);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart offsetPivot(double x, double y, double z) {
+        return offsetPivot(FiguraVec3.oneUse(x, y, z));
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart offsetPivot(@LuaNotNil FiguraVec3 pivotOffset) {
+        setOffsetPivot(pivotOffset);
+        return this;
     }
 
     @LuaWhitelist
@@ -359,6 +429,19 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    public FiguraModelPart matrix(@LuaNotNil FiguraMat4 matrix) {
+        setMatrix(matrix);
+        return this;
+    }
+
+    public boolean getVanillaVisible() {
+        FiguraModelPart part = this;
+        while (part != null && part.vanillaVisible == null)
+            part = part.parent;
+        return part == null || part.vanillaVisible;
+    }
+
+    @LuaWhitelist
     public boolean getVisible() {
         FiguraModelPart part = this;
         while (part != null && part.customization.visible == null)
@@ -372,14 +455,14 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public String getPrimaryRenderType() {
-        RenderTypes renderType = this.customization.getPrimaryRenderType();
-        return renderType == null ? null : renderType.name();
+    public FiguraModelPart visible(Boolean bool) {
+        setVisible(bool);
+        return this;
     }
 
     @LuaWhitelist
-    public String getSecondaryRenderType() {
-        RenderTypes renderType = this.customization.getSecondaryRenderType();
+    public String getPrimaryRenderType() {
+        RenderTypes renderType = this.customization.getPrimaryRenderType();
         return renderType == null ? null : renderType.name();
     }
 
@@ -393,6 +476,18 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    public FiguraModelPart primaryRenderType(String type) {
+        setPrimaryRenderType(type);
+        return this;
+    }
+
+    @LuaWhitelist
+    public String getSecondaryRenderType() {
+        RenderTypes renderType = this.customization.getSecondaryRenderType();
+        return renderType == null ? null : renderType.name();
+    }
+
+    @LuaWhitelist
     public void setSecondaryRenderType(String renderType) {
         try {
             this.customization.setSecondaryRenderType(renderType == null ? null : RenderTypes.valueOf(renderType.toUpperCase()));
@@ -402,64 +497,94 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    public FiguraModelPart secondaryRenderType(String type) {
+        setSecondaryRenderType(type);
+        return this;
+    }
+
+    @LuaWhitelist
     public void setPrimaryTexture(String textureType){
-        setPrimaryTextureDumb(textureType, null);
+        setTextureDumb(textureType, null, false);
     }
 
     @LuaWhitelist
     public void setPrimaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
-        setPrimaryTextureDumb(textureType, path);
+        setTextureDumb(textureType, path, false);
     }
 
     @LuaWhitelist
     public void setPrimaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
-        setPrimaryTextureDumb(textureType, texture);
+        setTextureDumb(textureType, texture, false);
     }
 
-    public void setPrimaryTextureDumb(String type, Object x) {
-        try {
-            this.customization.primaryTexture = type == null ? null : Pair.of(FiguraTextureSet.OverrideType.valueOf(type.toUpperCase()), x);
-        } catch (Exception ignored) {
-            throw new LuaError("Invalid texture override type: " + type);
-        }
+    @LuaWhitelist
+    public FiguraModelPart primaryTexture(String textureType){
+        return setTextureDumb(textureType, null, false);
     }
 
+    @LuaWhitelist
+    public FiguraModelPart primaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
+        return setTextureDumb(textureType, path, false);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart primaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
+        return setTextureDumb(textureType, texture, false);
+    }
 
     @LuaWhitelist
     public void setSecondaryTexture(String textureType){
-        setSecondaryTextureDumb(textureType, null);
+        setTextureDumb(textureType, null, true);
     }
 
     @LuaWhitelist
     public void setSecondaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
-        setSecondaryTextureDumb(textureType, path);
+        setTextureDumb(textureType, path, true);
     }
 
     @LuaWhitelist
     public void setSecondaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
-        setSecondaryTextureDumb(textureType, texture);
+        setTextureDumb(textureType, texture, true);
     }
 
-    public void setSecondaryTextureDumb(String type, Object x) {
+    @LuaWhitelist
+    public FiguraModelPart secondaryTexture(String textureType){
+        return setTextureDumb(textureType, null, true);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart secondaryTexture(@LuaNotNil String textureType, @LuaNotNil String path){
+        return setTextureDumb(textureType, path, true);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart secondaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
+        return setTextureDumb(textureType, texture, true);
+    }
+
+    public FiguraModelPart setTextureDumb(String type, Object x, boolean secondary) {
         try {
-            this.customization.secondaryTexture = type == null ? null : Pair.of(FiguraTextureSet.OverrideType.valueOf(type.toUpperCase()), x);
+            if(secondary)
+                this.customization.secondaryTexture = type == null ? null : Pair.of(FiguraTextureSet.OverrideType.valueOf(type.toUpperCase()), x);
+            else
+                this.customization.primaryTexture = type == null ? null : Pair.of(FiguraTextureSet.OverrideType.valueOf(type.toUpperCase()), x);
+            return this;
         } catch (Exception ignored) {
             throw new LuaError("Invalid texture override type: " + type);
         }
     }
+    
+    
 
     @LuaWhitelist
     public List<FiguraTexture> getTextures() {
         List<FiguraTexture> list = new ArrayList<>();
 
         for (FiguraTextureSet set : textures) {
-            FiguraTexture texture = set.mainTex;
-            if (texture != null)
-                list.add(texture);
-
-            texture = set.emissiveTex;
-            if (texture != null)
-                list.add(texture);
+            for (FiguraTexture texture : set.textures) {
+                if (texture != null)
+                    list.add(texture);
+            }
         }
 
         return list;
@@ -483,24 +608,47 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void setUV(Double u, Double v){
-        setUV(LuaUtils.freeVec2("setUV", u, v));
-    }
-
-    @LuaWhitelist
-    public void setUV(@LuaNotNil FiguraVec2 uv) {
-        this.customization.uvMatrix.reset();
-        this.customization.uvMatrix.translate(uv.x, uv.y);
-    }
-
-    @LuaWhitelist
     public FiguraVec2 getUV() {
         return this.customization.uvMatrix.apply(0d, 0d);
     }
 
     @LuaWhitelist
-    public void setUVPixels(Double u, Double v){
-        setUVPixels(LuaUtils.freeVec2("setUVPixels", u, v));
+    public void setUV(double u, double v){
+        setUV(FiguraVec2.oneUse(u, v));
+    }
+
+    @LuaWhitelist
+    public void setUV(@LuaNotNil FiguraVec2 uv) {
+        this.customization.uvMatrix.reset();
+        this.customization.uvMatrix.translate(uv.x % 1, uv.y % 1);
+    }
+    
+    @LuaWhitelist
+    public FiguraModelPart uv(@LuaNotNil FiguraVec2 uv){
+        setUV(uv);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart uv(double u, double v) {
+        return uv(FiguraVec2.oneUse(u, v));
+    }
+
+    @LuaWhitelist
+    public FiguraVec2 getUVPixels() {
+        if (this.textureWidth == -1 || this.textureHeight == -1) {
+            if (this.customization.partType == PartCustomization.PartType.GROUP)
+                throw new LuaError("Cannot call getUVPixels on groups!");
+            else
+                throw new LuaError("Cannot call getUVPixels on parts with multiple texture sizes!");
+        }
+
+        return getUV().mul(this.textureWidth, this.textureHeight);
+    }
+
+    @LuaWhitelist
+    public void setUVPixels(double u, double v){
+        setUVPixels(FiguraVec2.oneUse(u, v));
     }
 
     @LuaWhitelist
@@ -518,15 +666,20 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public FiguraVec2 getUVPixels() {
-        if (this.textureWidth == -1 || this.textureHeight == -1) {
-            if (this.customization.partType == PartCustomization.PartType.GROUP)
-                throw new LuaError("Cannot call getUVPixels on groups!");
-            else
-                throw new LuaError("Cannot call getUVPixels on parts with multiple texture sizes!");
-        }
+    public FiguraModelPart uvPixels(double u, double v) {
+        setUVPixels(FiguraVec2.oneUse(u, v));
+        return this;
+    }
 
-        return getUV().mul(this.textureWidth, this.textureHeight);
+    @LuaWhitelist
+    public FiguraModelPart uvPixels(@LuaNotNil FiguraVec2 uv) {
+        setUVPixels(uv);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraMat3 getUVMatrix() {
+        return this.customization.uvMatrix;
     }
 
     @LuaWhitelist
@@ -535,8 +688,14 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public FiguraMat3 getUVMatrix() {
-        return this.customization.uvMatrix;
+    public FiguraModelPart uvMatrix(@LuaNotNil FiguraMat3 matrix) {
+        setUVMatrix(matrix);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraVec3 getColor() {
+        return this.customization.color.copy();
     }
 
     @LuaWhitelist
@@ -550,13 +709,13 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public FiguraVec3 getColor() {
-        return this.customization.color.copy();
+    public FiguraModelPart color(Double r, Double g, Double b) {
+        return color(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
     }
-
-    @LuaWhitelist
-    public void setOpacity(Float opacity) {
-        this.customization.alpha = opacity;
+    
+    public FiguraModelPart color(@LuaNotNil FiguraVec3 color) {
+        setColor(color);
+        return this;
     }
 
     @LuaWhitelist
@@ -565,18 +724,14 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void setLight(){
-        this.customization.light = null;
+    public void setOpacity(Float opacity) {
+        this.customization.alpha = opacity;
     }
-
+    
     @LuaWhitelist
-    public void setLight(@LuaNotNil FiguraVec2 light){
-        setLight(light.x, light.y);
-    }
-
-    @LuaWhitelist
-    public void setLight(double blockLight, double skyLight) {
-        this.customization.light = LightTexture.pack((int) blockLight, (int) skyLight);
+    public FiguraModelPart opacity(Float opacity) {
+        setOpacity(opacity);
+        return this;
     }
 
     @LuaWhitelist
@@ -584,20 +739,26 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
         Integer light = this.customization.light;
         return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
     }
-
+    
     @LuaWhitelist
-    public void setOverlay(){
-        this.customization.overlay = null;
+    public void setLight(@LuaNotNil FiguraVec2 light){
+        setLight(light.x, light.y);
     }
 
     @LuaWhitelist
-    public void setOverlay(FiguraVec2 overlay){
-        setOverlay((int) overlay.x, (int) overlay.y);
+    public void setLight(Double blockLight, double skyLight) {
+        this.customization.light = blockLight == null ? null : LightTexture.pack(blockLight.intValue(), (int) skyLight);
+    }
+    
+    @LuaWhitelist
+    public FiguraModelPart light(@LuaNotNil FiguraVec2 light) {
+        return light(light.x, light.y);
     }
 
     @LuaWhitelist
-    public void setOverlay(int whiteOverlay, int hurtOverlay) {
-        this.customization.overlay = OverlayTexture.pack(whiteOverlay, hurtOverlay);
+    public FiguraModelPart light(Double light, double skyLight) {
+        setLight(light, skyLight);
+        return this;
     }
 
     @LuaWhitelist
@@ -607,14 +768,41 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    public void setOverlay(@LuaNotNil FiguraVec2 overlay){
+        setOverlay(overlay.x, overlay.y);
+    }
+
+    @LuaWhitelist
+    public void setOverlay(Double whiteOverlay, double hurtOverlay) {
+        this.customization.overlay = whiteOverlay == null ? null : OverlayTexture.pack(whiteOverlay.intValue(), (int) hurtOverlay);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart overlay(@LuaNotNil FiguraVec2 overlay) {
+        return light(overlay.x, overlay.y);
+    }
+
+    @LuaWhitelist
+    public FiguraModelPart overlay(Double whiteOverlay, double hurtOverlay) {
+        setOverlay(whiteOverlay, hurtOverlay);
+        return this;
+    }
+
+    @LuaWhitelist
+    public String getParentType() {
+        return this.parentType == null ? null : this.parentType.name();
+    }
+
+    @LuaWhitelist
     public void setParentType(@LuaNotNil String parent) {
         this.parentType = ParentType.get(parent);
         this.customization.needsMatrixRecalculation = true;
     }
 
     @LuaWhitelist
-    public String getParentType() {
-        return this.parentType == null ? null : this.parentType.name();
+    public FiguraModelPart parentType(@LuaNotNil String parent) {
+        setParentType(parent);
+        return this;
     }
 
     @LuaWhitelist
@@ -639,21 +827,21 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
 
     @LuaWhitelist
     public RenderTask newText(@LuaNotNil String taskName) {
-        RenderTask task = new TextTask();
+        RenderTask task = new TextTask(name);
         this.renderTasks.put(taskName, task);
         return task;
     }
 
     @LuaWhitelist
     public RenderTask newItem(@LuaNotNil String taskName) {
-        RenderTask task = new ItemTask();
+        RenderTask task = new ItemTask(name);
         this.renderTasks.put(taskName, task);
         return task;
     }
 
     @LuaWhitelist
     public RenderTask newBlock(@LuaNotNil String taskName) {
-        RenderTask task = new BlockTask();
+        RenderTask task = new BlockTask(name);
         this.renderTasks.put(taskName, task);
         return task;
     }
@@ -669,13 +857,15 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
-    public void removeTask(){
+    public FiguraModelPart removeTask(){
         this.renderTasks.clear();
+        return this;
     }
 
     @LuaWhitelist
-    public void removeTask(@LuaNotNil String taskName) {
+    public FiguraModelPart removeTask(@LuaNotNil String taskName) {
         this.renderTasks.remove(taskName);
+        return this;
     }
 
     //-- METAMETHODS --//
@@ -697,7 +887,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @Override
-    public int compareTo(FiguraModelPart o) {
+    public int compareTo(@NotNull FiguraModelPart o) {
         if (this.isChildOf(o))
             return 1;
         else if (o.isChildOf(this))

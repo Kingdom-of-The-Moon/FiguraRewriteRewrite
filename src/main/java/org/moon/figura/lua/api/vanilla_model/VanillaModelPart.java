@@ -2,10 +2,12 @@ package org.moon.figura.lua.api.vanilla_model;
 
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
+import org.moon.figura.avatar.Avatar;
 import org.moon.figura.model.ParentType;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.trust.Trust;
 
 import java.util.function.Function;
 
@@ -19,75 +21,99 @@ public class VanillaModelPart extends VanillaPart {
     private final ParentType parentType;
     private final Function<EntityModel<?>, ModelPart> provider;
 
-    private final FiguraVec3 savedOriginRot = FiguraVec3.of();
-    private final FiguraVec3 savedOriginPos = FiguraVec3.of();
+    private final FiguraVec3 originRot = FiguraVec3.of();
+    private final FiguraVec3 originPos = FiguraVec3.of();
+    private final FiguraVec3 originScale = FiguraVec3.of();
+    private boolean originVisible;
 
-    private boolean visible = true;
-    private boolean storedVisibility;
-
-    public VanillaModelPart(String name, ParentType parentType, Function<EntityModel<?>, ModelPart> provider) {
-        super(name);
+    public VanillaModelPart(Avatar owner, String name, ParentType parentType, Function<EntityModel<?>, ModelPart> provider) {
+        super(owner, name);
         this.parentType = parentType;
         this.provider = provider;
     }
 
     @Override
-    public void alter(EntityModel<?> model) {
-        if (provider == null)
+    public void change(EntityModel<?> model) {
+        if (visible == null || provider == null)
             return;
 
         ModelPart part = provider.apply(model);
-        storedVisibility = part.visible;
+        if (part == null)
+            return;
+
         part.visible = visible;
     }
 
     @Override
-    public void store(EntityModel<?> model) {
+    public void save(EntityModel<?> model) {
         if (provider == null)
             return;
 
         ModelPart part = provider.apply(model);
-        savedOriginRot.set(-part.xRot, -part.yRot, part.zRot);
-        savedOriginRot.scale(180 / Math.PI);
+        if (part == null)
+            return;
+
+        originRot.set(-part.xRot, -part.yRot, part.zRot);
+        originRot.scale(180 / Math.PI);
 
         FiguraVec3 pivot = parentType.offset.copy();
         pivot.sub(part.x, part.y, part.z);
         pivot.mul(1, -1, -1);
-        savedOriginPos.set(pivot);
+        originPos.set(pivot);
         pivot.free();
+
+        originScale.set(part.xScale, part.yScale, part.zScale);
+
+        originVisible = part.visible;
     }
 
     @Override
     public void restore(EntityModel<?> model) {
-        if (provider != null)
-            provider.apply(model).visible = storedVisibility;
+        if (provider == null)
+            return;
+
+        ModelPart part = provider.apply(model);
+        if (part == null)
+            return;
+
+        part.visible = originVisible;
     }
 
     @Override
     @LuaWhitelist
-    public void setVisible(boolean visible) {
+    public void setVisible(Boolean visible) {
         this.visible = visible;
+        if (visible == null) {
+            owner.trustsToTick.remove(Trust.VANILLA_MODEL_EDIT);
+        } else {
+            owner.trustsToTick.add(Trust.VANILLA_MODEL_EDIT);
+        }
     }
 
     @Override
     @LuaWhitelist
-    public boolean getVisible() {
+    public Boolean getVisible() {
         return this.visible;
     }
 
     @LuaWhitelist
     public boolean getOriginVisible() {
-        return this.storedVisibility;
+        return this.originVisible;
     }
 
     @LuaWhitelist
     public FiguraVec3 getOriginRot() {
-        return this.savedOriginRot.copy();
+        return this.originRot.copy();
     }
 
     @LuaWhitelist
     public FiguraVec3 getOriginPos() {
-        return this.savedOriginPos.copy();
+        return this.originPos.copy();
+    }
+
+    @LuaWhitelist
+    public FiguraVec3 getOriginScale() {
+        return this.originScale.copy();
     }
 
     @Override

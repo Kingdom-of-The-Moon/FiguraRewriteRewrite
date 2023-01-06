@@ -26,12 +26,12 @@ public class BiomeAPI {
     private BlockPos pos;
 
     @LuaWhitelist
-    public final String name;
+    public final String id;
 
     public BiomeAPI(Biome biome, BlockPos pos) {
         this.biome = biome;
         this.pos = pos;
-        this.name = WorldAPI.getCurrentWorld().registryAccess().registry(Registry.BIOME_REGISTRY).get().getKey(biome).toString();
+        this.id = WorldAPI.getCurrentWorld().registryAccess().registry(Registry.BIOME_REGISTRY).get().getKey(biome).toString();
     }
 
     protected BlockPos getBlockPos() {
@@ -51,6 +51,17 @@ public class BiomeAPI {
     @LuaWhitelist
     public void setPos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
+    }
+
+    @LuaWhitelist
+    public BiomeAPI pos(Double x, Double y, Double z) {
+        return pos(LuaUtils.freeVec3("pos", x, y, z));
+    }
+
+    @LuaWhitelist
+    public BiomeAPI pos(FiguraVec3 pos) {
+        this.pos = pos.asBlockPos();
+        return this;
     }
 
     @LuaWhitelist
@@ -132,11 +143,11 @@ public class BiomeAPI {
 
     @LuaWhitelist
     public Object __index(String arg) {
-        return "name".equals(arg) ? name : null;
+        return "id".equals(arg) ? id : null;
     }
 
     @Override
     public String toString() {
-        return name + " (Biome)";
+        return id + " (Biome)";
     }
 }

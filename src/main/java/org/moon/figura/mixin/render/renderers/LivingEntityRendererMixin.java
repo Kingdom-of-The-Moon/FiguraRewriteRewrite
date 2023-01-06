@@ -3,7 +3,6 @@ package org.moon.figura.mixin.render.renderers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -12,6 +11,7 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.config.Config;
@@ -67,11 +67,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         if (currentAvatar == null)
             return;
 
-        if (currentAvatar.luaRuntime != null && getModel() instanceof PlayerModel<?> playerModel && entity instanceof Player) {
-            currentAvatar.luaRuntime.vanilla_model.PLAYER.store(playerModel);
-            if (currentAvatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
-                currentAvatar.luaRuntime.vanilla_model.PLAYER.alter(playerModel);
-        }
+        if (currentAvatar.luaRuntime != null && entity instanceof Player)
+            currentAvatar.luaRuntime.vanilla_model.PLAYER.save(getModel());
 
         boolean showBody = this.isBodyVisible(entity);
         boolean translucent = !showBody && Minecraft.getInstance().player != null && !entity.isInvisibleTo(Minecraft.getInstance().player);
@@ -79,11 +76,25 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
         boolean invisible = !translucent && !showBody && !glowing;
 
         //When viewed 3rd person, render all non-world parts.
-        PartFilterScheme filter = invisible ? PartFilterScheme.PIVOTS : entity.isSpectator() ? PartFilterScheme.HEAD : PartFilterScheme.MODEL;
+        PartFilterScheme filter = invisible ? PartFilterScheme.PIVOTS : PartFilterScheme.MODEL;
         int overlay = getOverlayCoords(entity, getWhiteOverlayProgress(entity, delta));
+
+        FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+        FiguraMod.pushProfiler(currentAvatar);
+
+        FiguraMod.pushProfiler("renderEvent");
         currentAvatar.renderEvent(delta);
+
+        FiguraMod.popPushProfiler("render");
         currentAvatar.render(entity, yaw, delta, translucent ? 0.15f : 1f, matrices, bufferSource, light, overlay, (LivingEntityRenderer<?, ?>) (Object) this, filter, translucent, glowing);
+
+        FiguraMod.popPushProfiler("postRenderEvent");
         currentAvatar.postRenderEvent(delta);
+
+        FiguraMod.popProfiler(3);
+
+        if (currentAvatar.luaRuntime != null && currentAvatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
+            currentAvatar.luaRuntime.vanilla_model.PLAYER.change(getModel());
     }
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"), method = "render(Lnet/minecraft/world/entity/LivingEntity;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V")
@@ -92,9 +103,8 @@ public abstract class LivingEntityRendererMixin<T extends LivingEntity, M extend
             return;
 
         //Render avatar with params
-        EntityModel<?> model = this.getModel();
-        if (model instanceof PlayerModel<?> playerModel && entity instanceof Player && currentAvatar.luaRuntime != null && currentAvatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
-            currentAvatar.luaRuntime.vanilla_model.PLAYER.restore(playerModel);
+        if (currentAvatar.luaRuntime != null && currentAvatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
+            currentAvatar.luaRuntime.vanilla_model.PLAYER.restore(getModel());
 
         currentAvatar = null;
     }

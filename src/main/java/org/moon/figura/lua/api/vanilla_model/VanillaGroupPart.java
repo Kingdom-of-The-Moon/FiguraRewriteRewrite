@@ -1,6 +1,7 @@
 package org.moon.figura.lua.api.vanilla_model;
 
 import net.minecraft.client.model.EntityModel;
+import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
@@ -17,10 +18,8 @@ public class VanillaGroupPart extends VanillaPart {
     private final Collection<VanillaPart> cachedParts;
     private final HashMap<String, VanillaPart> partMap;
 
-    private boolean visible = true;
-
-    public VanillaGroupPart(String name, VanillaPart... parts) {
-        super(name);
+    public VanillaGroupPart(Avatar owner, String name, VanillaPart... parts) {
+        super(owner, name);
         partMap = new HashMap<>();
         for (VanillaPart part : parts)
             partMap.put(part.name, part);
@@ -28,15 +27,15 @@ public class VanillaGroupPart extends VanillaPart {
     }
 
     @Override
-    public void alter(EntityModel<?> model) {
+    public void change(EntityModel<?> model) {
         for (VanillaPart part : cachedParts)
-            part.alter(model);
+            part.change(model);
     }
 
     @Override
-    public void store(EntityModel<?> model) {
+    public void save(EntityModel<?> model) {
         for (VanillaPart part : cachedParts)
-            part.store(model);
+            part.save(model);
     }
 
     @Override
@@ -47,7 +46,7 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    public void setVisible(boolean visible) {
+    public void setVisible(Boolean visible) {
         this.visible = visible;
         for (VanillaPart part : cachedParts)
             part.setVisible(visible);
@@ -55,7 +54,7 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    public boolean getVisible() {
+    public Boolean getVisible() {
         return this.visible;
     }
 

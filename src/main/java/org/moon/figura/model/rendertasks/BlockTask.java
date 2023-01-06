@@ -23,6 +23,11 @@ public class BlockTask extends RenderTask {
 
     private BlockState block;
     private int cachedComplexity;
+
+    public BlockTask(String name) {
+        super(name);
+    }
+
     @Override
     public boolean render(PartCustomization.Stack stack, MultiBufferSource buffer, int light, int overlay) {
         if (!enabled || block == null || block.isAir())
@@ -41,6 +46,16 @@ public class BlockTask extends RenderTask {
     @Override
     public int getComplexity() {
         return cachedComplexity;
+    }
+
+    @LuaWhitelist
+    public void setBlock(String block) {
+        block(LuaUtils.parseBlockState("setBlock", block));
+    }
+
+    @LuaWhitelist
+    public void setBlock(@LuaNotNil BlockStateAPI block) {
+        block(LuaUtils.parseBlockState("setBlock", block));
     }
 
     @LuaWhitelist
@@ -68,6 +83,6 @@ public class BlockTask extends RenderTask {
 
     @Override
     public String toString() {
-        return "Block Render Task";
+        return name + " (Block Render Task)";
     }
 }

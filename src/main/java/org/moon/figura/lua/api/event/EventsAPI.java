@@ -6,6 +6,8 @@ import org.moon.figura.lua.docs.LuaMetamethodDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
+import java.util.List;
+
 @LuaWhitelist
 @LuaTypeDoc(
         name = "EventsAPI",
@@ -42,7 +44,31 @@ public class EventsAPI {
     @LuaWhitelist
     public final LuaEvent MOUSE_MOVE = new LuaEvent();
     @LuaWhitelist
+    public final LuaEvent KEY_PRESS = new LuaEvent();
+    @LuaWhitelist
+    public final LuaEvent MOUSE_PRESS = new LuaEvent();
+    @LuaWhitelist
     public final LuaEvent USE_ITEM = new LuaEvent();
+    @LuaWhitelist
+    public List<LuaEvent> getEvents() {
+        return List.of(
+                ENTITY_INIT,
+                TICK,
+                WORLD_TICK,
+                RENDER,
+                POST_RENDER,
+                WORLD_RENDER,
+                POST_WORLD_RENDER,
+                CHAT_SEND_MESSAGE,
+                CHAT_RECEIVE_MESSAGE,
+                SKULL_RENDER,
+                MOUSE_SCROLL,
+                MOUSE_MOVE,
+                MOUSE_PRESS,
+                KEY_PRESS,
+                USE_ITEM
+        );
+    }
 
     @LuaWhitelist
     @LuaMetamethodDoc(overloads = @LuaMetamethodOverload(
@@ -64,6 +90,8 @@ public class EventsAPI {
             case "SKULL_RENDER" -> SKULL_RENDER;
             case "MOUSE_SCROLL" -> MOUSE_SCROLL;
             case "MOUSE_MOVE" -> MOUSE_MOVE;
+            case "MOUSE_PRESS" -> MOUSE_PRESS;
+            case "KEY_PRESS" -> KEY_PRESS;
             case "USE_ITEM" -> USE_ITEM;
             default -> null;
         };

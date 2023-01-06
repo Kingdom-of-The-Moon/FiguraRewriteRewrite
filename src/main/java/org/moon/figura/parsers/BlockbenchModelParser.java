@@ -30,9 +30,15 @@ public class BlockbenchModelParser {
     private final HashMap<Integer, String> textureIdMap = new HashMap<>();
 
     //parser
-    public ModelData parseModel(Path avatarFolder, File sourceFile, String json, String modelName, String folders) {
+    public ModelData parseModel(Path avatarFolder, File sourceFile, String json, String modelName, String folders) throws Exception {
         //parse json -> object
         BlockbenchModel model = GSON.fromJson(json, BlockbenchModel.class);
+
+        //meta check
+        if (!model.meta.model_format.equals("free"))
+            throw new Exception("Model \"" + modelName + "\" not generic format");
+        if (Integer.parseInt(model.meta.format_version.split("\\.")[0]) < 4)
+            throw new Exception("Model \"" + modelName + "\" is too old (version " + model.meta.format_version + "), minimum compatible version is 4.0");
 
         //return lists
         CompoundTag textures = new CompoundTag();
@@ -99,26 +105,32 @@ public class BlockbenchModelParser {
 
         //read textures
         for (int i = 0; i < textures.length; i++) {
+            BlockbenchModel.Texture texture = textures[i];
+
             //name
-            String name = folders + textures[i].name;
+            String name = folders + texture.name;
             if (name.endsWith(".png"))
                 name = name.substring(0, name.length() - 4);
 
-            //render type
-            String renderType = textures[i].render_mode;
+            //texture type
+            String textureType;
+
             if (name.endsWith("_e")) {
-                renderType = "emissive";
-                name = name.substring(0, name.length() - 2);
+                textureType = "e";
+            } else if (name.endsWith("_n")) {
+                textureType = "n";
+            } else if (name.endsWith("_s")) {
+                textureType = "s";
+            } else {
+                textureType = "d";
             }
-            if (!renderType.equals("emissive"))
-                renderType = "default";
 
             //parse the texture data
             String path;
             byte[] source;
             try {
                 //check the file to load
-                Path p = sourceFile.toPath().resolve(textures[i].relative_path);
+                Path p = sourceFile.toPath().resolve(texture.relative_path);
                 File f = p.toFile();
                 if (!f.exists()) throw new Exception("File do not exists!");
                 if (!p.normalize().startsWith(avatar)) throw new Exception("File from outside the avatar folder!");
@@ -131,23 +143,28 @@ public class BlockbenchModelParser {
                 path = path.substring(0, path.length() - 4);
 
                 //feedback
-                FiguraMod.debug("Loaded" + (renderType.equals("emissive") ? " Emissive" : "") + " Texture \"{}\" from {}", name, f);
+                FiguraMod.debug("Loaded " + textureType.toUpperCase() + " Texture \"{}\" from {}", name, f);
             } catch (Exception ignored) {
                 //otherwise, load from the source stored in the model
-                source = Base64.getDecoder().decode(textures[i].source.substring("data:image/png;base64,".length()));
-                path = folders + modelName + "." + name + (renderType.equals("emissive") ? "_e" : "");
+                source = Base64.getDecoder().decode(texture.source.substring("data:image/png;base64,".length()));
+                path = folders + modelName + "." + name;
+                FiguraMod.debug("Loaded " + textureType.toUpperCase() + " Texture \"{}\" from {}", name, path);
             }
 
             //add source nbt
             src.putByteArray(path, source);
 
+            //fix texture name
+            if (!textureType.equals("d"))
+                name = name.substring(0, name.length() - 2);
+
             //add textures nbt
             if (texturesTemp.containsKey(name)) {
-                texturesTemp.get(name).putString(renderType, path);
+                texturesTemp.get(name).putString(textureType, path);
             } else {
                 //create nbt
                 CompoundTag compound = new CompoundTag();
-                compound.putString(renderType, path);
+                compound.putString(textureType, path);
 
                 //add to temp lists
                 texturesTemp.put(name, compound);

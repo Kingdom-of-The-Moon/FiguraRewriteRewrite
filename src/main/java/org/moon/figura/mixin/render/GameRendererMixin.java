@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.ducks.GameRendererAccessor;
@@ -107,15 +108,24 @@ public abstract class GameRendererMixin implements GameRendererAccessor {
 
         avatar = AvatarManager.getAvatarForPlayer(this.minecraft.player.getUUID());
         if (avatar != null) {
+            FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+            FiguraMod.pushProfiler(avatar);
+            FiguraMod.pushProfiler("renderEvent");
             avatar.renderMode = EntityRenderMode.FIRST_PERSON;
             avatar.renderEvent(tickDelta);
+            FiguraMod.popProfiler(3);
         }
     }
 
     @Inject(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V", shift = At.Shift.BEFORE))
     private void posRenderItemInHand(PoseStack matrices, Camera camera, float tickDelta, CallbackInfo ci) {
-        if (avatar != null)
+        if (avatar != null) {
+            FiguraMod.pushProfiler(FiguraMod.MOD_ID);
+            FiguraMod.pushProfiler(avatar);
+            FiguraMod.pushProfiler("postRenderEvent");
             avatar.postRenderEvent(tickDelta);
+            FiguraMod.popProfiler(3);
+        }
     }
 
     @Inject(method = "tickFov", at = @At("RETURN"))

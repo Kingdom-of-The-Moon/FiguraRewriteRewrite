@@ -1,7 +1,6 @@
 package org.moon.figura.lua.api.world;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
@@ -31,8 +30,6 @@ import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
 import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.api.entity.PlayerAPI;
-import org.moon.figura.lua.api.particle.LuaParticle;
-import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.EntityUtils;
@@ -197,6 +194,12 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
+    public static String getDimension() {
+        Level world = getCurrentWorld();
+        return world.dimension().location().toString();
+    }
+
+    @LuaWhitelist
     public static Map<String, EntityAPI<?>> getPlayers() {
         HashMap<String, EntityAPI<?>> playerList = new HashMap<>();
         for (Player player : getCurrentWorld().players())
@@ -213,32 +216,32 @@ public class WorldAPI {
         }
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z){
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec){
         return raycastBlock(fluid, vec, FiguraVec3.oneUse());
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
         return raycastBlock(fluid, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, FiguraVec3 axis){
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), axis);
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 start, FiguraVec3 end) {
         if (true) return null;
 
@@ -256,32 +259,32 @@ public class WorldAPI {
         return map;
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(Double x, Double y, Double z){
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(FiguraVec3 vec){
         return raycastEntity(vec, FiguraVec3.oneUse());
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
         return raycastEntity(vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, FiguraVec3 axis){
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), axis);
     }
 
-    @LuaWhitelist
+    //@LuaWhitelist
     public HashMap<String, Object> raycastEntity(FiguraVec3 start, FiguraVec3 end) {
         if (true) return null;
 
