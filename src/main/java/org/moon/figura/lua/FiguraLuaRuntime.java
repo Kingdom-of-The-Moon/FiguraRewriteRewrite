@@ -138,7 +138,7 @@ public class FiguraLuaRuntime {
             String name = arg.checkjstring(1).replaceAll("[/\\\\]", ".");
             if (loadingScripts.contains(name))
                 throw new LuaError("Detected circular dependency in script " + loadingScripts.peek());
-            if (scripts.get(name) == null && arg(2).isfunction())
+            if (scripts.get(name) == null && arg.isfunction(2))
                 return arg.checkfunction(2).invoke(LuaValue.valueOf(name));
 
             return INIT_SCRIPT.apply(name);

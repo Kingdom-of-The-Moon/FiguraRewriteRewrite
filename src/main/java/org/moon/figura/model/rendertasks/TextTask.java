@@ -151,19 +151,19 @@ public class TextTask extends RenderTask {
     public FiguraVec3 getOutlineColor() {
         return this.outlineColor;
     }
-    
+
     @LuaWhitelist
-    public void setOutlineColor(double r, double g, double b){
+    public void setOutlineColor(double r, double g, double b) {
         setOutlineColor(FiguraVec3.oneUse(r, g, b));
     }
-    
+
     @LuaWhitelist
-    public void setOutlineColor(@LuaNotNil FiguraVec3 color){
+    public void setOutlineColor(@LuaNotNil FiguraVec3 color) {
         this.outlineColor = color.copy();
     }
 
     @LuaWhitelist
-    public TextTask outlineColor(double r, double g, double b){
+    public TextTask outlineColor(double r, double g, double b) {
         return outlineColor(FiguraVec3.oneUse(r, g, b));
     }
 

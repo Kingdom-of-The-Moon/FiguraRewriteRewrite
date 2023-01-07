@@ -33,7 +33,7 @@ public abstract class CacheStack<T extends CachedType<T>, S> {
      * Fully clears the stack, removing any cached elements as well.
      */
     public void fullClear() {
-        for(T val : values)
+        for (T val : values)
             val.free();
         values.clear();
         index = -1;

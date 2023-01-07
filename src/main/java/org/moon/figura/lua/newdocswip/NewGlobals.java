@@ -1,15 +1,11 @@
 package org.moon.figura.lua.newdocswip;
 
-import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.MethodWrapper;
-import org.moon.figura.lua.docs.FiguraMathDocs;
-import org.moon.figura.lua.docs.LuaTypeDoc;
-import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.lua.api.*;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
 import org.moon.figura.lua.api.entity.EntityAPI;
@@ -22,9 +18,10 @@ import org.moon.figura.lua.api.nameplate.NameplateAPI;
 import org.moon.figura.lua.api.particle.ParticleAPI;
 import org.moon.figura.lua.api.ping.PingAPI;
 import org.moon.figura.lua.api.sound.SoundAPI;
-import org.moon.figura.lua.api.TextureAPI;
 import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
 import org.moon.figura.lua.api.world.WorldAPI;
+import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.model.FiguraModelPart;
 
 import java.util.Map;
 
@@ -42,81 +39,65 @@ abstract class NewGlobals {
 
     @LuaWhitelist
     public MethodWrapper vec;
-
     @LuaWhitelist
     public ActionWheelAPI action_wheel;
-
     @LuaWhitelist
     public Map<String, Animation> animations;
-
     @LuaWhitelist
     public Map<String, LuaTable> figuraMetatables;
-
     @LuaWhitelist
     public NameplateAPI nameplate;
-
     @LuaWhitelist
     public WorldAPI world;
-
     @LuaWhitelist
     public VanillaModelAPI vanilla_model;
-
     @LuaWhitelist
     public Map<String, FiguraModelPart> models;
-
     @LuaWhitelist
     public PlayerAPI player;
-
     @LuaWhitelist
     public EventsAPI events;
-
     @LuaWhitelist
     public KeybindAPI keybinds;
-
     @LuaWhitelist
     public VectorsAPI vectors;
-
     @LuaWhitelist
     public MatricesAPI matrices;
-
     @LuaWhitelist
     public ClientAPI client;
-
     @LuaWhitelist
     public HostAPI host;
-
     @LuaWhitelist
     public AvatarAPI avatar;
-
     @LuaWhitelist
     public ParticleAPI particles;
-
     @LuaWhitelist
     public SoundAPI sounds;
-
     @LuaWhitelist
     public RendererAPI renderer;
-
     @LuaWhitelist
     public EntityAPI<?> user;
-
     @LuaWhitelist
     public Map<String, PingAPI> pings;
-
     @LuaWhitelist
     public TextureAPI textures;
-
     @LuaWhitelist
     public NewMathDocs math;
 
     @LuaWhitelist
-    public static String type(LuaValue value) { return null; }
+    public static String type(LuaValue value) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static LuaValue require(String scriptName) {return null;}
+    public static LuaValue require(String scriptName) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static LuaTable listFiles(){return null;}
+    public static LuaTable listFiles() {
+        return null;
+    }
 
     @LuaWhitelist
     public static LuaTable listFiles(String folder) {return null;}
@@ -125,22 +106,34 @@ abstract class NewGlobals {
     public static LuaTable listFiles(String folder, boolean subFolders) {return null;}
 
     @LuaWhitelist
-    public static String print(Object arg) {return null;}
+    public static String print(Object arg) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static String log(Object arg) {return null;}
+    public static String log(Object arg) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static String printTable(LuaTable table, int maxDepth, boolean silent){return null;}
+    public static String printTable(LuaTable table, int maxDepth, boolean silent) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static String printTable(LuaUserdata object, int maxDepth, boolean silent){return null;}
+    public static String printTable(LuaUserdata object, int maxDepth, boolean silent) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static String logTable(LuaTable table, int maxDepth, boolean silent){return null;}
+    public static String logTable(LuaTable table, int maxDepth, boolean silent) {
+        return null;
+    }
 
     @LuaWhitelist
-    public static String logTable(LuaUserdata object, int maxDepth, boolean silent){return null;}
+    public static String logTable(LuaUserdata object, int maxDepth, boolean silent) {
+        return null;
+    }
 
     @LuaWhitelist
     public static String printJson(String json) {
@@ -151,5 +144,4 @@ abstract class NewGlobals {
     public static String logJson(String json) {
         return null;
     }
-
 }

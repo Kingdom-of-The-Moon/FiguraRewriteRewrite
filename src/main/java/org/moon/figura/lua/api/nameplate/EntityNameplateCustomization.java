@@ -44,9 +44,9 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     public EntityNameplateCustomization pos(@LuaNotNil double x, double y, double z) {
         return pos(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
-    public EntityNameplateCustomization pos(FiguraVec3 pos){
+    public EntityNameplateCustomization pos(FiguraVec3 pos) {
         setPos(pos);
         return this;
     }
@@ -70,7 +70,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     public EntityNameplateCustomization scale(@LuaNotNil Double x, Double y, Double z) {
         return scale(LuaUtils.freeVec3("scale", x, y, z, 1, 1, 1));
     }
-    
+
     @LuaWhitelist
     public EntityNameplateCustomization scale(FiguraVec3 scale) {
         setScale(scale);
@@ -136,10 +136,10 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
-    public void setLight(@LuaNotNil FiguraVec2 light){
+    public void setLight(@LuaNotNil FiguraVec2 light) {
         setLight(light.x, light.y);
     }
-    
+
     @LuaWhitelist
     public void setLight(Double blockLight, double skyLight) {
         this.light = blockLight == null ? null : LightTexture.pack(blockLight.intValue(), (int) skyLight);
@@ -149,7 +149,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     public EntityNameplateCustomization light(@LuaNotNil FiguraVec2 light) {
         return light(light.x, light.y);
     }
-    
+
     @LuaWhitelist
     public EntityNameplateCustomization light(Double blockLight, double skyLight) {
         setLight(blockLight, skyLight);

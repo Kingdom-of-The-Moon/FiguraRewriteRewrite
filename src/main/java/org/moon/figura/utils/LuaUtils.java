@@ -32,7 +32,7 @@ public class LuaUtils {
         throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }
 
-    public static FiguraVec4 freeVec4(String methodName, Object x, Number y, Number z, Number w, double defaultX, double defaultY, double defaultZ, double defaultW){
+    public static FiguraVec4 freeVec4(String methodName, Object x, Number y, Number z, Number w, double defaultX, double defaultY, double defaultZ, double defaultW) {
         if (x instanceof FiguraVec3 vec)
             return FiguraVec4.oneUse(vec.x, vec.y, vec.z, defaultW);
         if (x instanceof FiguraVec4 vec)

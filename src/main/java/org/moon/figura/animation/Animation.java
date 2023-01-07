@@ -186,7 +186,7 @@ public class Animation {
         this.lastTime = time;
         this.frameTime = Math.max(time, this.offset);
     }
-    
+
     @LuaWhitelist
     public Animation time(float time) {
         setTime(time);
@@ -202,7 +202,7 @@ public class Animation {
     public void newCode(float time, @LuaNotNil String data) {
         codeFrames.put(Math.max(time, 0f), data);
     }
-    
+
     @LuaWhitelist
     public Animation code(float time, @LuaNotNil String data) {
         newCode(time, data);
@@ -213,7 +213,7 @@ public class Animation {
     public float getBlend() {
         return this.blend;
     }
-    
+
     @LuaWhitelist
     public void setBlend(float blend) {
         this.blend = blend;
@@ -229,7 +229,7 @@ public class Animation {
     public float getOffset() {
         return this.offset;
     }
-    
+
     @LuaWhitelist
     public void setOffset(float offset) {
         this.offset = offset;
@@ -245,7 +245,7 @@ public class Animation {
     public float getStartDelay() {
         return this.startDelay;
     }
-    
+
     @LuaWhitelist
     public void setStartDelay(float delay) {
         this.startDelay = delay;
@@ -261,7 +261,7 @@ public class Animation {
     public float getLoopDelay() {
         return this.loopDelay;
     }
-    
+
     @LuaWhitelist
     public void setLoopDelay(float delay) {
         this.loopDelay = delay;
@@ -277,7 +277,7 @@ public class Animation {
     public float getLength() {
         return this.length;
     }
-    
+
     @LuaWhitelist
     public void setLength(float length) {
         this.length = length;

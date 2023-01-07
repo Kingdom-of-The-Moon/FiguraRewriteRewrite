@@ -59,12 +59,12 @@ public class BlockTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask block(String block){
+    public RenderTask block(String block) {
         return block(LuaUtils.parseBlockState("block", block));
     }
 
     @LuaWhitelist
-    public RenderTask block(@LuaNotNil BlockStateAPI block){
+    public RenderTask block(@LuaNotNil BlockStateAPI block) {
         return block(LuaUtils.parseBlockState("block", block));
     }
 

@@ -5,8 +5,6 @@ import org.luaj.vm2.LuaError;
 import org.lwjgl.BufferUtils;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -522,7 +520,7 @@ public class FiguraMat3 extends FiguraMatrix<FiguraMat3, FiguraVec3> {
     }
 
     @LuaWhitelist
-    public FiguraVec2 apply(double x, double y){
+    public FiguraVec2 apply(double x, double y) {
         return apply(LuaUtils.freeVec2("apply", x, y));
     }
 
@@ -532,7 +530,7 @@ public class FiguraMat3 extends FiguraMatrix<FiguraMat3, FiguraVec3> {
     }
 
     @LuaWhitelist
-    public FiguraVec2 applyDir(double x, double y){
+    public FiguraVec2 applyDir(double x, double y) {
         return applyDir(LuaUtils.freeVec2("applyDir", x, y));
     }
 

@@ -6,9 +6,6 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.gui.ActionWheel;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.HashMap;
@@ -65,12 +62,12 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    public void setPage(Page page){
+    public void setPage(Page page) {
         currentPage = page;
     }
 
     @LuaWhitelist
-    public void setPage(@LuaNotNil String pageTitle){
+    public void setPage(@LuaNotNil String pageTitle) {
         if (pages.containsKey(pageTitle))
             currentPage = pages.get(pageTitle);
         else

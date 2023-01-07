@@ -25,12 +25,30 @@ public class KeybindAPI {
     }
 
     @LuaWhitelist
-    public FiguraKeybind newKeybind(@LuaNotNil String name, String key, boolean gui) {
-        if (key == null) key = "key.keyboard.unknown";
-        FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).gui(gui);
+    public FiguraKeybind newKeybind(@LuaNotNil String name) {
+        return newKeybind(name, "key.keyboard.unknown");
+    }
 
+    @LuaWhitelist
+    public FiguraKeybind newKeybind(@LuaNotNil String name, String key) {
+        return newKeybind(name, key, false);
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind newKeybind(@LuaNotNil String name, String key, boolean gui) {
+        FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).gui(gui);
         this.keyBindings.add(binding);
         return binding;
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind of(@LuaNotNil String name) {
+        return newKeybind(name);
+    }
+
+    @LuaWhitelist
+    public FiguraKeybind of(@LuaNotNil String name, String key) {
+        return newKeybind(name, key);
     }
 
     @LuaWhitelist

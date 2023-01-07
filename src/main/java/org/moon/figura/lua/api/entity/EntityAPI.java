@@ -77,7 +77,8 @@ public class EntityAPI<T extends Entity> {
         return thingy;
     }
 
-    public FiguraVec3 getPos(){
+    @LuaWhitelist
+    public FiguraVec3 getPos() {
         return getPos(1f);
     }
 
@@ -87,7 +88,8 @@ public class EntityAPI<T extends Entity> {
         return FiguraVec3.fromVec3(entity.getPosition(delta));
     }
 
-    public FiguraVec2 getRot(){
+    @LuaWhitelist
+    public FiguraVec2 getRot() {
         return getRot(1f);
     }
 

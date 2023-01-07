@@ -48,9 +48,9 @@ public abstract class RenderTask {
     public boolean isEnabled() {
         return this.enabled;
     }
-    
+
     @LuaWhitelist
-    public void setEnabled(boolean enabled){
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
@@ -64,19 +64,19 @@ public abstract class RenderTask {
     public FiguraVec2 getLight() {
         return light == null ? null : FiguraVec2.of(LightTexture.block(light), LightTexture.sky(light));
     }
-    
+
     @LuaWhitelist
     public void setLight(@LuaNotNil FiguraVec2 light) {
         setLight((int) light.x, (int) light.y);
     }
-    
+
     @LuaWhitelist
     public void setLight(int blockLight, int skyLight) {
         this.light = LightTexture.pack(blockLight, skyLight);
     }
 
     @LuaWhitelist
-    public RenderTask light(@LuaNotNil FiguraVec2 light){
+    public RenderTask light(@LuaNotNil FiguraVec2 light) {
         return light((int) light.x, (int) light.y);
     }
 
@@ -90,19 +90,19 @@ public abstract class RenderTask {
     public FiguraVec2 getOverlay() {
         return overlay == null ? null : FiguraVec2.of(overlay & 0xFFFF, overlay >> 16);
     }
-    
+
     @LuaWhitelist
     public void setOverlay(FiguraVec2 overlay) {
         setOverlay((int) overlay.x, (int) overlay.y);
     }
-    
+
     @LuaWhitelist
     public void setOverlay(int whiteOverlay, int hurtOverlay) {
         this.overlay = OverlayTexture.pack(whiteOverlay, hurtOverlay);
     }
 
     @LuaWhitelist
-    public RenderTask overlay(FiguraVec2 overlay){
+    public RenderTask overlay(FiguraVec2 overlay) {
         return overlay((int) overlay.x, (int) overlay.y);
     }
 
@@ -116,12 +116,12 @@ public abstract class RenderTask {
     public FiguraVec3 getPos() {
         return this.pos;
     }
-    
+
     @LuaWhitelist
     public void setPos(double x, double y, double z) {
         setPos(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     public void setPos(@LuaNotNil FiguraVec3 pos) {
         this.pos.set(pos);
@@ -129,7 +129,7 @@ public abstract class RenderTask {
 
     @LuaWhitelist
     @LuaMethodDoc("setPos")
-    public RenderTask pos(double x, double y, double z){
+    public RenderTask pos(double x, double y, double z) {
         return pos(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -143,12 +143,12 @@ public abstract class RenderTask {
     public FiguraVec3 getRot() {
         return this.rot;
     }
-    
+
     @LuaWhitelist
     public void setRot(double x, double y, double z) {
         setRot(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     public void setRot(@LuaNotNil FiguraVec3 rot) {
         this.rot.set(rot);
@@ -156,7 +156,7 @@ public abstract class RenderTask {
 
     @LuaWhitelist
     @LuaMethodDoc("setRot")
-    public RenderTask rot(double x, double y, double z){
+    public RenderTask rot(double x, double y, double z) {
         return rot(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -170,19 +170,19 @@ public abstract class RenderTask {
     public FiguraVec3 getScale() {
         return this.scale;
     }
-    
+
     @LuaWhitelist
-    public void setScale (Double x, Double y, Double z){
+    public void setScale (Double x, Double y, Double z) {
         setScale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
     }
-    
+
     @LuaWhitelist
     public void setScale(@LuaNotNil FiguraVec3 scale) {
         this.scale.set(scale);
     }
 
     @LuaWhitelist
-    public RenderTask scale(Double x, Double y, Double z){
+    public RenderTask scale(Double x, Double y, Double z) {
         return scale(LuaUtils.freeVec3("scale", x, y, z, 1, 1, 1));
     }
 

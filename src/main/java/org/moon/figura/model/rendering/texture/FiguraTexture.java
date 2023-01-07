@@ -173,12 +173,12 @@ public class FiguraTexture extends SimpleTexture {
     }
 
     @LuaWhitelist
-    public void setPixel(int x, int y, @LuaNotNil FiguraVec3 rgb){
+    public void setPixel(int x, int y, @LuaNotNil FiguraVec3 rgb) {
         setPixel(x, y, rgb.x, rgb.y, rgb.z, 0);
     }
 
     @LuaWhitelist
-    public void setPixel(int x, int y, @LuaNotNil FiguraVec4 rgba){
+    public void setPixel(int x, int y, @LuaNotNil FiguraVec4 rgba) {
         setPixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
     }
 
@@ -193,15 +193,15 @@ public class FiguraTexture extends SimpleTexture {
     }
 
     @LuaWhitelist
-    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec3 rgb){
+    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec3 rgb) {
         return pixel(x, y, rgb.x, rgb.y, rgb.z, 0);
     }
 
     @LuaWhitelist
-    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec4 rgba){
+    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec4 rgba) {
         return pixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
     }
-    
+
     @LuaWhitelist
     public FiguraTexture pixel(int x ,int y, double r, double g, double b, double a) {
         setPixel(x, y, r, g, b, a);
@@ -209,12 +209,12 @@ public class FiguraTexture extends SimpleTexture {
     }
 
     @LuaWhitelist
-    public FiguraTexture fill(int x, int y, int width, int height, @LuaNotNil FiguraVec3 rgb){
+    public FiguraTexture fill(int x, int y, int width, int height, @LuaNotNil FiguraVec3 rgb) {
         return fill(x, y, width, height, rgb.x, rgb.y, rgb.z, 0);
     }
 
     @LuaWhitelist
-    public FiguraTexture fill(int x, int y, int width, int height, @LuaNotNil FiguraVec4 rgba){
+    public FiguraTexture fill(int x, int y, int width, int height, @LuaNotNil FiguraVec4 rgba) {
         return fill(x, y, width, height, rgba.x, rgba.y, rgba.z, rgba.w);
     }
 

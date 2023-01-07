@@ -39,17 +39,17 @@ public class SoundAPI {
 
 
     @LuaWhitelist
-    public LuaSound playSound(String id, double x, double y, double z){
+    public LuaSound playSound(String id, double x, double y, double z) {
         return playSound(id, x, y, z, 1, 1, false);
     }
 
     @LuaWhitelist
-    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos){
+    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos) {
         return playSound(id, pos.x, pos.y, pos.z, 1, 1, false);
     }
 
     @LuaWhitelist
-    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos, float volume, float pitch, boolean loop){
+    public LuaSound playSound(@LuaNotNil String id, @LuaNotNil FiguraVec3 pos, float volume, float pitch, boolean loop) {
         return playSound(id, pos.x, pos.y, pos.z, volume, pitch, loop);
     }
 
@@ -64,12 +64,12 @@ public class SoundAPI {
     }
 
     @LuaWhitelist
-    public void newSound(String name, String base64Text){
+    public void newSound(String name, String base64Text) {
         newSound(name, Base64.getDecoder().decode(base64Text));
     }
 
     @LuaWhitelist
-    public void newSound(String name, byte[] byteArray){
+    public void newSound(String name, byte[] byteArray) {
         try {
             owner.loadSound(name, byteArray);
         } catch (Exception e) {

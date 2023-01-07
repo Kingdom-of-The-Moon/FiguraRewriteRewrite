@@ -10,7 +10,7 @@ public class CacheUtils {
 
     public static final int DEFAULT_MAX_SIZE = 500;
 
-    public static <T extends CachedType<T>> Indifferent<T> getIndifferent(Supplier<T> generator, int count){
+    public static <T extends CachedType<T>> Indifferent<T> getIndifferent(Supplier<T> generator, int count) {
         return new Indifferent<>(generator, count);
     }
 
@@ -19,7 +19,7 @@ public class CacheUtils {
     }
 
     public static <T extends CachedType<T>> Cache<T> getCache(Supplier<T> generator) {
-        return new Cache<>(generator, DEFAULT_MAX_SIZE  );
+        return new Cache<>(generator, DEFAULT_MAX_SIZE);
     }
 
     public static class Cache<T extends CachedType<T>> {

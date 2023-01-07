@@ -53,7 +53,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static BiomeAPI getBiome(Double x, Double y, Double z){
+    public static BiomeAPI getBiome(Double x, Double y, Double z) {
         return getBiome(LuaUtils.freeVec3("getBiome", x, y, z));
     }
 
@@ -65,7 +65,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static BlockStateAPI getBlockState(Double x, Double y, Double z){
+    public static BlockStateAPI getBlockState(Double x, Double y, Double z) {
         return getBlockState(LuaUtils.freeVec3("getBlockState", x, y, z));
     }
 
@@ -79,7 +79,7 @@ public class WorldAPI {
         return new BlockStateAPI(world.getBlockState(blockPos), blockPos);
     }
 
-    public static int getRedstonePower(Double x, Double y, Double z){
+    public static int getRedstonePower(Double x, Double y, Double z) {
         return getRedstonePower(LuaUtils.freeVec3("getRedstonePower", x, y, z));
     }
 
@@ -93,7 +93,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getStrongRedstonePower(Double x, Double y, Double z){
+    public static int getStrongRedstonePower(Double x, Double y, Double z) {
         return getStrongRedstonePower(LuaUtils.freeVec3("getStrongRedstonePower", x, y, z));
     }
 
@@ -133,7 +133,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getLightLevel(Double x, Double y, Double z){
+    public static int getLightLevel(Double x, Double y, Double z) {
         return getLightLevel(LuaUtils.freeVec3("getLightLevel", x, y, z));
     }
 
@@ -149,7 +149,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getSkyLightLevel(Double x, Double y, Double z){
+    public static int getSkyLightLevel(Double x, Double y, Double z) {
         return getSkyLightLevel(LuaUtils.freeVec3("getSkyLightLevel", x, y, z));
     }
 
@@ -164,7 +164,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static int getBlockLightLevel(Double x, Double y, Double z){
+    public static int getBlockLightLevel(Double x, Double y, Double z) {
         return getBlockLightLevel(LuaUtils.freeVec3("getBlockLightLevel", x, y, z));
     }
 
@@ -179,7 +179,7 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static boolean isOpenSky(Double x, Double y, Double z){
+    public static boolean isOpenSky(Double x, Double y, Double z) {
         return isOpenSky(LuaUtils.freeVec3("isOpenSky", x, y, z));
     }
 
@@ -217,27 +217,27 @@ public class WorldAPI {
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z){
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z) {
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec){
+    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec) {
         return raycastBlock(fluid, vec, FiguraVec3.oneUse());
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ) {
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+    public HashMap<String, Object> raycastBlock(boolean fluid, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ) {
         return raycastBlock(fluid, vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, FiguraVec3 axis){
+    public HashMap<String, Object> raycastBlock(boolean fluid, Double x, Double y, Double z, FiguraVec3 axis) {
         return raycastBlock(fluid, LuaUtils.freeVec3("addParticle", x, y, z), axis);
     }
 
@@ -260,27 +260,27 @@ public class WorldAPI {
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z){
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z) {
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastEntity(FiguraVec3 vec){
+    public HashMap<String, Object> raycastEntity(FiguraVec3 vec) {
         return raycastEntity(vec, FiguraVec3.oneUse());
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ) {
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastEntity(FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+    public HashMap<String, Object> raycastEntity(FiguraVec3 vec, Double axisX, Double axisY, Double axisZ) {
         return raycastEntity(vec, LuaUtils.freeVec3("addParticle", axisX, axisY, axisZ));
     }
 
     //@LuaWhitelist
-    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, FiguraVec3 axis){
+    public HashMap<String, Object> raycastEntity(Double x, Double y, Double z, FiguraVec3 axis) {
         return raycastEntity(LuaUtils.freeVec3("addParticle", x, y, z), axis);
     }
 
@@ -311,12 +311,12 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static BlockStateAPI newBlock(String block){
+    public static BlockStateAPI newBlock(String block) {
         return newBlock(block, 0, 0, 0);
     }
 
     @LuaWhitelist
-    public static BlockStateAPI newBlock(String block, double x, double y, double z){
+    public static BlockStateAPI newBlock(String block, double x, double y, double z) {
         return newBlock(block, LuaUtils.freeVec3("newBlock", x, y, z));
     }
 
@@ -332,12 +332,12 @@ public class WorldAPI {
     }
 
     @LuaWhitelist
-    public static ItemStackAPI newItem(@LuaNotNil String item){
+    public static ItemStackAPI newItem(@LuaNotNil String item) {
         return newItem(item, 1);
     }
 
     @LuaWhitelist
-    public static ItemStackAPI newItem(@LuaNotNil String item, @LuaNotNil int count){
+    public static ItemStackAPI newItem(@LuaNotNil String item, @LuaNotNil int count) {
         return newItem(item, count, 0);
     }
 

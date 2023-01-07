@@ -79,7 +79,7 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    public void setPos(Double x, Double y, Double z){
+    public void setPos(Double x, Double y, Double z) {
         setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
@@ -89,7 +89,7 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
-    public BlockStateAPI pos(Double x, Double y, Double z){
+    public BlockStateAPI pos(Double x, Double y, Double z) {
         return pos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
