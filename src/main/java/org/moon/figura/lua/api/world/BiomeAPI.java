@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.biome.Biome;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.ColorUtils;
@@ -59,6 +60,7 @@ public class BiomeAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public BiomeAPI pos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
         return this;

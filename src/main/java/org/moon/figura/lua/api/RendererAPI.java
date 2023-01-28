@@ -4,14 +4,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import org.luaj.vm2.ast.Str;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.utils.LuaUtils;
 
 import java.util.UUID;
 
@@ -98,6 +97,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setShadowRadius")
     public RendererAPI shadowRadius(Float shadowRadius) {
         setShadowRadius(shadowRadius);
         return this;
@@ -139,6 +139,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setCameraPos")
     public RendererAPI cameraPos(FiguraVec3 pos) {
         setCameraPos(pos);
         return this;
@@ -165,6 +166,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setCameraPivot")
     public RendererAPI cameraPivot(FiguraVec3 pivot) {
         setCameraPivot(pivot);
         return this;
@@ -181,6 +183,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("set_offset_camera_pivot")
     public void setCameraOffsetPivot(FiguraVec3 pivotOffset) {
         this.cameraOffsetPivot = pivotOffset == null ? null : pivotOffset.copy();
     }
@@ -191,6 +194,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_offset_camera_pivot")
     public RendererAPI offsetCameraPivot(FiguraVec3 pivotOffset) {
         setCameraOffsetPivot(pivotOffset);
         return this;
@@ -217,6 +221,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setCameraRot")
     public RendererAPI cameraRot(FiguraVec3 rot) {
         setCameraRot(rot);
         return this;
@@ -243,6 +248,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOffsetCameraRot")
     public RendererAPI offsetCameraRot(FiguraVec3 rot) {
         setOffsetCameraRot(rot);
         return this;
@@ -259,6 +265,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setPostEffect")
     public RendererAPI postEffect(String effect) {
         setPostEffect(effect);
         return this;
@@ -275,6 +282,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setFOV")
     public RendererAPI fov(Float fov) {
         setFOV(fov);
         return this;
@@ -301,6 +309,7 @@ public class RendererAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setCrosshairOffset")
     public RendererAPI crosshairOffset(FiguraVec2 crosshairOffset) {
         setCrosshairOffset(crosshairOffset);
         return this;

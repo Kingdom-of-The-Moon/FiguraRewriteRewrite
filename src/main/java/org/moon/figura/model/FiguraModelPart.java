@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
@@ -251,6 +252,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public FiguraModelPart pos(@LuaNotNil FiguraVec3 pos) {
         setPos(pos);
         return this;
@@ -282,6 +284,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setRot")
     public FiguraModelPart rot(@LuaNotNil FiguraVec3 rot) {
         setRot(rot);
         return this;
@@ -308,6 +311,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOffsetRot")
     public FiguraModelPart offsetRot(@LuaNotNil FiguraVec3 offsetRot) {
         setOffsetRot(offsetRot);
         return this;
@@ -339,6 +343,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setScale")
     public FiguraModelPart scale(@LuaNotNil FiguraVec3 scale) {
         setScale(scale);
         return this;
@@ -370,6 +375,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPivot")
     public FiguraModelPart pivot(@LuaNotNil FiguraVec3 pivot) {
         setPivot(pivot);
         return this;
@@ -396,6 +402,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOffsetPivot")
     public FiguraModelPart offsetPivot(@LuaNotNil FiguraVec3 pivotOffset) {
         setOffsetPivot(pivotOffset);
         return this;
@@ -429,6 +436,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setMatrix")
     public FiguraModelPart matrix(@LuaNotNil FiguraMat4 matrix) {
         setMatrix(matrix);
         return this;
@@ -455,6 +463,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setVisible")
     public FiguraModelPart visible(Boolean bool) {
         setVisible(bool);
         return this;
@@ -476,6 +485,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPrimaryRenderType")
     public FiguraModelPart primaryRenderType(String type) {
         setPrimaryRenderType(type);
         return this;
@@ -497,6 +507,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setSecondaryRenderType")
     public FiguraModelPart secondaryRenderType(String type) {
         setSecondaryRenderType(type);
         return this;
@@ -528,6 +539,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPrimaryTexture")
     public FiguraModelPart primaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
         return setTextureDumb(textureType, texture, false);
     }
@@ -558,6 +570,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setSecondaryTexture")
     public FiguraModelPart secondaryTexture(@LuaNotNil String textureType, @LuaNotNil FiguraTexture texture){
         return setTextureDumb(textureType, texture, true);
     }
@@ -630,6 +643,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setUV")
     public FiguraModelPart uv(double u, double v) {
         return uv(FiguraVec2.oneUse(u, v));
     }
@@ -666,6 +680,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setUVPixels")
     public FiguraModelPart uvPixels(double u, double v) {
         setUVPixels(FiguraVec2.oneUse(u, v));
         return this;
@@ -688,6 +703,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setUVMatrix")
     public FiguraModelPart uvMatrix(@LuaNotNil FiguraMat3 matrix) {
         setUVMatrix(matrix);
         return this;
@@ -713,6 +729,8 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
         return color(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
     }
     
+    @LuaWhitelist
+    @LuaMethodDoc("setColor")
     public FiguraModelPart color(@LuaNotNil FiguraVec3 color) {
         setColor(color);
         return this;
@@ -729,6 +747,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setOpacity")
     public FiguraModelPart opacity(Float opacity) {
         setOpacity(opacity);
         return this;
@@ -756,6 +775,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLight")
     public FiguraModelPart light(Double light, double skyLight) {
         setLight(light, skyLight);
         return this;
@@ -783,6 +803,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverlay")
     public FiguraModelPart overlay(Double whiteOverlay, double hurtOverlay) {
         setOverlay(whiteOverlay, hurtOverlay);
         return this;
@@ -800,6 +821,7 @@ public class FiguraModelPart implements Comparable<FiguraModelPart> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_parent_type")
     public FiguraModelPart parentType(@LuaNotNil String parent) {
         setParentType(parent);
         return this;

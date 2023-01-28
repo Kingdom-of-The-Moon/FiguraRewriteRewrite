@@ -18,6 +18,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.luaj.vm2.LuaTable;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec6;
@@ -94,6 +95,7 @@ public class BlockStateAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public BlockStateAPI pos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
         return this;

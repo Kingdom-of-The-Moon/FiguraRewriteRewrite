@@ -6,6 +6,7 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
@@ -117,6 +118,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setTitle")
     public Action title(String title) {
         setTitle(title);
         return this;
@@ -143,6 +145,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setColor")
     public Action color(@LuaNotNil FiguraVec3 color) {
         setColor(color);
         return this;
@@ -169,6 +172,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setHoverColor")
     public Action hoverColor(@LuaNotNil FiguraVec3 color) {
         setHoverColor(color);
         return this;
@@ -190,6 +194,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_item")
     public Action item(ItemStackAPI item) {
         return item(item.itemStack);
     }
@@ -215,6 +220,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setHoverItem")
     public Action hoverItem(ItemStackAPI item) {
         return hoverItem(item.itemStack);
     }
@@ -260,6 +266,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setTexture")
     public Action texture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         setTexture(texture, u, v, width, height, scale);
         return this;
@@ -301,6 +308,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setHoverTexture")
     public Action hoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         setHoverTexture(texture, u, v, width, height, scale);
         return this;
@@ -316,6 +324,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnLeftClick")
     public Action onLeftClick(LuaFunction function) {
         setOnLeftClick(function);
         return this;
@@ -327,6 +336,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnRightClick")
     public Action onRightClick(LuaFunction function) {
         setOnRightClick(function);
         return this;
@@ -338,6 +348,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnToggle")
     public Action onToggle(LuaFunction function) {
         setOnToggle(function);
         return this;
@@ -349,6 +360,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnUntoggle")
     public Action onUntoggle(LuaFunction function) {
         setOnUntoggle(function);
         return this;
@@ -360,6 +372,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnScroll")
     public Action onScroll(LuaFunction function) {
         setOnScroll(function);
         return this;
@@ -380,6 +393,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setToggleTitle")
     public Action toggleTitle(String title) {
         setToggleTitle(title);
         return this;
@@ -406,6 +420,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setToggleColor")
     public Action toggleColor(FiguraVec3 color) {
         setToggleColor(color);
         return this;
@@ -427,6 +442,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setToggleItem")
     public Action toggleItem(ItemStackAPI item) {
         return toggleItem(item.itemStack);
     }
@@ -472,6 +488,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setToggleTexture")
     public Action toggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         setToggleTexture(texture, u, v, width, height, scale);
         return this;
@@ -488,6 +505,7 @@ public class Action {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setToggled")
     public Action toggled(boolean bool) {
         setToggled(bool);
         return this;

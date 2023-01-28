@@ -55,6 +55,7 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setEnabled")
     public RenderTask enabled(boolean enabled) {
         setEnabled(enabled);
         return this;
@@ -81,6 +82,7 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLight")
     public RenderTask light(int blockLight, int skyLight) {
         setLight(blockLight, skyLight);
         return this;
@@ -107,6 +109,7 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverlay")
     public RenderTask overlay(int whiteOverlay, int hurtOverlay) {
         setOverlay(whiteOverlay, hurtOverlay);
         return this;
@@ -187,6 +190,7 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setScale")
     public RenderTask scale(@LuaNotNil FiguraVec3 scale) {
         setScale(scale);
         return this;

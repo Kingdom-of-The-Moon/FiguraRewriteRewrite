@@ -10,8 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
-import org.moon.figura.lua.docs.LuaMethodShadow;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.trust.Trust;
@@ -177,6 +175,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public LuaSound pos(FiguraVec3 pos) {
         setPos(pos);
         return this;
@@ -195,6 +194,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setVolume")
     public LuaSound volume(float volume) {
         setVolume(volume);
         return this;
@@ -213,6 +213,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setAttenuation")
     public LuaSound attenuation(float attenuation) {
         setAttenuation(attenuation);
         return this;
@@ -231,6 +232,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPitch")
     public LuaSound pitch(float pitch) {
         setPitch(pitch);
         return this;
@@ -249,6 +251,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLoop")
     public LuaSound loop(boolean loop) {
         setLoop(loop);
         return this;

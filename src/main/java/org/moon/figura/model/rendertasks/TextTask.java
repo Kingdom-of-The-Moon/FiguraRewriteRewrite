@@ -8,11 +8,11 @@ import net.minecraft.network.chat.Component;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.avatar.Badges;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.ColorUtils;
-import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -78,6 +78,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setText")
     public RenderTask text(String text) {
         setText(text);
         return this;
@@ -94,6 +95,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setCentered")
     public RenderTask centered(boolean centered) {
         setCentered(centered);
         return this;
@@ -110,6 +112,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setRight")
     public RenderTask right(boolean right) {
         setRight(right);
         return this;
@@ -126,6 +129,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setShadow")
     public RenderTask shadow(boolean shadow) {
         setShadow(shadow);
         return this;
@@ -142,6 +146,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOutline")
     public RenderTask outline(boolean outline) {
         setOutline(outline);
         return this;
@@ -168,6 +173,7 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOutlineColor")
     public TextTask outlineColor(@LuaNotNil FiguraVec3 color) {
         setOutlineColor(color);
         return this;

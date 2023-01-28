@@ -3,6 +3,7 @@ package org.moon.figura.lua.api.nameplate;
 import net.minecraft.client.renderer.LightTexture;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -46,6 +47,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public EntityNameplateCustomization pos(FiguraVec3 pos){
         setPos(pos);
         return this;
@@ -72,6 +74,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setScale")
     public EntityNameplateCustomization scale(FiguraVec3 scale) {
         setScale(scale);
         return this;
@@ -104,6 +107,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setBackgroundColor")
     public EntityNameplateCustomization backgroundColor(@LuaNotNil FiguraVec3 rgb, Double a) {
         setBackgroundColor(rgb, a);
         return this;
@@ -125,6 +129,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOutlineColor")
     public EntityNameplateCustomization outlineColor(@LuaNotNil FiguraVec3 rgb) {
         setOutlineColor(rgb);
         return this;
@@ -151,6 +156,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setLight")
     public EntityNameplateCustomization light(Double blockLight, double skyLight) {
         setLight(blockLight, skyLight);
         return this;
@@ -167,6 +173,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setVisible")
     public EntityNameplateCustomization visible(boolean visible) {
         setVisible(visible);
         return this;
@@ -183,6 +190,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOutline")
     public EntityNameplateCustomization outline(boolean outline) {
         setOutline(outline);
         return this;
@@ -199,6 +207,7 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setShadow")
     public EntityNameplateCustomization shadow(boolean shadow) {
         setShadow(shadow);
         return this;

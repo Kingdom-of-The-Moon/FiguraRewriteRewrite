@@ -5,6 +5,7 @@ import org.luaj.vm2.LuaValue;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.trust.Trust;
@@ -61,6 +62,7 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setColor")
     public AvatarAPI color(@LuaNotNil FiguraVec3 color) {
         setColor(color);
         return this;

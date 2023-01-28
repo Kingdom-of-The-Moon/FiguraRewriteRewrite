@@ -9,6 +9,7 @@ import org.luaj.vm2.Varargs;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.List;
@@ -118,6 +119,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnPress")
     public FiguraKeybind onPress(LuaFunction function) {
         setOnPress(function);
         return this;
@@ -129,6 +131,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOnRelease")
     public FiguraKeybind onRelease(LuaFunction function) {
         setOnRelease(function);
         return this;
@@ -140,6 +143,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setKey")
     public FiguraKeybind key(@LuaNotNil String key) {
         setKey(key);
         return this;
@@ -181,6 +185,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_enabled")
     public FiguraKeybind enabled(boolean enabled) {
         setEnabled(enabled);
         return this;
@@ -197,6 +202,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setGUI")
     public FiguraKeybind gui(boolean enabled) {
         setGUI(enabled);
         return this;

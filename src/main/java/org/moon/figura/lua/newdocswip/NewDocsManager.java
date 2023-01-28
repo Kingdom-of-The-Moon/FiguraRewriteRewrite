@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
@@ -56,8 +57,8 @@ import static org.moon.figura.utils.ColorUtils.Colors.*;
 
 public class NewDocsManager {
 
-	public static final FiguraResourceListener RELOAD_LISTENER = new FiguraResourceListener("docs", manger -> NewDocsManager.updateDescriptions());
-	//class name map
+    public static final FiguraResourceListener RELOAD_LISTENER = new FiguraResourceListener("docs", manger -> NewDocsManager.updateDescriptions());
+    //class name map
     private static final Map<Class<?>, String> NAME_MAP = new HashMap<>() {{
         //Built in type names, even for things that don't have docs
         put(Double.class, "Number");
@@ -102,6 +103,12 @@ public class NewDocsManager {
     private static final Map<Class<?>, ClassDoc> classDocMap = new HashMap<>();
 
     private static final BaseDoc root = new BaseDoc("docs_new");
+    private static final List<Pattern> steps = Stream.of(
+        "([^A-Z_\\d])([A-Z]{2,}(?![a-z_0\\d$])|[A-Z]+$)",
+        "([^_])([A-Z][a-z]+)",
+        "([a-z])([A-Z])"
+    ).map(Pattern::compile).toList();
+    private static ClassDoc globals = null;
     public static final BaseDoc extensions = new BaseDoc("extensions", root);
 
     private static FiguraLuaRuntime runtime;
@@ -122,7 +129,7 @@ public class NewDocsManager {
 
         BaseDoc types = new BaseDoc("types", root);
         for (Class<?> clas : FiguraAPIManager.WHITELISTED_CLASSES)
-            if (!classDocMap.containsKey(clas) && clas.isAnnotationPresent(LuaTypeDoc.class))
+            if (!classDocMap.containsKey(clas) && (Object) clas.getDeclaredAnnotation(LuaTypeDoc.class) instanceof LuaTypeDoc typeDoc && !typeDoc.value().isBlank())
                 new ClassDoc(clas, types);
         for(ClassDoc doc : classDocMap.values())
             doc.initFieldsAndMethods();
@@ -152,7 +159,7 @@ public class NewDocsManager {
         new EnumDoc<>(PlayerModelPart.class, enums){ protected MutableComponent getTextForElement(@NotNull Enum<PlayerModelPart> elem){
             return Component.empty().append(Component.literal(elem.name()).withStyle(WHITE));
         }};
-        new ListDoc(enums, "KeyIDs", null){ public List<MutableComponent> getList() {
+        new ListDoc(enums, "KeyIDs", "key_ids"){ public List<MutableComponent> getList() {
             return KeyMappingAccessor.getAll().keySet().stream().map(Component::literal).toList();
         }};
         new ListDoc(enums, "Keybind", null){ public List<MutableComponent> getList() {
@@ -171,47 +178,90 @@ public class NewDocsManager {
             }
         };
 
-        ClassDoc globals = new ClassDoc(NewGlobals.class, root);
+        globals = new ClassDoc(NewGlobals.class, root);
         globals.initFieldsAndMethods();
         ClassDoc math = new ClassDoc(NewMathDocs.class, globals);
         math.initFieldsAndMethods();
-
-        for(Doc doc : globals.children)
-            doc.parent = root;
-        classDocMap.remove(globals.clas);
+        math.parent = root;
+        
     }
 
     public static void updateDescriptions() {
-        for(Doc doc : allDocs){
-            if (doc instanceof MethodDoc || doc instanceof FieldDoc) {
-                Doc parent = doc.parent;
-                String type = doc instanceof MethodDoc ? "method" : "field";
-                String nameKey = Doc.toSnakeCase(doc.name);
-                String descriptionKey;
-                ArrayList<String> list = new ArrayList<>();
-                if (parent instanceof ClassDoc) {
-                    do {
-                        descriptionKey = parent.descriptionKey + "." + nameKey;
-                        list.add(descriptionKey);
-                        parent = ((ClassDoc) parent).superClassDoc;
-                    } while (parent != null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey));
-                    if (parent == null && FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
-                        FiguraMod.LOGGER.warn("No doc string found for {}'s {} {}, checked: {}", doc.parent.name, type, doc.name, list);
-                    }
-                } else if (parent == root) {
-                    descriptionKey = "globals." + nameKey;
-                    if (FiguraText.of("docs." + descriptionKey).getString().equals("figura.docs." + descriptionKey)) {
-                        FiguraMod.LOGGER.warn("No doc string found for global {} {}, checked: {}", type, doc.name, "figura.docs." + descriptionKey);
-                    }
-                } else {
-                    descriptionKey = nameKey;
-                }
-                doc.descriptionKey = descriptionKey;
-            } else if(doc instanceof ListDoc listDoc){
-                listDoc.updateMaxWidth();
-            }
-
+        Set<Doc> unnamedDocs = new HashSet<>(allDocs);
+        Map<Doc, List<String>> triedKeys = new HashMap<>();
+        for (Doc doc : allDocs) {
+            doc.descriptionKey = doc instanceof ListDoc? doc.descriptionKey : null;
         }
+        int lastUnmapped = 0;
+        while (lastUnmapped != unnamedDocs.size()){
+            triedKeys.clear();
+            lastUnmapped = unnamedDocs.size();
+            for(Doc doc : Set.copyOf(unnamedDocs)){
+                Doc parent = doc.parent;
+                String descriptionKey = doc.descriptionKey;
+                ArrayList<String> list = new ArrayList<>();
+                if(doc instanceof MethodDoc methodDoc && methodDoc.wrapper instanceof MethodWrapper wrapper){
+                    for(Method method : wrapper.getMethods()){
+                        if((Object) method.getDeclaredAnnotation(LuaMethodDoc.class) instanceof LuaMethodDoc jaavj){
+                            descriptionKey = a(parent, jaavj.value(), list);
+                            break;
+                        }
+                    }
+                }
+                if(doc instanceof FieldDoc fieldDoc && (Object) fieldDoc.field.getDeclaredAnnotation(LuaFieldDoc.class) instanceof  LuaFieldDoc jaavj){
+                    descriptionKey = a(parent, jaavj.value(), list);
+                }
+                if (doc instanceof ListDoc listDoc) {
+                    listDoc.updateMaxWidth();
+                }
+                if (descriptionKey == null || isKeyMissing(descriptionKey)) {
+                    descriptionKey = a(parent, doc.name, list);
+                }
+                if(descriptionKey != null && !isKeyMissing(descriptionKey)){
+                    doc.descriptionKey = descriptionKey;
+                    unnamedDocs.remove(doc);
+                    triedKeys.remove(doc);
+                } else {
+                    triedKeys.put(doc, list);
+                }
+            }
+        }
+        if(lastUnmapped != 0){
+            StringBuilder builder = new StringBuilder();
+            for (Iterator<Doc> iterator = triedKeys.keySet().stream().sorted(Comparator.comparing(doc -> (doc.parent != null ? doc.parent.name : "") + doc.name)).iterator(); iterator.hasNext();){
+                Doc doc = iterator.next();
+                builder.append(doc.getClass().getSimpleName().replace("Doc", "")).append(" ").append(doc.name);
+                if(doc.parent instanceof ClassDoc classDoc){
+                    builder.append(": in class ").append(classDoc.name);
+                } else if(doc.parent == globals) {
+                    builder.append(": in globals");
+                }
+                builder.append(" - ").append(triedKeys.get(doc).toString());
+                if(iterator.hasNext()){
+                    builder.append("\n\t");
+                }
+            }
+            FiguraMod.LOGGER.warn("Failed to get description keys for {} entries:\n\t{}", lastUnmapped, builder);
+        }
+    }
+    
+    private static String a(Doc parent, String nameKey, List<String> list){
+        nameKey = toSnakeCase(nameKey);
+        if(parent instanceof ClassDoc classDoc) {
+            do {
+                list.add(classDoc.descriptionKey + "." + nameKey);
+                classDoc = classDoc.superClassDoc;
+            } while (classDoc != null && isKeyMissing(list.get(list.size() - 1)));
+            return list.get(list.size() - 1);
+        } else {
+            list.add((parent == globals ? "globals." : "") + nameKey);
+            return list.get(0);
+        }
+        
+    }
+    
+    public static boolean isKeyMissing(String key) {
+        return !Language.getInstance().has("figura.docs." + key);
     }
 
     public static LiteralCommandNode<FabricClientCommandSource> getCommand() {
@@ -226,6 +276,26 @@ public class NewDocsManager {
         return Component.empty().append(type).withStyle(RESET);
     }
 
+    protected static String toSnakeCase(String name){
+        boolean b = name.toLowerCase().equals(name) || name.toUpperCase().equals(name);
+        if(!(b) && name.indexOf('_') != -1) return null;
+        else if (b) return name.toLowerCase();
+        else if (!name.isBlank()){
+            Matcher matcher;
+            for(Pattern step : steps){
+                matcher = step.matcher(name);
+                while (matcher.find()){
+                    name = matcher.replaceFirst(matcher.group(1) + "_" + matcher.group(2).toLowerCase());
+                    matcher = step.matcher(name);
+                }
+            }
+            if(Character.isUpperCase(name.charAt(0)))
+                name = name.substring(0, 1).toLowerCase() + name.substring(1);
+            return name;
+        } else
+            return name;
+    }
+
     abstract static class Doc implements Command<FabricClientCommandSource> {
         public static final MutableComponent HEADER = FiguraText.of("doc_template.header", FiguraText.of()).withStyle(FRAN_PINK.style).withStyle(UNDERLINE);
         public static final MutableComponent GLOBAL = FiguraText.of("docs.text.global");
@@ -237,7 +307,7 @@ public class NewDocsManager {
         public String name;
         public List<Doc> children = new ArrayList<>();
         public boolean executes = true;
-        public String descriptionKey;
+        public String descriptionKey = null;
         public LiteralCommandNode<FabricClientCommandSource> command;
 
         public Doc(Doc parent, String name){
@@ -325,30 +395,9 @@ public class NewDocsManager {
             return "";
         }
 
-        private static final List<Pattern> steps = Stream.of(
-            "([^A-Z_\\d])([A-Z]{2,}(?![a-z_0\\d$])|[A-Z]+$)",
-            "([^_])([A-Z][a-z]+)",
-            "([a-z])([A-Z])"
-        ).map(Pattern::compile).toList();
-
-        protected static String toSnakeCase(String name){
-            boolean b = name.toLowerCase().equals(name) || name.toUpperCase().equals(name);
-            if(!(b) && name.indexOf('_') != -1) return null;
-            else if (b) return name.toLowerCase();
-            else if (!name.isBlank()){
-                Matcher matcher;
-                for(Pattern step : steps){
-                    matcher = step.matcher(name);
-                    while (matcher.find()){
-                        name = matcher.replaceFirst(matcher.group(1) + "_" + matcher.group(2).toLowerCase());
-                        matcher = step.matcher(name);
-                    }
-                }
-                if(Character.isUpperCase(name.charAt(0)))
-                    name = name.substring(0, 1).toLowerCase() + name.substring(1);
-                return name;
-            } else
-                return name;
+        @Override
+        public String toString() {
+            return Language.getInstance().getOrDefault("figura." + getType()) + " " + name;
         }
 
         protected String getCommandPath() {
@@ -393,23 +442,18 @@ public class NewDocsManager {
         }
 
         void initFieldsAndMethods() {
-            boolean bl = clas.getAnnotation(LuaTypeDoc.class).blacklist();
             for (Field field : clas.getDeclaredFields())
-                if (field.isAnnotationPresent(LuaWhitelist.class) && field.isAnnotationPresent(LuaFieldDoc.class) && bl == "".equals(field.getAnnotation(LuaFieldDoc.class).value()))
-                    addChild(new FieldDoc(field, this));
+                if (field.isAnnotationPresent(LuaWhitelist.class) && (!((Object) field.getDeclaredAnnotation(LuaFieldDoc.class) instanceof LuaFieldDoc lfd ) || "".equals(lfd.value())))
+                    new FieldDoc(field, this);
             LuaTable index = runtime.typeManager.getIndexFor(clas);
             if(index != null)
                 for (LuaValue value : Arrays.stream(index.keys()).map(index::rawget).toArray(LuaValue[]::new)){
-                    String[] name = new String[1];
-                    if (
-                            value instanceof LuaFunction wrapper && (
-                                    !(wrapper instanceof MethodWrapper methodWrapper) || methodWrapper.getMethods().stream().anyMatch(method -> {
-                                        String[] strings = method.getAnnotation(LuaMethodDoc.class).value().split("\\.");
-                                        name[0] = strings[strings.length - 1];
-                                        return "".equals(name[0]);
-                                    }) == bl
-                            )
-                    ) addChild(new MethodDoc(wrapper, this, name[0] == null ? wrapper.name() : name[0]));
+                    if (value instanceof LuaFunction wrapper && wrapper instanceof MethodWrapper methodWrapper) {
+                        Optional<LuaMethodDoc> annotation = methodWrapper.getMethods().stream().map(method -> method.getAnnotation(LuaMethodDoc.class)).filter(Objects::nonNull).findFirst();
+                        if(annotation.isEmpty() || !annotation.get().value().isBlank()){
+                            new MethodDoc(wrapper, this);
+                        }
+                    }
                 }
             else
                 FiguraMod.LOGGER.warn("Index table for class {} does not exist, maybe it has not been initialised properly?", clas);
@@ -448,6 +492,7 @@ public class NewDocsManager {
             return Component.empty().append(getTypeNameText(field.getType())).append(" " + name);
         }
 
+        @SuppressWarnings("unused")
         public boolean isEditable(){
             return !Modifier.isFinal(field.getModifiers());
         }
@@ -469,18 +514,37 @@ public class NewDocsManager {
         @Override
         protected MutableComponent getExtra() {
             MutableComponent syntax = Component.literal("\n").append(getBullet(FiguraText.of("docs.text.syntax")).append(":\n\t").withStyle(CHLOE_PURPLE.style));
-            if(wrapper instanceof MethodWrapper figuraFunction){
+            if(wrapper instanceof MethodWrapper methodWrapper){
                 var prefix = Component.empty();
                 if(parent instanceof ClassDoc type){
                     prefix = Component.translatable(
                         "<%s>",
                         getTypeNameText(type.clas)
                     ).withStyle(YELLOW).append(
-                            Component.literal(figuraFunction.isStatic? "." : ":").withStyle(FRAN_PINK.style).withStyle(BOLD)
+                            Component.literal(methodWrapper.isStatic? "." : ":").withStyle(FRAN_PINK.style).withStyle(BOLD)
                     );
                 }
-                for (Iterator<Method> iterator = figuraFunction.getMethods().stream().sorted(Comparator.comparingInt(Method::getParameterCount)).iterator(); iterator.hasNext(); ) {
-                    Method method = iterator.next();
+                Iterator<Method> sorted = methodWrapper.getMethods().stream().sorted((m1, m2) -> {
+                    int res = Integer.compare(m1.getParameterCount(), m2.getParameterCount());
+                    if(res != 0)
+                        return res;
+                    else {
+                        Parameter[] i1 = m1.getParameters(), i2 = m2.getParameters();
+                        int i = 0;
+                        while (i < i1.length){
+                            res = i1[i].getName().compareToIgnoreCase(i2[i].getName());
+                            if(res != 0)
+                                return res;
+                            res = runtime.typeManager.getTypeName(i1[i].getType()).compareToIgnoreCase(runtime.typeManager.getTypeName(i2[i].getType()));
+                            if(res != 0)
+                                return res;
+                            i++;
+                        }
+                        return 0;
+                    }
+                }).iterator();
+                while (sorted.hasNext()) {
+                    Method method = sorted.next();
                     MutableComponent argText = Component.empty();
                     for (Parameter param : method.getParameters()) {
                         if(!argText.getString().isBlank())

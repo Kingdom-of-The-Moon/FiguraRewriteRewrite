@@ -1,13 +1,12 @@
 package org.moon.figura.lua.newdocswip;
 
-import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaUserdata;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.MethodWrapper;
-import org.moon.figura.lua.docs.FiguraMathDocs;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.lua.api.*;
@@ -128,6 +127,7 @@ abstract class NewGlobals {
     public static String print(Object arg) {return null;}
 
     @LuaWhitelist
+    @LuaMethodDoc("print")
     public static String log(Object arg) {return null;}
 
     @LuaWhitelist
@@ -140,6 +140,7 @@ abstract class NewGlobals {
     public static String logTable(LuaTable table, int maxDepth, boolean silent){return null;}
 
     @LuaWhitelist
+    @LuaMethodDoc("printTable")
     public static String logTable(LuaUserdata object, int maxDepth, boolean silent){return null;}
 
     @LuaWhitelist
@@ -148,6 +149,7 @@ abstract class NewGlobals {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("printJson")
     public static String logJson(String json) {
         return null;
     }

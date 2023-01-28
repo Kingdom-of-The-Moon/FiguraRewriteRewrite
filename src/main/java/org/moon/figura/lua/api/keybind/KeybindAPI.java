@@ -5,6 +5,7 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.input.KeyMappingAccessor;
 
@@ -34,6 +35,7 @@ public class KeybindAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("newKeybind")
     public FiguraKeybind of(@LuaNotNil String name, String key, boolean gui) {
         return newKeybind(name, key, gui);
     }

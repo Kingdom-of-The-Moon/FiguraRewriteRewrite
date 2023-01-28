@@ -5,6 +5,7 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.FiguraModelPart;
 
@@ -170,6 +171,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPlaying")
     public Animation playing(boolean playing) {
         setPlaying(playing);
         return this;
@@ -188,6 +190,7 @@ public class Animation {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setTime")
     public Animation time(float time) {
         setTime(time);
         return this;
@@ -204,6 +207,7 @@ public class Animation {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("newCode")
     public Animation code(float time, @LuaNotNil String data) {
         newCode(time, data);
         return this;
@@ -220,6 +224,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setBlend")
     public Animation blend(float blend) {
         setBlend(blend);
         return this;
@@ -236,6 +241,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOffset")
     public Animation offset(float offset) {
         setOffset(offset);
         return this;
@@ -252,6 +258,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setStartDelay")
     public Animation startDelay(float delay) {
         setStartDelay(delay);
         return this;
@@ -268,6 +275,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLoopDelay")
     public Animation loopDelay(float delay) {
         setLoopDelay(delay);
         return this;
@@ -284,6 +292,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLength")
     public Animation length(float length) {
         setLength(length);
         return this;
@@ -295,6 +304,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverride")
     public Animation override(boolean override) {
         setOverride(override);
         return this;
@@ -321,6 +331,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverrideRot")
     public Animation overrideRot(boolean override) {
         setOverrideRot(override);
         return this;
@@ -332,6 +343,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverridePos")
     public Animation overridePos(boolean override) {
         setOverridePos(override);
         return this;
@@ -343,6 +355,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setOverrideScale")
     public Animation overrideScale(boolean override) {
         setOverrideScale(override);
         return this;
@@ -363,6 +376,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLoop")
     public Animation loop(@LuaNotNil String loop) {
         setLoop(loop);
         return this;
@@ -379,6 +393,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPriority")
     public Animation priority(int priority) {
         setPriority(priority);
         return this;
@@ -397,6 +412,7 @@ public class Animation {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setSpeed")
     public Animation speed(Float speed) {
         setSpeed(speed);
         return this;

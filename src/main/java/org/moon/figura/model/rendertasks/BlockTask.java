@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.BlockStateAPI;
@@ -64,6 +65,7 @@ public class BlockTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setBlock")
     public RenderTask block(@LuaNotNil BlockStateAPI block){
         return block(LuaUtils.parseBlockState("block", block));
     }

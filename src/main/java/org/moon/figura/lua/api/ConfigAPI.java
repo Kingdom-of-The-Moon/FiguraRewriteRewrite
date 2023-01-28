@@ -7,6 +7,7 @@ import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
@@ -242,6 +243,7 @@ public class ConfigAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setName")
     public ConfigAPI name(@LuaNotNil String name) {
         setName(name);
         return this;

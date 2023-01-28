@@ -1009,6 +1009,7 @@
   "figura.docs.matrix3": "A matrix with 3 rows and 3 columns",
   "figura.docs.matrix4": "A matrix with 4 rows and 4 columns",
 
+  "figura.docs.matrix_n": "Base matrix class",
   "figura.docs.matrix_n.copy": "Creates and returns a new copy of this matrix",
   "figura.docs.matrix_n.get_column": "Gets the given column of this matrix, as a vector\nIndexing starts at 1, as usual",
   "figura.docs.matrix_n.get_row": "Gets the given row of this matrix, as a vector\nIndexing starts at 1, as usual",
@@ -1121,7 +1122,7 @@
   "figura.docs.nameplate_entity.set_visible": "Sets whether or not the nameplate should be rendered",
   "figura.docs.nameplate_entity.has_shadow": "Gets whether or not the nameplate should have shadow",
   "figura.docs.nameplate_entity.set_shadow": "Sets whether or not the nameplate should have shadow\nIncompatible with \"outline\"",
-  "figura.docs.nameplate_entity.has_outliner": "Gets whether or not the nameplate should have outline",
+  "figura.docs.nameplate_entity.has_outline": "Gets whether or not the nameplate should have outline",
   "figura.docs.nameplate_entity.set_outline": "Sets whether or not the nameplate should have outline\nIncompatible with \"shadow\"",
 
   "figura.docs.nameplate_group": "A customization that holds another nameplate customizations",
@@ -1222,6 +1223,7 @@
   "figura.docs.renderer.get_camera_offset_rot": "Gets the offset rotation for the camera",
   "figura.docs.renderer.set_offset_camera_rot": "Sets the offset rotation for the camera\nNil values for rotation are assumed to be 0\nAngles are given in degrees\nFor absolute rotation values, check out the non-offset rot function",
   "figura.docs.renderer.set_post_effect": "Sets the current rendering effect\nSame as the discontinued Super Secret Settings",
+  "figura.docs.renderer.get_post_effect": "Gets the current rendering effect\nSame as the discontinued Super Secret Settings",
   "figura.docs.renderer.set_fov": "Sets the multiplier of your fov\nThe default value is nil, which means no changes will be applied to your fov",
   "figura.docs.renderer.get_fov": "Gets the multiplier of your fov",
   "figura.docs.renderer.set_crosshair_offset": "Sets the offset of your crosshair",
@@ -1350,6 +1352,7 @@
   "figura.docs.vector5": "A vector that holds 5 numbers\nCan be created using functions in the \"vectors\" api",
   "figura.docs.vector6": "A vector that holds 6 numbers\nCan be created using functions in the \"vectors\" api",
 
+  "figura.docs.vector_n": "The base vector class",
   "figura.docs.vector_n.x": "The first coordinate of this vector\nCan also be gotten with the indices \"r\" and [1]",
   "figura.docs.vector_n.y": "The second coordinate of this vector\nCan also be gotten with the indices \"g\" and [2]",
   "figura.docs.vector_n.z": "The third coordinate of this vector\nCan also be gotten with the indices \"b\" and [3]",

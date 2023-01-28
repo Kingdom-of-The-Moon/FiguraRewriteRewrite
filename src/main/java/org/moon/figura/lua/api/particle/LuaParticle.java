@@ -87,6 +87,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPos")
     public LuaParticle pos(@LuaNotNil FiguraVec3 pos) {
         setPos(pos);
         return this;
@@ -114,6 +115,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setVelocity")
     public LuaParticle velocity(@LuaNotNil FiguraVec3 velocity) {
         setVelocity(velocity);
         return this;
@@ -152,6 +154,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setColor")
     public LuaParticle color(FiguraVec4 rgba) {
         setColor(rgba);
         return this;
@@ -168,6 +171,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setLifetime")
     public LuaParticle lifetime(int age) {
         setLifetime(age);
         return this;
@@ -185,6 +189,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPower")
     public LuaParticle power(float power) {
         setPower(power);
         return this;
@@ -202,6 +207,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setScale")
     public LuaParticle scale(float scale) {
         setScale(scale);
         return this;
@@ -218,6 +224,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setGravity")
     public LuaParticle gravity(float gravity) {
         setGravity(gravity);
         return this;
@@ -234,6 +241,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setPhysics")
     public LuaParticle physics(boolean physics) {
         setPhysics(physics);
         return this;

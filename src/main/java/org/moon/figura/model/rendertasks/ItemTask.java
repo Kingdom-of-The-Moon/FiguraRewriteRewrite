@@ -10,6 +10,7 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.LuaUtils;
@@ -69,6 +70,7 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setItem")
     public RenderTask item(@LuaNotNil ItemStackAPI item){
         return item(LuaUtils.parseItemStack("item", item));
     }
@@ -97,6 +99,7 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setRenderType")
     public RenderTask renderType(@LuaNotNil String type) {
         setRenderType(type);
         return this;

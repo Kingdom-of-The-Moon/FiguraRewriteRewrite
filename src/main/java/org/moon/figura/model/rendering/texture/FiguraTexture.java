@@ -16,6 +16,7 @@ import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -203,6 +204,7 @@ public class FiguraTexture extends SimpleTexture {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setPixel")
     public FiguraTexture pixel(int x ,int y, double r, double g, double b, double a) {
         setPixel(x, y, r, g, b, a);
         return this;

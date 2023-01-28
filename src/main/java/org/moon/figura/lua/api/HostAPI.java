@@ -85,6 +85,7 @@ public class HostAPI {
     }
     
     @LuaWhitelist
+    @LuaMethodDoc("setTitleTimes")
     public HostAPI titleTimes(int fadeInTime, int stayTime, int fadeOutTime) {
         setTitleTimes(fadeInTime, stayTime, fadeOutTime);
         return this;
@@ -103,6 +104,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setTitle")
     public HostAPI title(@LuaNotNil String text) {
         setTitle(text);
         return this;
@@ -115,6 +117,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setSubtitle")
     public HostAPI subtitle(@LuaNotNil String text) {
         setSubtitle(text);
         return this;
@@ -127,6 +130,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_actionbar")
     public HostAPI actionbar(@LuaNotNil String text, boolean animated) {
         setActionbar(text, animated);
         return this;
@@ -218,6 +222,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("set_chat_color")
     public HostAPI chatColor(FiguraVec3 color) {
         setChatColor(color);
         return this;
@@ -238,6 +243,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setChatText")
     public HostAPI chatText(@LuaNotNil String text) {
         setChatText(text);
         return this;
@@ -318,6 +324,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("setClipboard")
     public HostAPI clipboard(@LuaNotNil String text) {
         setClipboard(text);
         return this;

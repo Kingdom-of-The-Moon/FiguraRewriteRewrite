@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.LivingEntityAccessor;
 
@@ -76,6 +77,7 @@ public class LivingEntityAPI<T extends LivingEntity> extends EntityAPI<T> {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("")
     public List<Map<String, Object>> getStatusEffects() {
         checkEntity();
         List<Map<String, Object>> list = new ArrayList<>();
