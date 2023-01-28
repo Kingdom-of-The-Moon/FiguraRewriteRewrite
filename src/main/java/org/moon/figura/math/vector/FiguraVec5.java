@@ -40,11 +40,11 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
         return this;
     }
 
-    public static FiguraVec5 oneUse(){
+    public static FiguraVec5 oneUse() {
         return IMMEDIATE.getFresh();
     }
 
-    public static FiguraVec5 oneUse(double x, double y, double z, double w, double t){
+    public static FiguraVec5 oneUse(double x, double y, double z, double w, double t) {
         return IMMEDIATE.getFresh().set(x, y, z, w, t);
     }
 
@@ -366,7 +366,7 @@ public class FiguraVec5 extends FiguraVector<FiguraVec5, FiguraMatrix.DummyMatri
 
     @LuaWhitelist
     public FiguraVec5 __div(Double other) {
-        if(other == 0)
+        if (other == 0)
             throw new LuaError(new ArithmeticException("Division by zero"));
         return scaled(1 / other);
     }

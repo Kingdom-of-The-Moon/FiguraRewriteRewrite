@@ -268,9 +268,9 @@ public class NewDocsManager {
         return root.createCommand();
     }
 
-    public static @NotNull MutableComponent getTypeNameText(Class<?> clas){
+    public static @NotNull MutableComponent getTypeNameText(Class<?> clas) {
         MutableComponent type = Component.literal(runtime.typeManager.getTypeName(clas)).withStyle(YELLOW);
-        if(classDocMap.containsKey(clas)){
+        if (classDocMap.containsKey(clas)) {
             type = type.withStyle(UNDERLINE).withStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, classDocMap.get(clas).getCommandPath())));
         }
         return Component.empty().append(type).withStyle(RESET);
@@ -310,11 +310,11 @@ public class NewDocsManager {
         public String descriptionKey = null;
         public LiteralCommandNode<FabricClientCommandSource> command;
 
-        public Doc(Doc parent, String name){
+        public Doc(Doc parent, String name) {
             this.name = name;
             allDocs.add(this);
             this.parent = parent;
-            if(parent != null)
+            if (parent != null)
                 parent.addChild(this);
         }
 
@@ -338,11 +338,11 @@ public class NewDocsManager {
             return 0;
         }
 
-        protected static MutableComponent getBullet(Object text){
+        protected static MutableComponent getBullet(Object text) {
             return FiguraText.of(BULLET_KEY, text);
         }
 
-        protected MutableComponent getExtra(){
+        protected MutableComponent getExtra() {
             return Component.empty();
         }
 
@@ -353,9 +353,9 @@ public class NewDocsManager {
             if (this instanceof ClassDoc classDoc && Modifier.isAbstract(classDoc.clas.getModifiers())) {
                 firstBullet.append(" ").append(name.withStyle(MAYA_BLUE.style)).append(Component.literal(" (abstract)").withStyle(SKYE_BLUE.style));
                 secondBullet = Component.empty();
-                for(Class<?> clas : classDocMap.keySet()){
-                    if(classDoc.clas.isAssignableFrom(clas) && clas != classDoc.clas){
-                        if(!secondBullet.getString().isBlank())
+                for (Class<?> clas : classDocMap.keySet()) {
+                    if (classDoc.clas.isAssignableFrom(clas) && clas != classDoc.clas) {
+                        if (!secondBullet.getString().isBlank())
                             secondBullet.append(", ");
                         secondBullet.append(getTypeNameText(clas));
                     }
@@ -363,7 +363,7 @@ public class NewDocsManager {
                 secondBullet = FiguraText.of("docs.text.subtypes").append(": ").append(secondBullet.getString().isBlank() ? FiguraText.of("docs.no_subtypes") : secondBullet);
             } else
                 secondBullet = name.copy();
-            if(this instanceof FieldDoc fieldDoc && fieldDoc.field.getGenericType() instanceof ParameterizedType parameterizedType) {
+            if (this instanceof FieldDoc fieldDoc && fieldDoc.field.getGenericType() instanceof ParameterizedType parameterizedType) {
                 Iterator<Type> iter = Arrays.stream(parameterizedType.getActualTypeArguments()).iterator();
                 if (iter.hasNext()) {
                     secondBullet.append("\n\t");
@@ -391,7 +391,7 @@ public class NewDocsManager {
             return Component.literal(name);
         }
 
-        protected String getType(){
+        protected String getType() {
             return "";
         }
 
@@ -402,7 +402,7 @@ public class NewDocsManager {
 
         protected String getCommandPath() {
             CommandDispatcher<FabricClientCommandSource> dispatcher = ClientCommandManager.getActiveDispatcher();
-            if(dispatcher != null)
+            if (dispatcher != null)
                 return "/" + dispatcher.getPath(this.command).parallelStream().collect(Collectors.joining(" "));
             else
                 return "";
@@ -468,11 +468,11 @@ public class NewDocsManager {
     static class FieldDoc extends Doc {
         private final Field field;
 
-        public FieldDoc(Field field, Doc parent){
+        public FieldDoc(Field field, Doc parent) {
             this(field, parent, field.getDeclaredAnnotation(LuaFieldDoc.class));
         }
 
-        private FieldDoc(Field field, Doc parent, LuaFieldDoc ass){
+        private FieldDoc(Field field, Doc parent, LuaFieldDoc ass) {
             this(field, parent, ass == null || ass.value().isBlank()? field.getName() : ass.value());
         }
 
@@ -493,7 +493,7 @@ public class NewDocsManager {
         }
 
         @SuppressWarnings("unused")
-        public boolean isEditable(){
+        public boolean isEditable() {
             return !Modifier.isFinal(field.getModifiers());
         }
     }
@@ -501,7 +501,7 @@ public class NewDocsManager {
     static class MethodDoc extends Doc {
         private final LuaFunction wrapper;
 
-        public MethodDoc(LuaFunction wrapper, Doc parent){
+        public MethodDoc(LuaFunction wrapper, Doc parent) {
             this(wrapper, parent, wrapper.name());
         }
 
@@ -514,9 +514,9 @@ public class NewDocsManager {
         @Override
         protected MutableComponent getExtra() {
             MutableComponent syntax = Component.literal("\n").append(getBullet(FiguraText.of("docs.text.syntax")).append(":\n\t").withStyle(CHLOE_PURPLE.style));
-            if(wrapper instanceof MethodWrapper methodWrapper){
+            if (wrapper instanceof MethodWrapper methodWrapper) {
                 var prefix = Component.empty();
-                if(parent instanceof ClassDoc type){
+                if (parent instanceof ClassDoc type) {
                     prefix = Component.translatable(
                         "<%s>",
                         getTypeNameText(type.clas)
@@ -547,7 +547,7 @@ public class NewDocsManager {
                     Method method = sorted.next();
                     MutableComponent argText = Component.empty();
                     for (Parameter param : method.getParameters()) {
-                        if(!argText.getString().isBlank())
+                        if (!argText.getString().isBlank())
                             argText.append(", ");
                         argText.append(getTypeNameText(param.getType())).append(Component.literal(" " + param.getName()).withStyle(WHITE));
                     }
@@ -579,7 +579,7 @@ public class NewDocsManager {
         public ListDoc(Doc parent, String name, String value) {
             super(parent, name);
             this.descriptionKey = "enum." + (value == null ? toSnakeCase(name) : value);
-            if(!descriptionKey.endsWith("s"))
+            if (!descriptionKey.endsWith("s"))
                 descriptionKey = descriptionKey + "s";
         }
 
@@ -590,7 +590,7 @@ public class NewDocsManager {
             MutableComponent name = getName();
             MutableComponent firstBullet = FiguraText.of(getType()).append(" ").append(name.copy());
             MutableComponent listText = Component.empty();
-            for(FormattedText line : getPaddedList()) {
+            for (FormattedText line : getPaddedList()) {
                 listText.append(getBullet(TextUtils.formattedTextToText(line))).append("\n\t");
             }
 
@@ -612,14 +612,14 @@ public class NewDocsManager {
             return "docs.enum";
         }
 
-        public void updateMaxWidth(){
+        public void updateMaxWidth() {
             maxWidth = 0;
-            for(MutableComponent text : getList()){
+            for (MutableComponent text : getList()) {
                 maxWidth = Math.max(Minecraft.getInstance().font.width(text), maxWidth);
             }
         }
 
-        private List<FormattedText> getPaddedList(){
+        private List<FormattedText> getPaddedList() {
             return getList().stream().map(enu -> Minecraft.getInstance().font.substrByWidth(enu.append(" ".repeat(maxWidth)), maxWidth)).toList();
         }
     }
@@ -628,11 +628,11 @@ public class NewDocsManager {
 
         private final List<Enum<T>> values;
 
-        public EnumDoc(@NotNull Class<T> enumClass, Doc parent){
+        public EnumDoc(@NotNull Class<T> enumClass, Doc parent) {
             this(enumClass, parent, enumClass.getDeclaredAnnotation(LuaTypeDoc.class));
         }
 
-        private EnumDoc(@NotNull Class<T> enumClass, Doc parent, LuaTypeDoc annotation){
+        private EnumDoc(@NotNull Class<T> enumClass, Doc parent, LuaTypeDoc annotation) {
             this(
                 enumClass, parent,
                 annotation == null || annotation.name().isBlank() ? enumClass.getSimpleName() : annotation.name(),
@@ -640,12 +640,12 @@ public class NewDocsManager {
             );
         }
 
-        public EnumDoc(@NotNull Class<T> enumClass, Doc parent, String name, String value){
+        public EnumDoc(@NotNull Class<T> enumClass, Doc parent, String name, String value) {
             super(parent, name, value);
             values = List.of(enumClass.getEnumConstants());
         }
 
-        protected MutableComponent getTextForElement(@NotNull Enum<T> elem){
+        protected MutableComponent getTextForElement(@NotNull Enum<T> elem) {
             return Component.literal(elem.name()).withStyle(WHITE);
         }
 

@@ -57,7 +57,7 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
-    public void setColor(Double r, Double g, Double b){
+    public void setColor(Double r, Double g, Double b) {
         setColor(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
     }
 

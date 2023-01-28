@@ -1,10 +1,7 @@
 package org.moon.figura.lua.api.math;
 
-import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMat2;
 import org.moon.figura.math.matrix.FiguraMat3;
@@ -24,7 +21,7 @@ public class MatricesAPI {
     public static final MatricesAPI INSTANCE = new MatricesAPI();
 
     @LuaWhitelist
-    public static FiguraMat2 mat2(){
+    public static FiguraMat2 mat2() {
         return FiguraMat2.of();
     }
 
@@ -37,7 +34,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat3 mat3(){
+    public static FiguraMat3 mat3() {
         return FiguraMat3.of();
     }
 
@@ -51,7 +48,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat4 mat4(){
+    public static FiguraMat4 mat4() {
         return FiguraMat4.of();
     }
 
@@ -74,7 +71,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat3 rotation3(Double x, Double y, Double z){
+    public static FiguraMat3 rotation3(Double x, Double y, Double z) {
         return rotation3(LuaUtils.freeVec3("rotation3", x, y, z));
     }
 
@@ -107,7 +104,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat4 rotation4(Double x, Double y, Double z){
+    public static FiguraMat4 rotation4(Double x, Double y, Double z) {
         return rotation4(LuaUtils.freeVec3("rotation3", x, y, z));
     }
 
@@ -141,7 +138,7 @@ public class MatricesAPI {
 
     //-- SCALE MATRICES --//
     @LuaWhitelist
-    public static FiguraMat2 scale2(Double x, Double y){
+    public static FiguraMat2 scale2(Double x, Double y) {
         return scale2(LuaUtils.freeVec2("scale2", x, y, 1, 1));
     }
 
@@ -153,7 +150,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat3 scale3(Double x, Double y, Double z){
+    public static FiguraMat3 scale3(Double x, Double y, Double z) {
         return scale3(LuaUtils.freeVec3("scale3", x, y, z, 1, 1, 1));
     }
 
@@ -165,7 +162,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat4 scale4(Double x, Double y, Double z){
+    public static FiguraMat4 scale4(Double x, Double y, Double z) {
         return scale4(LuaUtils.freeVec3("scale4", x, y, z, 1, 1, 1));
     }
 
@@ -178,7 +175,7 @@ public class MatricesAPI {
 
     //-- TRANSLATION MATRICES --//
     @LuaWhitelist
-    public static FiguraMat3 translate3(Double x, Double y){
+    public static FiguraMat3 translate3(Double x, Double y) {
         return translate3(LuaUtils.parseVec2("translate3", x, y));
     }
 
@@ -190,7 +187,7 @@ public class MatricesAPI {
     }
 
     @LuaWhitelist
-    public static FiguraMat4 translate4(Double x, Double y, Double z){
+    public static FiguraMat4 translate4(Double x, Double y, Double z) {
         return translate4(LuaUtils.parseVec3("translate4", x, y, z));
     }
 

@@ -64,12 +64,12 @@ public class LuaParticle {
     public FiguraVec3 getPos() {
         return pos.copy();
     }
-    
+
     @LuaWhitelist
     public void setPos(double x, double y, double z) {
         setPos(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     public void setPos(@LuaNotNil FiguraVec3 pos) {
         particle.setPos(pos.x, pos.y, pos.z);
@@ -82,7 +82,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public LuaParticle pos(double x, double y, double z){
+    public LuaParticle pos(double x, double y, double z) {
         return pos(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -99,7 +99,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public void setVelocity(double x, double y, double z){
+    public void setVelocity(double x, double y, double z) {
         setVelocity(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -110,7 +110,7 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public LuaParticle velocity(double x, double y, double z){
+    public LuaParticle velocity(double x, double y, double z) {
         return velocity(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -127,12 +127,12 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public void setColor(Double r, Double g, Double b, Double a){
+    public void setColor(Double r, Double g, Double b, Double a) {
         setColor(LuaUtils.freeVec4("color", r, g, b, a, 1, 1, 1, 1));
     }
 
     @LuaWhitelist
-    public void setColor(FiguraVec3 rgb){
+    public void setColor(FiguraVec3 rgb) {
         setColor(FiguraVec4.oneUse(rgb.x, rgb.y, rgb.z, 1));
     }
 
@@ -144,12 +144,12 @@ public class LuaParticle {
     }
 
     @LuaWhitelist
-    public LuaParticle color(Double r, Double g, Double b, Double a){
+    public LuaParticle color(Double r, Double g, Double b, Double a) {
         return color(LuaUtils.freeVec4("color", r, g, b, a, 1, 1, 1, 1));
     }
 
     @LuaWhitelist
-    public LuaParticle color(FiguraVec3 rgb){
+    public LuaParticle color(FiguraVec3 rgb) {
         return color(FiguraVec4.oneUse(rgb.x, rgb.y, rgb.z, 1));
     }
 

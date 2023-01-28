@@ -649,7 +649,7 @@ public class FiguraMat4 extends FiguraMatrix<FiguraMat4, FiguraVec4> {
     }
 
     @LuaWhitelist
-    public FiguraVec3 apply(Double x, Double y, Double z){
+    public FiguraVec3 apply(Double x, Double y, Double z) {
         return apply(LuaUtils.freeVec3("apply", x, y, z));
     }
 
@@ -659,7 +659,7 @@ public class FiguraMat4 extends FiguraMatrix<FiguraMat4, FiguraVec4> {
     }
 
     @LuaWhitelist
-    public FiguraVec3 applyDir(Double x, Double y, Double z){
+    public FiguraVec3 applyDir(Double x, Double y, Double z) {
         FiguraVec3 vec = LuaUtils.freeVec3("applyDir", x, y, z);
         return applyDir(vec);
     }

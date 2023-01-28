@@ -29,7 +29,6 @@ public class KeybindAPI {
     public FiguraKeybind newKeybind(@LuaNotNil String name, String key, boolean gui) {
         if (key == null) key = "key.keyboard.unknown";
         FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).gui(gui);
-
         this.keyBindings.add(binding);
         return binding;
     }

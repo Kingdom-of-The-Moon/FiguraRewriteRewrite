@@ -5,7 +5,10 @@ import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -64,7 +67,7 @@ public class LuaTypeManager {
         for (String methodName : overloads.keySet()) {
             Method[] methods = filterOverrides(overloads.get(methodName));
 
-            if("__index".equals(methodName)){
+            if ("__index".equals(methodName)) {
                 metatable.set("__index", new TwoArgFunction() {
                     final LuaFunction indexer = MethodWrapper.of(LuaTypeManager.this, methods);
 
@@ -134,7 +137,7 @@ public class LuaTypeManager {
         });
     }
 
-    public void setTypeName(Class<?> clazz, String name){
+    public void setTypeName(Class<?> clazz, String name) {
         namesCache.computeIfAbsent(clazz, unnamed -> name);
     }
 
@@ -219,7 +222,7 @@ public class LuaTypeManager {
     public boolean checkTypeStrict(LuaValue value, Class<?> type) {
         if (type == null || value == null || value.isnil())
             return true;
-        if(type.isAssignableFrom(value.getClass()))
+        if (type.isAssignableFrom(value.getClass()))
             return true;
         LuaType luaType = luaToJavaTypes.get(type);
         if (luaType != null)
@@ -230,7 +233,7 @@ public class LuaTypeManager {
     public boolean checkType(LuaValue value, Class<?> type) {
         if (type == null || value == null || value.isnil())
             return true;
-        if(type.isAssignableFrom(value.getClass()))
+        if (type.isAssignableFrom(value.getClass()))
             return true;
         LuaType luaType = luaToJavaTypes.get(type);
         if (luaType != null)

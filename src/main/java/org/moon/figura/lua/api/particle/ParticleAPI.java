@@ -42,32 +42,32 @@ public class ParticleAPI {
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, Double x, Double y, Double z){
+    public LuaParticle newParticle(String name, Double x, Double y, Double z) {
        return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z));
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, FiguraVec3 vec){
+    public LuaParticle newParticle(String name, FiguraVec3 vec) {
        return newParticle(name, vec, FiguraVec3.oneUse());
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ){
+    public LuaParticle newParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ) {
        return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z), LuaUtils.freeVec3("newParticle", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ){
+    public LuaParticle newParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ) {
        return newParticle(name, vec, LuaUtils.freeVec3("newParticle", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, Double x, Double y, Double z, FiguraVec3 axis){
+    public LuaParticle newParticle(String name, Double x, Double y, Double z, FiguraVec3 axis) {
        return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z), axis);
     }
 
     @LuaWhitelist
-    public LuaParticle newParticle(String name, FiguraVec3 pos, FiguraVec3 vel){
+    public LuaParticle newParticle(String name, FiguraVec3 pos, FiguraVec3 vel) {
 
        return generate(name, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z).spawn();
 

@@ -69,7 +69,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public void setTitleTimes(FiguraVec3 titleTimes){
+    public void setTitleTimes(FiguraVec3 titleTimes) {
         setTitleTimes((int) titleTimes.x, (int) titleTimes.y, (int) titleTimes.z);
     }
 
@@ -78,12 +78,12 @@ public class HostAPI {
         if (!isHost()) return;
         this.minecraft.gui.setTimes(fadeInTime, stayTime, fadeOutTime);
     }
-    
+
     @LuaWhitelist
     public HostAPI titleTimes(FiguraVec3 titleTimes) {
         return titleTimes((int) titleTimes.x, (int) titleTimes.y, (int) titleTimes.z);
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setTitleTimes")
     public HostAPI titleTimes(int fadeInTime, int stayTime, int fadeOutTime) {
@@ -163,17 +163,17 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public ItemStackAPI getSlot(String slot){
-        if(!isHost()) return null;
+    public ItemStackAPI getSlot(String slot) {
+        if (!isHost()) return null;
         try {
             return getSlot(SlotArgument.slot().parse(new StringReader(slot)));
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new LuaError("Unable to get slot \"" + slot + "\"");
         }
     }
 
     @LuaWhitelist
-    public ItemStackAPI getSlot(int slot){
+    public ItemStackAPI getSlot(int slot) {
         if (!isHost()) return null;
         Entity e = this.owner.luaRuntime.getUser();
         return ItemStackAPI.verify(e.getSlot(slot).get());
@@ -207,7 +207,7 @@ public class HostAPI {
     }
 
     @LuaWhitelist
-    public void setChatColor(@LuaNotNil double r, double g, double b){
+    public void setChatColor(@LuaNotNil double r, double g, double b) {
         setChatColor(LuaUtils.freeVec3("setChatColor", r, g, b));
     }
 

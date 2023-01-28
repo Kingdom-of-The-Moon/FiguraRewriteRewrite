@@ -95,7 +95,7 @@ public class RendererAPI {
     public void setShadowRadius(Float shadowRadius) {
         this.shadowRadius = shadowRadius == null ? null : Mth.clamp(shadowRadius, 0f, 12f);
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setShadowRadius")
     public RendererAPI shadowRadius(Float shadowRadius) {
@@ -124,7 +124,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setCameraPos(@LuaNotNil double x, double y, double z){
+    public void setCameraPos(@LuaNotNil double x, double y, double z) {
         setCameraPos(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -132,12 +132,12 @@ public class RendererAPI {
     public void setCameraPos(FiguraVec3 pos) {
         this.cameraPos = pos == null ? null : pos.copy();
     }
-    
+
     @LuaWhitelist
     public RendererAPI cameraPos(@LuaNotNil double x, double y, double z) {
         return cameraPos(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setCameraPos")
     public RendererAPI cameraPos(FiguraVec3 pos) {
@@ -151,7 +151,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setCameraPivot(@LuaNotNil double x, double y, double z){
+    public void setCameraPivot(@LuaNotNil double x, double y, double z) {
         setCameraPivot(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -159,12 +159,12 @@ public class RendererAPI {
     public void setCameraPivot(FiguraVec3 pivot) {
         this.cameraPivot = pivot == null ? null : pivot.copy();
     }
-    
+
     @LuaWhitelist
     public RendererAPI cameraPivot(@LuaNotNil double x, double y, double z) {
         return cameraPivot(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setCameraPivot")
     public RendererAPI cameraPivot(FiguraVec3 pivot) {
@@ -176,12 +176,12 @@ public class RendererAPI {
     public FiguraVec3 getCameraOffsetPivot() {
         return this.cameraOffsetPivot;
     }
-    
+
     @LuaWhitelist
     public void setCameraOffsetPivot(@LuaNotNil double x, double y, double z) {
         setCameraOffsetPivot(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("set_offset_camera_pivot")
     public void setCameraOffsetPivot(FiguraVec3 pivotOffset) {
@@ -189,7 +189,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public RendererAPI offsetCameraPivot(@LuaNotNil double x, double y, double z){
+    public RendererAPI offsetCameraPivot(@LuaNotNil double x, double y, double z) {
         return offsetCameraPivot(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -206,7 +206,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setCameraRot(@LuaNotNil double x, double y, double z){
+    public void setCameraRot(@LuaNotNil double x, double y, double z) {
         setCameraRot(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -214,12 +214,12 @@ public class RendererAPI {
     public void setCameraRot(FiguraVec3 rot) {
         this.cameraRot = rot == null ? null : rot.copy();
     }
-    
+
     @LuaWhitelist
     public RendererAPI cameraRot(@LuaNotNil double x, double y, double z) {
         return cameraRot(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setCameraRot")
     public RendererAPI cameraRot(FiguraVec3 rot) {
@@ -236,14 +236,14 @@ public class RendererAPI {
     public void setOffsetCameraRot(@LuaNotNil double x, double y, double z) {
         setOffsetCameraRot(FiguraVec3.oneUse(x, y, z));
     }
-    
+
     @LuaWhitelist
     public void setOffsetCameraRot(FiguraVec3 rot) {
         this.cameraOffsetRot = rot == null ? null : rot.copy();
     }
-    
+
     @LuaWhitelist
-    public RendererAPI offsetCameraRot(@LuaNotNil double x, double y, double z){
+    public RendererAPI offsetCameraRot(@LuaNotNil double x, double y, double z) {
         return offsetCameraRot(FiguraVec3.oneUse(x, y, z));
     }
 
@@ -253,7 +253,7 @@ public class RendererAPI {
         setOffsetCameraRot(rot);
         return this;
     }
-    
+
     @LuaWhitelist
     public String getPostEffect() {
         return this.postShader.getPath().substring(13, this.postShader.getPath().length() - 5);
@@ -263,7 +263,7 @@ public class RendererAPI {
     public void setPostEffect(String effect) {
         this.postShader = effect == null ? null : new ResourceLocation("shaders/post/" + effect.toLowerCase() + ".json");
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setPostEffect")
     public RendererAPI postEffect(String effect) {
@@ -280,7 +280,7 @@ public class RendererAPI {
     public void setFOV(Float fov) {
         this.fov = fov;
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setFOV")
     public RendererAPI fov(Float fov) {
@@ -297,25 +297,23 @@ public class RendererAPI {
     public void setCrosshairOffset(@LuaNotNil double x, double y) {
         setCrosshairOffset(FiguraVec2.oneUse(x, y));
     }
-    
+
     @LuaWhitelist
     public void setCrosshairOffset(FiguraVec2 crosshairOffset) {
         this.crosshairOffset = crosshairOffset == null ? null : crosshairOffset.copy();
     }
-    
+
     @LuaWhitelist
     public RendererAPI crosshairOffset(@LuaNotNil double x, double y) {
         return crosshairOffset(FiguraVec2.oneUse(x, y));
     }
-    
+
     @LuaWhitelist
     @LuaMethodDoc("setCrosshairOffset")
     public RendererAPI crosshairOffset(FiguraVec2 crosshairOffset) {
         setCrosshairOffset(crosshairOffset);
         return this;
     }
-    
-    
 
     @LuaWhitelist
     public Object __index(String arg) {

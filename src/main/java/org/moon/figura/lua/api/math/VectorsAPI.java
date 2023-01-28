@@ -1,6 +1,5 @@
 package org.moon.figura.lua.api.math;
 
-import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.*;
@@ -18,7 +17,7 @@ public class VectorsAPI {
     public static final VectorsAPI INSTANCE = new VectorsAPI();
 
     @LuaWhitelist
-    public static FiguraVec2 vec2(){
+    public static FiguraVec2 vec2() {
         return FiguraVec2.of();
     }
 
@@ -33,7 +32,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec3 vec3(){
+    public static FiguraVec3 vec3() {
         return FiguraVec3.of();
     }
 
@@ -48,7 +47,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec4 vec4(){
+    public static FiguraVec4 vec4() {
         return FiguraVec4.of();
     }
 
@@ -63,7 +62,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec5 vec5(){
+    public static FiguraVec5 vec5() {
         return FiguraVec5.of();
     }
 
@@ -78,7 +77,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec6 vec6(){
+    public static FiguraVec6 vec6() {
         return FiguraVec6.of();
     }
 
@@ -95,7 +94,7 @@ public class VectorsAPI {
     // -- colors -- //
 
     @LuaWhitelist
-    public static int rgbToInt(double r, double g, double b){
+    public static int rgbToInt(double r, double g, double b) {
         return rgbToInt(LuaUtils.freeVec3("rgbToInt", r, g, b));
     }
 
@@ -115,7 +114,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec3 hsvToRGB(double h, double s, double v){
+    public static FiguraVec3 hsvToRGB(double h, double s, double v) {
         return hsvToRGB(LuaUtils.freeVec3("hsvToRGB", h, s, v));
     }
 
@@ -125,7 +124,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec3 rgbToHSV(double r, double g, double b){
+    public static FiguraVec3 rgbToHSV(double r, double g, double b) {
         return rgbToHSV(LuaUtils.freeVec3("rgbToHSV", r, g, b));
     }
 
@@ -135,7 +134,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static String rgbToHex(double r, double g, double b){
+    public static String rgbToHex(double r, double g, double b) {
         return rgbToHex(LuaUtils.freeVec3("rgbToHex", r, g, b));
     }
 
@@ -147,28 +146,28 @@ public class VectorsAPI {
     // -- math utils -- //
 
     @LuaWhitelist
-    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, double axisX, double axisY, double axisZ){
+    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, double axisX, double axisY, double axisZ) {
         return rotateAroundAxis(angle, LuaUtils.freeVec3("rotateAroundAxis", x, y, z), LuaUtils.freeVec3("rotateAroundAxis", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, double axisX, double axisY, double axisZ){
+    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, double axisX, double axisY, double axisZ) {
         return rotateAroundAxis(angle, vec, LuaUtils.freeVec3("rotateAroundAxis", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, FiguraVec3 axis){
+    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, FiguraVec3 axis) {
         return rotateAroundAxis(angle, LuaUtils.freeVec3("rotateAroundAxis", x, y, z), axis);
     }
 
     @LuaWhitelist
-    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, FiguraVec3 axis){
+    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, FiguraVec3 axis) {
 
         return MathUtils.rotateAroundAxis(vec, axis, angle);
     }
 
     @LuaWhitelist
-    public static FiguraVec3 toCameraSpace(double x, double y, double z){
+    public static FiguraVec3 toCameraSpace(double x, double y, double z) {
         return toCameraSpace(LuaUtils.freeVec3("toCameraSpace", x, y, z));
     }
 
@@ -178,7 +177,7 @@ public class VectorsAPI {
     }
 
     @LuaWhitelist
-    public static FiguraVec4 worldToScreenSpace(double x, double y, double z){
+    public static FiguraVec4 worldToScreenSpace(double x, double y, double z) {
         return worldToScreenSpace(LuaUtils.freeVec3("worldToScreenSpace", x, y, z));
     }
 

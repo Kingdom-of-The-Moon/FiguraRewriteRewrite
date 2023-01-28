@@ -235,7 +235,7 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             Object[] params = new Object[values.size()];
             for (int i = values.size() - 1; i >= 0; i--) {
                 LuaValue value = values.get(i);
-                if(value == null || value.isnil())
+                if (value == null || value.isnil())
                     value = getDefault(match.param.getType());
                 params[i] = manager.luaToJava(value, match.param.getType());
                 match = match.parent;
@@ -248,11 +248,11 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             while (nodes.size() == 1 && (node = nodes.get(0)).method == null) {
                 List<Parameter> params = node.children.keySet().stream().filter(param -> !param.isAnnotationPresent(LuaNotNil.class)).toList();
                 Parameter p;
-                if(params.size() != 1) {
+                if (params.size() != 1) {
                     nodes.clear();
                     return;
                 }
-                if((p = params.get(0)).isAnnotationPresent(LuaNotNil.class))
+                if ((p = params.get(0)).isAnnotationPresent(LuaNotNil.class))
                     throw new LuaError("attempt to call " + name + " with nil as Non-Nil parameter " + p.getName());
                 values.add(getDefault(p.getType()));
                 nodes.set(0, node.children.get(p));

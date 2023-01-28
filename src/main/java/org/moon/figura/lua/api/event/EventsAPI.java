@@ -49,6 +49,7 @@ public class EventsAPI {
     public final LuaEvent MOUSE_PRESS = new LuaEvent();
     @LuaWhitelist
     public final LuaEvent USE_ITEM = new LuaEvent();
+
     @LuaWhitelist
     public List<LuaEvent> getEvents() {
         return List.of(

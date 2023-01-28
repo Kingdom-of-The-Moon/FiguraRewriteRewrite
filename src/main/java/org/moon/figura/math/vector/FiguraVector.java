@@ -128,7 +128,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
     @LuaWhitelist
     @LuaMethodDoc("")
-    public String toString(){
+    public String toString() {
         return getString(unpack());
     };
 
@@ -147,7 +147,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
 
 
     @LuaWhitelist
-    public Double __index(int i){
+    public Double __index(int i) {
         return getSwizzleComponent(Integer.toString(i).charAt(0));
     }
 
@@ -162,7 +162,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
         boolean fail = false;
         for (int i = 0; i < len; i++) {
             Double d = getSwizzleComponent(arg.charAt(i));
-            if(d == null){
+            if (d == null) {
                 fail = true;
                 break;
             }
@@ -172,21 +172,21 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
     }
 
     @LuaWhitelist
-    public void __newindex(int i, double v){
+    public void __newindex(int i, double v) {
         setSwizzleComponent(Integer.toString(i).charAt(0), v);
     }
 
     @LuaWhitelist
-    public void __newindex(@LuaNotNil String i, double v){
-        if(i.length() != 1){
+    public void __newindex(@LuaNotNil String i, double v) {
+        if (i.length() != 1) {
             throw new LuaError("Invalid call to __newindex - can only set one axis to a number");
         }
         setSwizzleComponent(i.charAt(0), v);
     }
 
     @LuaWhitelist
-    public void __newindex(@LuaNotNil String swizzle, @LuaNotNil FiguraVector<?, ?> vector){
-        if(swizzle.length() == vector.size()){
+    public void __newindex(@LuaNotNil String swizzle, @LuaNotNil FiguraVector<?, ?> vector) {
+        if (swizzle.length() == vector.size()) {
             T copy = copy();
             double[] vals = unpack();
             for (int i = 0; i < swizzle.length(); i++) {

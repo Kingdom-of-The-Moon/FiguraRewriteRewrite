@@ -34,11 +34,11 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
         return this;
     }
 
-    public static FiguraVec2 oneUse(){
+    public static FiguraVec2 oneUse() {
         return IMMEDIATE.getFresh();
     }
 
-    public static FiguraVec2 oneUse(double x, double y){
+    public static FiguraVec2 oneUse(double x, double y) {
         return IMMEDIATE.getFresh().set(x, y);
     }
 
@@ -325,7 +325,7 @@ public class FiguraVec2 extends FiguraVector<FiguraVec2, FiguraMat2> {
 
     @LuaWhitelist
     public FiguraVec2 __div(@LuaNotNil Double other) {
-        if(other == 0)
+        if (other == 0)
             throw new LuaError(new ArithmeticException("Division by zero"));
         return scaled(1 / other);
     }

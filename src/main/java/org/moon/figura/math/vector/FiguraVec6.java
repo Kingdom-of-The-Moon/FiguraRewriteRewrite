@@ -5,7 +5,7 @@ import org.luaj.vm2.LuaFunction;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.*;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.utils.caching.CacheUtils;
 
@@ -42,11 +42,11 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
         return this;
     }
 
-    public static FiguraVec6 oneUse(){
+    public static FiguraVec6 oneUse() {
         return IMMEDIATE.getFresh();
     }
 
-    public static FiguraVec6 oneUse(double x, double y, double z, double w, double t, double h){
+    public static FiguraVec6 oneUse(double x, double y, double z, double w, double t, double h) {
         return IMMEDIATE.getFresh().set(x, y, z, w, t, h);
     }
 
@@ -374,7 +374,7 @@ public class FiguraVec6 extends FiguraVector<FiguraVec6, FiguraMatrix.DummyMatri
 
     @LuaWhitelist
     public FiguraVec6 __div(double other) {
-        if(other == 0)
+        if (other == 0)
             throw new LuaError(new ArithmeticException("Division by zero"));
         return scaled(1 / other);
     }

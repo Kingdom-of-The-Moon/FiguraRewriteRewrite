@@ -12,7 +12,6 @@ import org.moon.figura.utils.ColorUtils;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -61,18 +60,18 @@ public class TextureAPI {
         try {
             image = new NativeImage(width, height, true);
         } catch (Exception e) {
-            throw (e instanceof LuaError le? le : new LuaError(e.getMessage()));
+            throw new LuaError(e.getMessage());
         }
 
         return register(name, image, false).fill(0, 0, width, height, ColorUtils.Colors.FRAN_PINK.vec.augmented());
     }
 
     @LuaWhitelist
-    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil byte[] byteArray){
+    public FiguraTexture read(@LuaNotNil String name, @LuaNotNil byte[] byteArray) {
         try(ByteArrayInputStream bais = new ByteArrayInputStream(byteArray)) {
             return register(name, NativeImage.read(null, bais), false);
-        } catch (Exception e){
-            throw (e instanceof LuaError le? le : new LuaError(e.getMessage()));
+        } catch (Exception e) {
+            throw new LuaError(e.getMessage());
         }
     }
 

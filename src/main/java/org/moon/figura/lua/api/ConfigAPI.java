@@ -266,7 +266,8 @@ public class ConfigAPI {
         return this;
     }
 
-    public LuaTable load(){
+    @LuaWhitelist
+    public LuaTable load() {
         return new ReadOnlyLuaTable(luaTable);
     }
 

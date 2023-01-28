@@ -1,7 +1,6 @@
 package org.moon.figura.lua.api.nameplate;
 
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 @LuaWhitelist

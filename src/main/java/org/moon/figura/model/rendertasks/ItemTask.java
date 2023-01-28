@@ -55,23 +55,23 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setItem(String itemId){
+    public void setItem(String itemId) {
         item(LuaUtils.parseItemStack("item", itemId));
     }
 
     @LuaWhitelist
-    public void setItem(@LuaNotNil ItemStackAPI item){
+    public void setItem(@LuaNotNil ItemStackAPI item) {
         item(LuaUtils.parseItemStack("item", item));
     }
 
     @LuaWhitelist
-    public RenderTask item(String itemId){
+    public RenderTask item(String itemId) {
         return item(LuaUtils.parseItemStack("item", itemId));
     }
 
     @LuaWhitelist
     @LuaMethodDoc("setItem")
-    public RenderTask item(@LuaNotNil ItemStackAPI item){
+    public RenderTask item(@LuaNotNil ItemStackAPI item) {
         return item(LuaUtils.parseItemStack("item", item));
     }
 
