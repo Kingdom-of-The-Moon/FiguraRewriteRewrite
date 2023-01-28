@@ -130,7 +130,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
     @LuaMethodDoc("")
     public String toString() {
         return getString(unpack());
-    };
+    }
 
     protected static String getString(double[] d) {
         StringBuilder sb = new StringBuilder();

@@ -51,7 +51,6 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             super(manager, mth.getDeclaringClass(), Modifier.isStatic(mth.getModifiers()));
             method = mth;
             parameters = method.getParameters();
-            boolean t = true;
         }
 
         public static Single of(LuaTypeManager manager, Method method) {
@@ -61,8 +60,6 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
             if (method.isVarArgs())
                 return new VarArg(manager, method);
             return new Fixed(manager, method);
-
-//            return new MySadStub(manager, method);
         }
 
         @Override
@@ -149,17 +146,6 @@ public abstract sealed class MethodWrapper extends VarArgFunction {
                 params[i] = manager.luaToJava(NIL.equals(value) ? getDefault(param.getType()) : value, param.getType());
             }
             return params;
-        }
-
-        private static final class MySadStub extends Single {
-            public MySadStub(LuaTypeManager luaTypeManager, Method mth) {
-                super(luaTypeManager, mth);
-            }
-
-            @Override
-            public Varargs invoke(Varargs args) {
-                throw new LuaError(new NotImplementedException("mewthod %s is not implemented ;-;".formatted(method)));
-            }
         }
     }
 
