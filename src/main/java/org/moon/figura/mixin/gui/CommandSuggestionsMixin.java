@@ -1,13 +1,18 @@
 package org.moon.figura.mixin.gui;
 
 import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.context.SuggestionContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
@@ -36,13 +41,21 @@ public class CommandSuggestionsMixin implements CommandSuggestionsAccessor {
     @Shadow
     private int commandUsageWidth;
     @Shadow
+    private int commandUsagePosition;
+    @Shadow
     private boolean allowSuggestions;
     @Shadow
     boolean keepSuggestions;
     @Final
     @Shadow
+    EditBox input;
+    @Final
+    @Shadow
     Screen screen;
 
+
+    @Shadow @Final
+    Font font;
 
     @Override
     public void setUseFiguraSuggester(boolean use) {
@@ -66,28 +79,47 @@ public class CommandSuggestionsMixin implements CommandSuggestionsAccessor {
             if (avatar == null || avatar.luaRuntime == null)
                 return;
 
-            Either<Suggestions, String> suggestions = avatar.chatAutocompleteEvent(string, i);
-
-            if (suggestions != null) {
-                if (suggestions.left().isPresent()) {
-                    Suggestions s = suggestions.left().get();
-                    pendingSuggestions = CompletableFuture.completedFuture(s);
-
-                    if (s.isEmpty()) {
-                        commandUsage.add(FormattedCharSequence.forward("This avatar did not provide any suggestion", Style.EMPTY));
-                    }
-                }
-                else if(suggestions.right().isPresent()) {
-                    commandUsage.add(FormattedCharSequence.forward(suggestions.right().get(), Style.EMPTY));
-                }
-
-                commandUsageWidth = commandUsage.size() > 0 ? screen.width : 0;
-
-                if (allowSuggestions && Minecraft.getInstance().options.autoSuggestions().get()) {
-                    ((CommandSuggestions) (Object) this).showSuggestions(false);
-                }
-                ci.cancel();
+            SuggestionBehaviour behaviour = avatar.chatAutocompleteEvent(string, i);
+            if (behaviour == null) {
+                return;
             }
+            commandUsageWidth = screen.width;
+            commandUsagePosition = 0;
+
+            if (behaviour instanceof AcceptBehaviour accepting) {
+                Suggestions s = accepting.suggest();
+                pendingSuggestions = CompletableFuture.completedFuture(s);
+
+                if (s.isEmpty()) {
+                    commandUsage.add(FormattedCharSequence.forward("This avatar did not provide any suggestion", Style.EMPTY));
+                }
+            }
+            else {
+                String usage;
+                pendingSuggestions = Suggestions.empty();
+                if (behaviour instanceof HintBehaviour hint) {
+                    usage = hint.hint();
+                    commandUsagePosition = Mth.clamp(input.getScreenX(hint.pos()), 0, this.input.getScreenX(0) + this.input.getInnerWidth() - i);
+                    commandUsageWidth = font.width(usage);
+                }
+                else if (behaviour instanceof RejectBehaviour reject) {
+                    usage = reject.err();
+                }
+                else {
+                    throw new RuntimeException("Unexpected " + behaviour.getClass().getName());
+                }
+
+                commandUsage.add(FormattedCharSequence.forward(usage, Style.EMPTY));
+            }
+
+            if (commandUsage.isEmpty()) {
+                commandUsageWidth = 0;
+            }
+
+            if (allowSuggestions && Minecraft.getInstance().options.autoSuggestions().get()) {
+                ((CommandSuggestions) (Object) this).showSuggestions(false);
+            }
+            ci.cancel();
         }
     }
 }
