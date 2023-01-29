@@ -57,6 +57,6 @@ public class ChatScreenMixin {
             method = "init"
     )
     private void init(CallbackInfo ci) {
-        ((CommandSuggestionsAccessor) commandSuggestions).setUseFiguraSuggester(true);
+        ((CommandSuggestionsAccessor) commandSuggestions).figura$setUseFiguraSuggester(true);
     }
 }

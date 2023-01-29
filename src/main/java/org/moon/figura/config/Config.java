@@ -176,6 +176,7 @@ public enum Config {
                 .append("\n\n")
                 .append(FiguraText.of(tooltip + "3").withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
     }},
+    CHAT_AUTOCOMPLETE(1, 3),
     MAIN_DIR("", InputType.FOLDER_PATH),
     SERVER_IP("figura.moonlight-devs.org:25565", InputType.IP) {
         @Override

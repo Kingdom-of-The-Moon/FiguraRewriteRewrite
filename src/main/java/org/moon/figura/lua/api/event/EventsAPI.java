@@ -68,7 +68,6 @@ public class EventsAPI {
     @LuaWhitelist
     @LuaFieldDoc("events.use_item")
     public final LuaEvent USE_ITEM = new LuaEvent();
-
     @LuaWhitelist
     @LuaFieldDoc("events.chat_autocomplete")
     public final LuaEvent CHAT_AUTOCOMPLETE = new LuaEvent();
