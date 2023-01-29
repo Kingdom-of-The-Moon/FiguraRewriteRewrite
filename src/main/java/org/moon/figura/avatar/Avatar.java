@@ -5,6 +5,8 @@ import com.mojang.blaze3d.audio.SoundBuffer;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Axis;
@@ -437,19 +439,19 @@ public class Avatar {
                     }
                     LuaTable table = verifying.checktable();
 
-                    if (!(verifying = table.get("result")).isstring()) {
+                    if (!(verifying = table.rawget("result")).isstring()) {
                         throw new LuaError("Table from autocomplete event expected a String in field \"result\"");
                     }
 
                     String s = verifying.checkjstring();
                     switch (s) {
                         case "suggest" -> {
-                            if (!(verifying = table.get("suggestions")).istable()) {
+                            if (!(verifying = table.rawget("suggestions")).istable()) {
                                 throw new LuaError("Table from autocomplete event expected a Table in field \"suggestions\"");
                             }
                             LuaTable suggestions = verifying.checktable();
 
-                            if (!(verifying = table.get("position")).isint()) {
+                            if (!(verifying = table.rawget("position")).isint()) {
                                 throw new LuaError("Table from autocomplete event expected an Integer in field \"position\"");
                             }
                             int position = verifying.checkint();
@@ -463,30 +465,58 @@ public class Avatar {
 
                             SuggestionsBuilder builder = new SuggestionsBuilder(input, position - 1);
                             for (int i = 1; suggestions.get(i) != LuaValue.NIL; i++) {
-                                LuaValue v = suggestions.get(i);
+                                verifying = suggestions.get(i);
+                                String tooltip, value;
 
-                                if (!v.isstring()) {
-                                    throw new LuaError("Table \"suggestions\" from the Table from the autocomplete event was expected to be an array of Strings, but caught %s in position %d"
-                                            .formatted(v.typename(), i)
+                                if (verifying.isstring()) {
+                                    value = verifying.tojstring();
+                                    tooltip = null;
+
+                                } else if (verifying.istable()) {
+                                    LuaTable suggestion = verifying.checktable();
+
+                                    if (!(verifying = suggestion.rawget("name")).isstring()) {
+                                        throw new LuaError("Tables inside array \"suggestions\" from the Table from the autocomplete expected a String in field \"name\"");
+                                    }
+
+                                    value = verifying.checkjstring();
+                                    verifying = suggestion.rawget("tooltip");
+                                    if (verifying.isnil()) {
+                                        tooltip = null;
+                                    }
+                                    else if (verifying.isstring()) {
+                                        tooltip = verifying.checkjstring();
+                                    } else {
+                                        throw new LuaError("Tables inside array \"suggestions\" from the Table from the autocomplete expected a String or nil in field \"tooltip\"");
+                                    }
+                                }
+                                else {
+                                    throw new LuaError("Table \"suggestions\" from the Table from the autocomplete event was expected to be an array of Strings or Tables, but caught %s in position %d"
+                                            .formatted(verifying.typename(), i)
                                     );
                                 }
-                                String val = v.tojstring();
-                                builder.suggest(val);
+
+                                if (tooltip == null) {
+                                    builder.suggest(value);
+                                }
+                                else {
+                                    builder.suggest(value, new LiteralMessage(tooltip));
+                                }
                             }
                             return new CommandSuggestionsAccessor.AcceptBehaviour(builder.build());
                         }
                         case "usage" -> {
-                            if (!(verifying = table.get("usage")).isstring()) {
+                            if (!(verifying = table.rawget("usage")).isstring()) {
                                 throw new LuaError("Table from autocomplete event expected a String in field \"usage\"");
                             }
                             String usage = verifying.tojstring();
-                            if (!(verifying = table.get("position")).isint()) {
+                            if (!(verifying = table.rawget("position")).isint()) {
                                 throw new LuaError("Table from autocomplete event expected an Integer in field \"position\"");
                             }
                             return new CommandSuggestionsAccessor.HintBehaviour(usage, verifying.checkint() - 1);
                         }
                         case "error" -> {
-                            if (!(verifying = table.get("message")).isstring()) {
+                            if (!(verifying = table.rawget("message")).isstring()) {
                                 throw new LuaError("Table from autocomplete event expected a String in field \"message\"");
                             }
                             return new CommandSuggestionsAccessor.RejectBehaviour(verifying.tojstring());

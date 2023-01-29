@@ -523,6 +523,13 @@
   "figura.config.chat_messages.tooltip.2": "This is a dangerous option, as the chat messages will still be signed",
   "figura.config.chat_messages.tooltip.3": "Figura does not take any responsibility for the usage of this feature",
 
+  "figura.config.chat_autocomplete": "Chat Autocomplete",
+  "figura.config.chat_autocomplete.tooltip": "Toggles whether or not the avatar can provide autocomplete suggestions in your chat",
+  "figura.config.chat_autocomplete.enum": "On: Allow autocomplete\nOn + Badges: Allow autocomplete and add badges in relevant landmarks to signify that the completion was provided by the avatar\nOff: Don't allow autocomplete",
+  "figura.config.chat_autocomplete.1": "On",
+  "figura.config.chat_autocomplete.2": "On + Badges",
+  "figura.config.chat_autocomplete.3": "Off",
+
   "figura.config.main_dir": "Figura Folder Location",
   "figura.config.main_dir.tooltip": "Changes the location of the Figura folder",
 
@@ -980,6 +987,7 @@
   "figura.docs.events.mouse_press": "The MOUSE_PRESS event runs every time a mouse button is pressed\nTakes three number parameters, a \"button\", which is the number id of the button that was been pressed, the \"action\", which is the status of the press event (0 for release, 1 for press, 2 for hold), and the \"modifier\", which is a bitmask number detecting if you have any modifier keys being pressed (like shift or alt, for example)\nIf returned true, the event cancels its vanilla function",
   "figura.docs.events.key_press": "The KEY_PRESS event runs every time a keyboard key is pressed\nTakes three number parameters, a \"key\", which is the number id of the key that was been pressed, the \"action\", which is the status of the press event (0 for release, 1 for press, 2 for hold), and the \"modifier\", which is a bitmask number detecting if you have any modifier keys being pressed (like shift or alt, for example)\nIf returned true, the event cancels its vanilla function",
   "figura.docs.events.use_item": "The USE_ITEM event is run every time the entity uses an item\nThe item, action and amount of particles this item would produce is given as argument\nIf returned true, the event cancels its vanilla function",
+  "figura.docs.events.chat_autocomplete": "The CHAT_AUTOCOMPLETE event is run every time an autocomplete is requested for the chat (this does not include command blocks)\nThe input and the cursor position is provided and the event subscribers may return a boolean which should be true if this subscriber wishes to autocomplete, and a table which contains information about the autocompletion behaviour:\n\nThis table should have a field named \"result\" which denotes what behaviour the autocompletion should have, and must be of either \"suggest\", \"usage\", or \"error\", the table requires different fields depending on which behaviour has been taken\n\nif behaviour == \"error\", the table should have a String field named \"message\" which denotes what should be shown to the user\n\nif behaviour == \"usage\", the table should have a String field named \"usage\" which denotes what should be shown to the user, and an Integer field named \"position\" which denotes where to place this alongside the text field\n\nif behaviour == \"suggest\", the table should have an Integer field named \"position\" which denotes where should the insertion into the text happen, and an array in the field named \"suggestions\"\n\nThis array must contain either Strings or Tables, which if it's a Table it should have a String field named \"name\", and an optional String field named \"tooltip\"\n\nthe String or the field \"name\" will be what will be shown and inserted, and the optional \"tooltip\" will be shown when the user hovers the suggestion",
   "figura.docs.events.arrow_render": "The ARROW_RENDER event is run for every arrow entity shot by the Avatar owner\nIt takes two arguments, the tick delta, and the arrow entity\nReturning \"true\" stops this arrow from rendering, including the Arrow parent parts\nRequires the \"Vanilla Model Change\" permission",
   "figura.docs.events.get_events": "Returns a table with all events types",
 
