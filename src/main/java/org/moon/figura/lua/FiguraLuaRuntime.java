@@ -24,8 +24,10 @@ import org.moon.figura.lua.api.ping.PingAPI;
 import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
 import org.moon.figura.permissions.Permissions;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -153,7 +155,23 @@ public class FiguraLuaRuntime {
         @Override
         public Varargs invoke(Varargs args) {
             try {
-                return runtime.userGlobals.load(args.arg(1).checkjstring(), "loadstring", runtime.userGlobals);
+                InputStream ld;
+                LuaValue val = args.arg(1);
+                if(val.isfunction()){
+                    ld = new FuncStream(val.checkfunction());
+                } else if(val.isstring()) {
+                    ld = new ByteArrayInputStream(val.checkjstring().getBytes(StandardCharsets.UTF_8));
+                } else {
+                    throw new LuaError("chunk source is neither string nor function");
+                }
+                val = args.arg(2);
+                String chunkName = val.isstring() ? val.tojstring() : "=(loadstring)";
+                val = args.arg(3);
+                String mode = val.isstring() ? val.tojstring() : "t";
+                val = args.arg(4);
+                LuaTable environment = val.istable() ? val.checktable() : runtime.userGlobals;
+                
+                return runtime.userGlobals.load(ld, chunkName, mode, environment);
             } catch (LuaError e) {
                 return varargsOf(NIL, e.getMessageObject());
             }
@@ -162,6 +180,27 @@ public class FiguraLuaRuntime {
         @Override
         public String tojstring() {
             return "function: loadstring";
+        }
+        
+        static class FuncStream extends InputStream{
+            final LuaFunction function;
+            String string = "";
+            int index = 0;
+            FuncStream(LuaFunction function){
+                this.function = function;
+            }
+
+            @Override
+            public int read() {
+                if (++index >= string.length()){
+                    index = 0;
+                    Varargs result = function.invoke();
+                    if (result.isnil(1))
+                        return -1;
+                    string = result.tojstring();
+                }
+                return string.charAt(index);
+            }
         }
     };
     private void loadExtraLibraries() {
