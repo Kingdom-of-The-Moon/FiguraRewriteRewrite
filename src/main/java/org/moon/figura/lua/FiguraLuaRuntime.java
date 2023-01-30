@@ -156,7 +156,7 @@ public class FiguraLuaRuntime {
             return "function: require";
         }
     };
-    private static final Function<FiguraLuaRuntime, LuaValue> LOADSTRING_FUNC = runtime -> new VarArgFunction() { 
+    private static final Function<FiguraLuaRuntime, LuaValue> LOADSTRING_FUNC = runtime -> new VarArgFunction() {
         @Override
         public Varargs invoke(Varargs args) {
             try {
