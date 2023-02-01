@@ -27,7 +27,6 @@ import org.moon.figura.permissions.Permissions;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -72,6 +71,8 @@ public class FiguraLuaRuntime {
         userGlobals.load(new TableLib());
         userGlobals.load(new StringLib());
         userGlobals.load(new JseMathLib());
+        if(enableBytecode)
+            LoadState.install(userGlobals);
 
         LuaC.install(userGlobals);
 
@@ -151,24 +152,30 @@ public class FiguraLuaRuntime {
             return "function: require";
         }
     };
-    private static final Function<FiguraLuaRuntime, LuaValue> LOADSTRING_FUNC = runtime -> new VarArgFunction() {
+    private static final boolean enableBytecode = false; // theoretically never true so bytecode is never enabled
+    private static final Function<FiguraLuaRuntime, LuaValue> LOADSTRING_FUNC = runtime -> new VarArgFunction() { 
         @Override
         public Varargs invoke(Varargs args) {
             try {
                 InputStream ld;
-                LuaValue val = args.arg(1);
+                int i = 1;
+                LuaValue val = args.arg(i++);
                 if(val.isfunction()){
                     ld = new FuncStream(val.checkfunction());
                 } else if(val.isstring()) {
-                    ld = new ByteArrayInputStream(val.checkjstring().getBytes(StandardCharsets.UTF_8));
+                    ld = new ByteArrayInputStream(val.checkstring().m_bytes);
                 } else {
                     throw new LuaError("chunk source is neither string nor function");
                 }
-                val = args.arg(2);
+                val = args.arg(i++);
                 String chunkName = val.isstring() ? val.tojstring() : "=(loadstring)";
-                val = args.arg(3);
-                String mode = val.isstring() ? val.tojstring() : "t";
-                val = args.arg(4);
+                String mode;
+                if(enableBytecode) {
+                    val = args.arg(i++);
+                    mode = val.isstring() ? val.tojstring() : "t";
+                } else
+                    mode = "t";
+                val = args.arg(i);
                 LuaTable environment = val.istable() ? val.checktable() : runtime.userGlobals;
                 
                 return runtime.userGlobals.load(ld, chunkName, mode, environment);
