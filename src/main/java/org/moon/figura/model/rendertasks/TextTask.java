@@ -71,16 +71,11 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setText(String text) {
+    @LuaMethodDoc("text")
+    public TextTask setText(String text) {
         this.text = text == null ? null : TextUtils.splitText(Badges.noBadges4U(TextUtils.tryParseJson(text)), "\n");
         if (text != null)
             this.cachedComplexity = text.length() + 1;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setText")
-    public RenderTask text(String text) {
-        setText(text);
         return this;
     }
 
@@ -90,14 +85,9 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setCentered(boolean centered) {
+    @LuaMethodDoc("centered")
+    public TextTask setCentered(boolean centered) {
         this.centered = centered;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setCentered")
-    public RenderTask centered(boolean centered) {
-        setCentered(centered);
         return this;
     }
 
@@ -107,14 +97,9 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setRight(boolean right) {
+    @LuaMethodDoc("right")
+    public TextTask setRight(boolean right) {
         this.rtl = right;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setRight")
-    public RenderTask right(boolean right) {
-        setRight(right);
         return this;
     }
 
@@ -124,14 +109,9 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setShadow(boolean shadow) {
+    @LuaMethodDoc("shadow")
+    public TextTask setShadow(boolean shadow) {
         this.shadow = shadow;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setShadow")
-    public RenderTask shadow(boolean shadow) {
-        setShadow(shadow);
         return this;
     }
 
@@ -141,14 +121,9 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setOutline(boolean outline) {
+    @LuaMethodDoc("outline")
+    public TextTask setOutline(boolean outline) {
         this.outline = outline;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOutline")
-    public RenderTask outline(boolean outline) {
-        setOutline(outline);
         return this;
     }
 
@@ -158,24 +133,14 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setOutlineColor(double r, double g, double b) {
-        setOutlineColor(FiguraVec3.oneUse(r, g, b));
+    public TextTask setOutlineColor(double r, double g, double b) {
+        return setOutlineColor(FiguraVec3.oneUse(r, g, b));
     }
 
     @LuaWhitelist
-    public void setOutlineColor(@LuaNotNil FiguraVec3 color) {
+    @LuaMethodDoc("outlineColor")
+    public TextTask setOutlineColor(@LuaNotNil FiguraVec3 color) {
         this.outlineColor = color.copy();
-    }
-
-    @LuaWhitelist
-    public TextTask outlineColor(double r, double g, double b) {
-        return outlineColor(FiguraVec3.oneUse(r, g, b));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOutlineColor")
-    public TextTask outlineColor(@LuaNotNil FiguraVec3 color) {
-        setOutlineColor(color);
         return this;
     }
 

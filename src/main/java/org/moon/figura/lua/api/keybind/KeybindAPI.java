@@ -26,17 +26,12 @@ public class KeybindAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("of")
     public FiguraKeybind newKeybind(@LuaNotNil String name, String key, boolean gui) {
         if (key == null) key = "key.keyboard.unknown";
         FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).gui(gui);
         this.keyBindings.add(binding);
         return binding;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("newKeybind")
-    public FiguraKeybind of(@LuaNotNil String name, String key, boolean gui) {
-        return newKeybind(name, key, gui);
     }
 
     @LuaWhitelist

@@ -339,8 +339,7 @@ public class EntityAPI<T extends Entity> {
         Vec3 vec3 = entity.getEyePosition(1f);
         HitResult result = entity.pick(distance, 1f, false);
 
-        if (result != null)
-            distance = result.getLocation().distanceToSqr(vec3);
+        distance = result.getLocation().distanceToSqr(vec3);
 
         Vec3 vec32 = entity.getViewVector(1f);
         Vec3 vec33 = vec3.add(vec32.x * distance, vec32.y * distance, vec32.z * distance);

@@ -50,24 +50,14 @@ public class BlockTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setBlock(String block) {
-        block(LuaUtils.parseBlockState("setBlock", block));
+    public RenderTask setBlock(String block) {
+        return block(LuaUtils.parseBlockState("setBlock", block));
     }
 
     @LuaWhitelist
-    public void setBlock(@LuaNotNil BlockStateAPI block) {
-        block(LuaUtils.parseBlockState("setBlock", block));
-    }
-
-    @LuaWhitelist
-    public RenderTask block(String block) {
-        return block(LuaUtils.parseBlockState("block", block));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setBlock")
-    public RenderTask block(@LuaNotNil BlockStateAPI block) {
-        return block(LuaUtils.parseBlockState("block", block));
+    @LuaMethodDoc("block")
+    public RenderTask setBlock(@LuaNotNil BlockStateAPI block) {
+        return block(LuaUtils.parseBlockState("setBlock", block));
     }
 
     public RenderTask block(BlockState block) {

@@ -203,7 +203,7 @@ public class NewDocsManager {
                 if(doc instanceof MethodDoc methodDoc && methodDoc.wrapper instanceof MethodWrapper wrapper){
                     for(Method method : wrapper.getMethods()){
                         if((Object) method.getDeclaredAnnotation(LuaMethodDoc.class) instanceof LuaMethodDoc jaavj){
-                            descriptionKey = a(parent, jaavj.value(), list);
+                            descriptionKey = a(parent, jaavj.key(), list);
                             break;
                         }
                     }
@@ -450,7 +450,7 @@ public class NewDocsManager {
                 for (LuaValue value : Arrays.stream(index.keys()).map(index::rawget).toArray(LuaValue[]::new)){
                     if (value instanceof LuaFunction wrapper && wrapper instanceof MethodWrapper methodWrapper) {
                         Optional<LuaMethodDoc> annotation = methodWrapper.getMethods().stream().map(method -> method.getAnnotation(LuaMethodDoc.class)).filter(Objects::nonNull).findFirst();
-                        if(annotation.isEmpty() || !annotation.get().value().isBlank()){
+                        if(annotation.isEmpty() || !annotation.get().key().isBlank()){
                             new MethodDoc(wrapper, this);
                         }
                     }

@@ -127,7 +127,7 @@ public abstract class FiguraVector<T extends FiguraVector<T, M>, M extends Figur
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("")
+    @LuaMethodDoc(value = {}, key = "")
     public String toString() {
         return getString(unpack());
     }

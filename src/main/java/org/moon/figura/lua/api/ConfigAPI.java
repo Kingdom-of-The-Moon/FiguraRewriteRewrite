@@ -236,16 +236,11 @@ public class ConfigAPI {
 
 
     @LuaWhitelist
-    public void setName(@LuaNotNil String name) {
-        if (!isHost) return;
+    @LuaMethodDoc("name")
+    public ConfigAPI setName(@LuaNotNil String name) {
+        if (!isHost) return null;
         this.name = name;
         this.loaded = false;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setName")
-    public ConfigAPI name(@LuaNotNil String name) {
-        setName(name);
         return this;
     }
 

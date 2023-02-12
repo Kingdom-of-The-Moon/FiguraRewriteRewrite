@@ -5,11 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.PlayerModelPart;
@@ -91,30 +89,28 @@ public class FiguraListDocs {
     }};
 
     private enum ListDoc {
-        KEYBINDS(() -> FiguraListDocs.KEYBINDS, "Keybinds", "keybinds", 2),
-        PARENT_TYPES(() -> FiguraListDocs.PARENT_TYPES, "ParentTypes", "parent_types", 1),
-        RENDER_TYPES(() -> FiguraListDocs.RENDER_TYPES, "RenderTypes", "render_types", 1),
-        TEXTURE_TYPES(() -> FiguraListDocs.TEXTURE_TYPES, "TextureTypes", "texture_types", 1),
-        KEY_IDS(() -> new LinkedHashSet<>() {{this.addAll(KeyMappingAccessor.getAll().keySet());}}, "KeyIDs", "key_ids", 2),
-        ENTITY_POSES(() -> FiguraListDocs.ENTITY_POSES, "EntityPoses", "entity_poses", 2),
-        ITEM_RENDER_TYPES(() -> FiguraListDocs.ITEM_RENDER_TYPES, "ItemRenderTypes", "item_render_types", 1),
-        POST_EFFECTS(() -> FiguraListDocs.POST_EFFECTS, "PostEffects", "post_effects", 2),
-        PLAY_STATES(() -> FiguraListDocs.PLAY_STATES, "PlayStates", "play_states", 1),
-        LOOP_MODES(() -> FiguraListDocs.LOOP_MODES, "LoopModes", "loop_modes", 1),
-        COLORS(() -> FiguraListDocs.COLORS, "Colors", "colors", 1),
-        PLAYER_MODEL_PARTS(() -> FiguraListDocs.PLAYER_MODEL_PARTS, "PlayerModelParts", "player_model_parts", 1),
-        USE_ACTIONS(() -> FiguraListDocs.USE_ACTIONS, "UseActions", "use_actions", 1),
-        RENDER_MODES(() -> FiguraListDocs.RENDER_MODES, "RenderModes", "render_modes", 1);
+        KEYBINDS(() -> FiguraListDocs.KEYBINDS, "Keybinds", "keybinds"),
+        PARENT_TYPES(() -> FiguraListDocs.PARENT_TYPES, "ParentTypes", "parent_types"),
+        RENDER_TYPES(() -> FiguraListDocs.RENDER_TYPES, "RenderTypes", "render_types"),
+        TEXTURE_TYPES(() -> FiguraListDocs.TEXTURE_TYPES, "TextureTypes", "texture_types"),
+        KEY_IDS(() -> new LinkedHashSet<>() {{this.addAll(KeyMappingAccessor.getAll().keySet());}}, "KeyIDs", "key_ids"),
+        ENTITY_POSES(() -> FiguraListDocs.ENTITY_POSES, "EntityPoses", "entity_poses"),
+        ITEM_RENDER_TYPES(() -> FiguraListDocs.ITEM_RENDER_TYPES, "ItemRenderTypes", "item_render_types"),
+        POST_EFFECTS(() -> FiguraListDocs.POST_EFFECTS, "PostEffects", "post_effects"),
+        PLAY_STATES(() -> FiguraListDocs.PLAY_STATES, "PlayStates", "play_states"),
+        LOOP_MODES(() -> FiguraListDocs.LOOP_MODES, "LoopModes", "loop_modes"),
+        COLORS(() -> FiguraListDocs.COLORS, "Colors", "colors"),
+        PLAYER_MODEL_PARTS(() -> FiguraListDocs.PLAYER_MODEL_PARTS, "PlayerModelParts", "player_model_parts"),
+        USE_ACTIONS(() -> FiguraListDocs.USE_ACTIONS, "UseActions", "use_actions"),
+        RENDER_MODES(() -> FiguraListDocs.RENDER_MODES, "RenderModes", "render_modes");
 
         private final Supplier<Object> supplier;
         private final String name, id;
-        private final int split;
 
-        ListDoc(Supplier<Object> supplier, String name, String id, int split) {
+        ListDoc(Supplier<Object> supplier, String name, String id) {
             this.supplier = supplier;
             this.name = name;
             this.id = id;
-            this.split = split;
         }
 
         private Collection<?> get() {
@@ -141,8 +137,10 @@ public class FiguraListDocs {
 
             JsonArray entries = new JsonArray();
             for (Object o : coll) {
+                //noinspection rawtypes
                 if (o instanceof Map.Entry e) {
                     entries.add(e.getKey().toString());
+                    //noinspection unchecked
                     for (String s : (List<String>) e.getValue())
                         entries.add(s);
                 } else {
@@ -159,52 +157,7 @@ public class FiguraListDocs {
             LiteralArgumentBuilder<FabricClientCommandSource> command = LiteralArgumentBuilder.literal(id);
 
             //display everything
-            command.executes(context -> {
-                Collection<?> coll = get();
-                if (coll.size() == 0) {
-                    FiguraMod.sendChatMessage(FiguraText.of("docs.enum.empty"));
-                    return 0;
-                }
-
-                MutableComponent text = FiguraDoc.HEADER.copy()
-                        .append("\n\n")
-                        .append(Component.literal("• ")
-                                .append(FiguraText.of("docs.text.description"))
-                                .append(":")
-                                .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                        .append("\n\t")
-                        .append(Component.literal("• ")
-                                .append(FiguraText.of("docs.enum." + id))
-                                .withStyle(ColorUtils.Colors.MAYA_BLUE.style))
-                        .append("\n\n")
-                        .append(Component.literal("• ")
-                                .append(FiguraText.of("docs.text.entries"))
-                                .append(":")
-                                .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style));
-
-                int i = 0;
-                for (Object o : coll) {
-                    MutableComponent component;
-
-                    if (o instanceof Map.Entry e) {
-                        component = Component.literal(e.getKey().toString()).withStyle(ChatFormatting.WHITE);
-                        for (String s : (List<String>) e.getValue()) {
-                            component.append(Component.literal(" | ").withStyle(ChatFormatting.YELLOW))
-                                    .append(Component.literal(s).withStyle(ChatFormatting.GRAY));
-                        }
-                    } else {
-                        component = Component.literal(o.toString()).withStyle(ChatFormatting.WHITE);
-                    }
-
-                    text.append(i % split == 0 ? "\n\t" : "\t");
-                    text.append(Component.literal("• ").withStyle(ChatFormatting.YELLOW)).append(component);
-                    i++;
-                }
-
-                FiguraMod.sendChatMessage(text);
-                return 1;
-            });
-
+            
             //add collection as child for easy navigation
             Collection<?> coll = get();
             for (Object o : coll) {
@@ -239,31 +192,7 @@ public class FiguraListDocs {
     public static LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {
         //self
         LiteralArgumentBuilder<FabricClientCommandSource> root = LiteralArgumentBuilder.literal("enums");
-        root.executes(context -> {
-            FiguraMod.sendChatMessage(FiguraDoc.HEADER.copy()
-                    .append("\n\n")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.text.type"))
-                            .append(":")
-                            .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                    .append("\n\t")
-                    .append(Component.literal("• ")
-                            .append(Component.literal("enumerators"))
-                            .withStyle(ColorUtils.Colors.MAYA_BLUE.style))
-
-                    .append("\n\n")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.text.description"))
-                            .append(":")
-                            .withStyle(ColorUtils.Colors.CHLOE_PURPLE.style))
-                    .append("\n\t")
-                    .append(Component.literal("• ")
-                            .append(FiguraText.of("docs.enum"))
-                            .withStyle(ColorUtils.Colors.MAYA_BLUE.style))
-            );
-            return 1;
-        });
-
+        
         for (ListDoc value : ListDoc.values())
             root.then(value.generateCommand());
 

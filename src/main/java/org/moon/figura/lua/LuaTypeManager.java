@@ -3,6 +3,7 @@ package org.moon.figura.lua;
 import org.luaj.vm2.*;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
+import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.lang.reflect.Array;
@@ -51,6 +52,9 @@ public class LuaTypeManager {
                     continue;
                 String name = method.getName();
                 List<Method> methods = overloads.compute(name, (k, v) -> v == null ? new LinkedList<>() : v);
+                if((Object) method.getDeclaredAnnotation(LuaMethodDoc.class) instanceof LuaMethodDoc doc)
+                    for (String alias : doc.value())
+                        overloads.put(alias, methods);
                 for (int i = 0; i < methods.size(); i ++) {
                     Method method1 = methods.get(i);
                     if (Arrays.equals(method1.getParameterTypes(), method.getParameterTypes())) {

@@ -52,25 +52,15 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
-    public void setColor(@LuaNotNil FiguraVec3 color) {
+    public AvatarAPI setColor(Double r, Double g, Double b) {
+        return setColor(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("color")
+    public AvatarAPI setColor(@LuaNotNil FiguraVec3 color) {
         avatar.color = ColorUtils.rgbToHex(color);
-    }
-
-    @LuaWhitelist
-    public void setColor(Double r, Double g, Double b) {
-        setColor(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setColor")
-    public AvatarAPI color(@LuaNotNil FiguraVec3 color) {
-        setColor(color);
         return this;
-    }
-
-    @LuaWhitelist
-    public AvatarAPI color(double r, Double g, Double b) {
-        return color(LuaUtils.freeVec3("setColor", r, g, b, 1, 1, 1));
     }
 
     @LuaWhitelist

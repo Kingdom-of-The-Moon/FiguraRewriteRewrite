@@ -103,6 +103,15 @@ public class Action {
         return ret;
     }
 
+    public Action setItem(ItemStack item, String slot) {
+        switch (slot){
+            case "hover" -> hoverItem = item;
+            case "toggle" -> toggleItem = item;
+            default -> this.item = item;
+        }
+        return this;
+    }
+
 
     // -- general functions -- //
 
@@ -113,14 +122,9 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setTitle(String title) {
+    @LuaMethodDoc("title")
+    public Action setTitle(String title) {
         this.title = title;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setTitle")
-    public Action title(String title) {
-        setTitle(title);
         return this;
     }
 
@@ -130,24 +134,14 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setColor(Double r, Double g, Double b) {
-        setColor(LuaUtils.freeVec3("setColor", r, g, b));
+    public Action setColor(Double r, Double g, Double b) {
+        return setColor(LuaUtils.freeVec3("setColor", r, g, b));
     }
 
     @LuaWhitelist
-    public void setColor(@LuaNotNil FiguraVec3 color) {
+    @LuaMethodDoc("color")
+    public Action setColor(@LuaNotNil FiguraVec3 color) {
         this.color = color.copy();
-    }
-
-    @LuaWhitelist
-    public Action color(Double r, Double g, Double b) {
-        return color(LuaUtils.freeVec3("color", r, g, b));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setColor")
-    public Action color(@LuaNotNil FiguraVec3 color) {
-        setColor(color);
         return this;
     }
 
@@ -157,160 +151,80 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setHoverColor(Double r, Double g, Double b) {
-        setHoverColor(LuaUtils.freeVec3("setHoverColor", r, g, b));
+    public Action setHoverColor(Double r, Double g, Double b) {
+        return setHoverColor(LuaUtils.freeVec3("setHoverColor", r, g, b));
     }
 
     @LuaWhitelist
-    public void setHoverColor(@LuaNotNil FiguraVec3 color) {
+    @LuaMethodDoc("hoverColor")
+    public Action setHoverColor(@LuaNotNil FiguraVec3 color) {
         this.hoverColor = color.copy();
-    }
-
-    @LuaWhitelist
-    public Action hoverColor(Double r, Double g, Double b) {
-        return hoverColor(LuaUtils.freeVec3("hoverColor", r, g, b));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setHoverColor")
-    public Action hoverColor(@LuaNotNil FiguraVec3 color) {
-        setHoverColor(color);
         return this;
     }
 
     @LuaWhitelist
-    public void setItem(String itemId) {
-        item(LuaUtils.parseItemStack("setItem", itemId));
+    public Action setItem(String itemId) {
+        return setItem(LuaUtils.parseItemStack("setItem", itemId), "item");
     }
 
     @LuaWhitelist
-    public void setItem(ItemStackAPI item) {
-        item(item.itemStack);
+    @LuaMethodDoc("item")
+    public Action setItem(ItemStackAPI item) {
+        return setItem(item.itemStack, "item");
     }
 
     @LuaWhitelist
-    public Action item(String itemId) {
-        return item(LuaUtils.parseItemStack("item", itemId));
+    public Action setHoverItem(String itemId) {
+        return setItem(LuaUtils.parseItemStack("setHoverItem", itemId), "hover");
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("set_item")
-    public Action item(ItemStackAPI item) {
-        return item(item.itemStack);
-    }
-
-    public Action item(ItemStack item) {
-        this.item = item;
-        return this;
+    @LuaMethodDoc("hoverItem")
+    public Action setHoverItem(ItemStackAPI item) {
+        return setItem(item.itemStack, "hover");
     }
 
     @LuaWhitelist
-    public void setHoverItem(String itemId) {
-        hoverItem(LuaUtils.parseItemStack("setHoverItem", itemId));
+    public Action setTexture(@LuaNotNil FiguraTexture texture) {
+        return setTexture(texture, 0, 0, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    public void setHoverItem(ItemStackAPI item) {
-        hoverItem(item.itemStack);
+    public Action setTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
+        return setTexture(texture, u, v, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    public Action hoverItem(String itemId) {
-        return hoverItem(LuaUtils.parseItemStack("hoverItem", itemId));
+    public Action setTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
+        return setTexture(texture, u, v, width, height, 0d);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("setHoverItem")
-    public Action hoverItem(ItemStackAPI item) {
-        return hoverItem(item.itemStack);
-    }
-
-    public Action hoverItem(ItemStack item) {
-        this.hoverItem = item;
-        return this;
-    }
-
-    @LuaWhitelist
-    public void setTexture(@LuaNotNil FiguraTexture texture) {
-        setTexture(texture, 0, 0, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public void setTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        setTexture(texture, u, v, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public void setTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        setTexture(texture, u, v, width, height, 0d);
-    }
-
-    @LuaWhitelist
-    public void setTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
+    @LuaMethodDoc("texture")
+    public Action setTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         this.texture = new TextureData(texture, u, v, width, height, scale);
-    }
-
-    @LuaWhitelist
-    public Action texture(@LuaNotNil FiguraTexture texture) {
-        return texture(texture, 0, 0, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action texture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        return texture(texture, u, v, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action texture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        return texture(texture, u, v, width, height, 0d);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setTexture")
-    public Action texture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
-        setTexture(texture, u, v, width, height, scale);
         return this;
     }
 
     @LuaWhitelist
-    public void setHoverTexture(@LuaNotNil FiguraTexture texture) {
-        setHoverTexture(texture, 0, 0, 0, 0, 0d);
+    public Action setHoverTexture(@LuaNotNil FiguraTexture texture) {
+        return setHoverTexture(texture, 0, 0, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    public void setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        setHoverTexture(texture, u, v, 0, 0, 0d);
+    public Action setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
+        return setHoverTexture(texture, u, v, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    public void setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        setHoverTexture(texture, u, v, width, height, 0d);
+    public Action setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
+        return setHoverTexture(texture, u, v, width, height, 0d);
     }
 
     @LuaWhitelist
-    public void setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
+    @LuaMethodDoc("hoverTexture")
+    public Action setHoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         this.hoverTexture = new TextureData(texture, u, v, width, height, scale);
-    }
-
-    @LuaWhitelist
-    public Action hoverTexture(@LuaNotNil FiguraTexture texture) {
-        return hoverTexture(texture, 0, 0, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action hoverTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        return hoverTexture(texture, u, v, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action hoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        return hoverTexture(texture, u, v, width, height, 0d);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setHoverTexture")
-    public Action hoverTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
-        setHoverTexture(texture, u, v, width, height, scale);
         return this;
     }
 
@@ -319,62 +233,37 @@ public class Action {
 
 
     @LuaWhitelist
-    public void setOnLeftClick(LuaFunction function) {
+    @LuaMethodDoc("onRightClick")
+    public Action setOnLeftClick(LuaFunction function) {
         this.leftClick = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnLeftClick")
-    public Action onLeftClick(LuaFunction function) {
-        setOnLeftClick(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setOnRightClick(LuaFunction function) {
+    @LuaMethodDoc("onLeftClick")
+    public Action setOnRightClick(LuaFunction function) {
         this.rightClick = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnRightClick")
-    public Action onRightClick(LuaFunction function) {
-        setOnRightClick(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setOnToggle(LuaFunction function) {
+    @LuaMethodDoc("onToggle")
+    public Action setOnToggle(LuaFunction function) {
         this.toggle = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnToggle")
-    public Action onToggle(LuaFunction function) {
-        setOnToggle(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setOnUntoggle(LuaFunction function) {
+    @LuaMethodDoc("onUntoggle")
+    public Action setOnUntoggle(LuaFunction function) {
         this.untoggle = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnUntoggle")
-    public Action onUntoggle(LuaFunction function) {
-        setOnUntoggle(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setOnScroll(LuaFunction function) {
+    @LuaMethodDoc("onScroll")
+    public Action setOnScroll(LuaFunction function) {
         this.scroll = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnScroll")
-    public Action onScroll(LuaFunction function) {
-        setOnScroll(function);
         return this;
     }
 
@@ -388,14 +277,9 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setToggleTitle(String title) {
+    @LuaMethodDoc("toggleTitle")
+    public Action setToggleTitle(String title) {
         this.toggleTitle = title;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setToggleTitle")
-    public Action toggleTitle(String title) {
-        setToggleTitle(title);
         return this;
     }
 
@@ -405,92 +289,46 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setToggleColor(Double r, Double g, Double b) {
-        setToggleColor(LuaUtils.freeVec3("toggleColor", r, g, b));
+    public Action setToggleColor(Double r, Double g, Double b) {
+        return setToggleColor(LuaUtils.freeVec3("toggleColor", r, g, b));
     }
 
     @LuaWhitelist
-    public void setToggleColor(FiguraVec3 color) {
+    @LuaMethodDoc("toggleColor")
+    public Action setToggleColor(FiguraVec3 color) {
         this.toggleColor = color.copy();
-    }
-
-    @LuaWhitelist
-    public Action toggleColor(Double r, Double g, Double b) {
-        return toggleColor(LuaUtils.freeVec3("toggleColor", r, g, b));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setToggleColor")
-    public Action toggleColor(FiguraVec3 color) {
-        setToggleColor(color);
         return this;
     }
 
     @LuaWhitelist
-    public void setToggleItem(String itemId) {
-        toggleItem(LuaUtils.parseItemStack("setToggleItem", itemId));
+    public Action setToggleItem(String itemId) {
+        return setItem(LuaUtils.parseItemStack("setToggleItem", itemId), "toggle");
     }
 
     @LuaWhitelist
-    public void setToggleItem(ItemStackAPI item) {
-        toggleItem(item.itemStack);
+    @LuaMethodDoc("toggleItem")
+    public Action setToggleItem(ItemStackAPI item) {
+        return setItem(item.itemStack, "toggle");
     }
 
     @LuaWhitelist
-    public Action toggleItem(String itemId) {
-        return toggleItem(LuaUtils.parseItemStack("toggleItem", itemId));
+    public Action setToggleTexture(@LuaNotNil FiguraTexture texture) {
+        return setToggleTexture(texture, 0, 0, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("setToggleItem")
-    public Action toggleItem(ItemStackAPI item) {
-        return toggleItem(item.itemStack);
-    }
-
-    public Action toggleItem(ItemStack item) {
-        this.hoverItem = item;
-        return this;
+    public Action setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
+        return setToggleTexture(texture, u, v, 0, 0, 0d);
     }
 
     @LuaWhitelist
-    public void setToggleTexture(@LuaNotNil FiguraTexture texture) {
-        setToggleTexture(texture, 0, 0, 0, 0, 0d);
+    public Action setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
+        return setToggleTexture(texture, u, v, width, height, 0d);
     }
 
     @LuaWhitelist
-    public void setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        setToggleTexture(texture, u, v, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public void setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        setToggleTexture(texture, u, v, width, height, 0d);
-    }
-
-    @LuaWhitelist
-    public void setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
+    public Action setToggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
         this.toggleTexture = new TextureData(texture, u, v, width, height, scale);
-    }
-
-    @LuaWhitelist
-    public Action toggleTexture(@LuaNotNil FiguraTexture texture) {
-        return toggleTexture(texture, 0, 0, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action toggleTexture(@LuaNotNil FiguraTexture texture, double u, double v) {
-        return toggleTexture(texture, u, v, 0, 0, 0d);
-    }
-
-    @LuaWhitelist
-    public Action toggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height) {
-        return toggleTexture(texture, u, v, width, height, 0d);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setToggleTexture")
-    public Action toggleTexture(@LuaNotNil FiguraTexture texture, double u, double v, Integer width, Integer height, Double scale) {
-        setToggleTexture(texture, u, v, width, height, scale);
         return this;
     }
 
@@ -500,14 +338,9 @@ public class Action {
     }
 
     @LuaWhitelist
-    public void setToggled(boolean bool) {
+    @LuaMethodDoc("toggled")
+    public Action setToggled(boolean bool) {
         this.toggled = bool;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setToggled")
-    public Action toggled(boolean bool) {
-        setToggled(bool);
         return this;
     }
 

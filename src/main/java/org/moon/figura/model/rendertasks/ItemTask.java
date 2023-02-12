@@ -55,23 +55,13 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setItem(String itemId) {
-        item(LuaUtils.parseItemStack("item", itemId));
-    }
-
-    @LuaWhitelist
-    public void setItem(@LuaNotNil ItemStackAPI item) {
-        item(LuaUtils.parseItemStack("item", item));
-    }
-
-    @LuaWhitelist
-    public RenderTask item(String itemId) {
+    public RenderTask setItem(String itemId) {
         return item(LuaUtils.parseItemStack("item", itemId));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("setItem")
-    public RenderTask item(@LuaNotNil ItemStackAPI item) {
+    @LuaMethodDoc("item")
+    public RenderTask setItem(@LuaNotNil ItemStackAPI item) {
         return item(LuaUtils.parseItemStack("item", item));
     }
 
@@ -89,20 +79,15 @@ public class ItemTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public void setRenderType(@LuaNotNil String renderType) {
+    @LuaMethodDoc("renderType")
+    public ItemTask setRenderType(@LuaNotNil String renderType) {
         try {
             this.renderType = ItemTransforms.TransformType.valueOf(renderType.toUpperCase());
             this.left = this.renderType == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND || this.renderType == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
+            return this;
         } catch (Exception ignored) {
             throw new LuaError("Illegal RenderType: \"" + renderType + "\".");
         }
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setRenderType")
-    public RenderTask renderType(@LuaNotNil String type) {
-        setRenderType(type);
-        return this;
     }
 
     @Override

@@ -77,7 +77,7 @@ public class LivingEntityAPI<T extends LivingEntity> extends EntityAPI<T> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("")
+    @LuaMethodDoc(value = {}, key = "")
     public List<Map<String, Object>> getStatusEffects() {
         checkEntity();
         List<Map<String, Object>> list = new ArrayList<>();

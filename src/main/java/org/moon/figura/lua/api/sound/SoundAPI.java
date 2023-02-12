@@ -55,7 +55,7 @@ public class SoundAPI {
 
     @LuaWhitelist
     public LuaSound playSound(@LuaNotNil String id, double x, double y, double z, float volume, float pitch, boolean loop) {
-        return __index(id).pos(x, y, z).volume(volume).pitch(pitch).loop(loop).play();
+        return __index(id).setPos(x, y, z).setVolume(volume).setPitch(pitch).setLoop(loop).play();
     }
 
     @LuaWhitelist

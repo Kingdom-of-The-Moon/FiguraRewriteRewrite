@@ -221,46 +221,46 @@ public class FiguraDocsManager {
                 ConfigAPI.class
         ));
     }};
-    private static final Map<String, List<FiguraDoc>> GENERATED_CHILDREN = new HashMap<>();
+//    private static final Map<String, List<FiguraDoc>> GENERATED_CHILDREN = new HashMap<>();
 
-    private static FiguraDoc.ClassDoc global;
+//    private static FiguraDoc.ClassDoc global;
 
     private static final List<Class<?>> LUA_LIB_OVERRIDES = List.of(
-            FiguraMathDocs.class
+//            FiguraMathDocs.class
     );
-    private static final List<FiguraDoc> GENERATED_LIB_OVERRIDES = new ArrayList<>();
+//    private static final List<FiguraDoc> GENERATED_LIB_OVERRIDES = new ArrayList<>();
 
     public static void init() {
         //generate children override
         for (Map.Entry<String, List<Class<?>>> packageEntry : GLOBAL_CHILDREN.entrySet()) {
             for (Class<?> documentedClass : packageEntry.getValue()) {
-                FiguraDoc.ClassDoc doc = generateDocFor(documentedClass, "globals " + packageEntry.getKey());
-                if (doc != null)
-                    GENERATED_CHILDREN.computeIfAbsent(packageEntry.getKey(), s -> new ArrayList<>()).add(doc);
+//                FiguraDoc.ClassDoc doc = generateDocFor(documentedClass, "globals " + packageEntry.getKey());
+//                if (doc != null)
+//                    GENERATED_CHILDREN.computeIfAbsent(packageEntry.getKey(), s -> new ArrayList<>()).add(doc);
             }
         }
 
         //generate standard libraries overrides
         for (Class<?> lib : LUA_LIB_OVERRIDES) {
-            FiguraDoc.ClassDoc libDoc = generateDocFor(lib, null);
-            if (libDoc != null)
-                GENERATED_LIB_OVERRIDES.add(libDoc);
+//            FiguraDoc.ClassDoc libDoc = generateDocFor(lib, null);
+//            if (libDoc != null)
+//                GENERATED_LIB_OVERRIDES.add(libDoc);
         }
 
         //generate globals
-        Class<?> globalClass = FiguraGlobalsDocs.class;
-        global = new FiguraDoc.ClassDoc(globalClass, globalClass.getAnnotation(LuaTypeDoc.class), GENERATED_CHILDREN);
+//        Class<?> globalClass = FiguraGlobalsDocs.class;
+//        global = new FiguraDoc.ClassDoc(globalClass, globalClass.getAnnotation(LuaTypeDoc.class), GENERATED_CHILDREN);
     }
 
-    private static FiguraDoc.ClassDoc generateDocFor(Class<?> documentedClass, String pack) {
-        if (!documentedClass.isAnnotationPresent(LuaTypeDoc.class))
-            return null;
-
-        FiguraDoc.ClassDoc doc = new FiguraDoc.ClassDoc(documentedClass, documentedClass.getAnnotation(LuaTypeDoc.class));
-        NAME_MAP.put(documentedClass, doc.name);
-        CLASS_COMMAND_MAP.put(documentedClass, "/figura docs " + (pack == null ? "" : pack) + " " + doc.name);
-        return doc;
-    }
+//    private static FiguraDoc.ClassDoc generateDocFor(Class<?> documentedClass, String pack) {
+//        if (!documentedClass.isAnnotationPresent(LuaTypeDoc.class))
+//            return null;
+//
+//        FiguraDoc.ClassDoc doc = new FiguraDoc.ClassDoc(documentedClass, documentedClass.getAnnotation(LuaTypeDoc.class));
+//        NAME_MAP.put(documentedClass, doc.name);
+//        CLASS_COMMAND_MAP.put(documentedClass, "/figura docs " + (pack == null ? "" : pack) + " " + doc.name);
+//        return doc;
+//    }
 
     public static String getNameFor(Class<?> clazz) {
         return NAME_MAP.computeIfAbsent(clazz, aClass -> {
@@ -293,15 +293,15 @@ public class FiguraDocsManager {
     public static LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {
         //root
         LiteralArgumentBuilder<FabricClientCommandSource> root = LiteralArgumentBuilder.literal("docs");
-        root.executes(context -> FiguraDoc.printRoot());
+//        root.executes(context -> FiguraDoc.printRoot());
 
         //globals
-        LiteralArgumentBuilder<FabricClientCommandSource> globals = global == null ? LiteralArgumentBuilder.literal("globals") : global.getCommand();
-        root.then(globals);
+//        LiteralArgumentBuilder<FabricClientCommandSource> globals = global == null ? LiteralArgumentBuilder.literal("globals") : global.getCommand();
+//        root.then(globals);
 
         //library overrides
-        for (FiguraDoc figuraDoc : GENERATED_LIB_OVERRIDES)
-            root.then(figuraDoc.getCommand());
+//        for (FiguraDoc figuraDoc : GENERATED_LIB_OVERRIDES)
+//            root.then(figuraDoc.getCommand());
 
         //list docs
         root.then(FiguraListDocs.getCommand());
@@ -357,12 +357,12 @@ public class FiguraDocsManager {
         JsonObject root = new JsonObject();
 
         //globals
-        JsonObject globals = global == null ? new JsonObject() : global.toJson(translate);
-        root.add("globals", globals);
+//        JsonObject globals = global == null ? new JsonObject() : global.toJson(translate);
+//        root.add("globals", globals);
 
         //library overrides
-        for (FiguraDoc figuraDoc : GENERATED_LIB_OVERRIDES)
-            root.add(figuraDoc.name, figuraDoc.toJson(translate));
+//        for (FiguraDoc figuraDoc : GENERATED_LIB_OVERRIDES)
+//            root.add(figuraDoc.name, figuraDoc.toJson(translate));
 
         //lists
         root.add("lists", FiguraListDocs.toJson(translate));

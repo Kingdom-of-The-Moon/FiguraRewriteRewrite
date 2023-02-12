@@ -107,13 +107,8 @@ abstract class NewGlobals {
     public static LuaTable listFiles(String folder, boolean subFolders) {return null;}
 
     @LuaWhitelist
+    @LuaMethodDoc("log")
     public static String print(Object arg) {
-        return null;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("print")
-    public static String log(Object arg) {
         return null;
     }
 
@@ -123,29 +118,15 @@ abstract class NewGlobals {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("logTable")
     public static String printTable(LuaUserdata object, int maxDepth, boolean silent) {
         return null;
     }
 
     @LuaWhitelist
-    public static String logTable(LuaTable table, int maxDepth, boolean silent) {
-        return null;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("printTable")
-    public static String logTable(LuaUserdata object, int maxDepth, boolean silent) {
-        return null;
-    }
-
-    @LuaWhitelist
+    @LuaMethodDoc("logJson")
     public static String printJson(String json) {
         return null;
     }
 
-    @LuaWhitelist
-    @LuaMethodDoc("printJson")
-    public static String logJson(String json) {
-        return null;
-    }
 }

@@ -45,23 +45,13 @@ public class BiomeAPI {
     }
 
     @LuaWhitelist
-    public void setPos(Double x, Double y, Double z) {
-        setPos(LuaUtils.freeVec3("setPos", x, y, z));
+    public BiomeAPI setPos(Double x, Double y, Double z) {
+        return setPos(LuaUtils.freeVec3("setPos", x, y, z));
     }
 
     @LuaWhitelist
-    public void setPos(FiguraVec3 pos) {
-        this.pos = pos.asBlockPos();
-    }
-
-    @LuaWhitelist
-    public BiomeAPI pos(Double x, Double y, Double z) {
-        return pos(LuaUtils.freeVec3("pos", x, y, z));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setPos")
-    public BiomeAPI pos(FiguraVec3 pos) {
+    @LuaMethodDoc("pos")
+    public BiomeAPI setPos(FiguraVec3 pos) {
         this.pos = pos.asBlockPos();
         return this;
     }

@@ -85,12 +85,12 @@ public class FiguraKeybind {
     }
 
     public static boolean set(List<FiguraKeybind> bindings, InputConstants.Key key, boolean pressed) {
-        boolean overrided = false;
+        boolean overridden = false;
         for (FiguraKeybind keybind : bindings) {
             if (keybind.key == key && keybind.enabled && (keybind.gui || Minecraft.getInstance().screen == null))
-                overrided = keybind.setDown(pressed) || overrided;
+                overridden = keybind.setDown(pressed) || overridden;
         }
-        return overrided;
+        return overridden;
     }
 
     public static void releaseAll(List<FiguraKeybind> bindings) {
@@ -114,36 +114,27 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public void setOnPress(LuaFunction function) {
+    @LuaMethodDoc("onPress")
+    public FiguraKeybind setOnPress(LuaFunction function) {
         this.press = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnPress")
-    public FiguraKeybind onPress(LuaFunction function) {
-        setOnPress(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setOnRelease(LuaFunction function) {
+    @LuaMethodDoc("onRelease")
+    public FiguraKeybind setOnRelease(LuaFunction function) {
         this.release = function;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOnRelease")
-    public FiguraKeybind onRelease(LuaFunction function) {
-        setOnRelease(function);
         return this;
     }
 
     @LuaWhitelist
-    public void setKey(@LuaNotNil String key) {
+    @LuaMethodDoc("key")
+    public FiguraKeybind setKey(@LuaNotNil String key) {
         this.key = parseStringKey(key);
+        return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("setKey")
     public FiguraKeybind key(@LuaNotNil String key) {
         setKey(key);
         return this;
@@ -180,14 +171,9 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public void setEnabled(boolean enabled) {
+    @LuaMethodDoc("enabled")
+    public FiguraKeybind setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("set_enabled")
-    public FiguraKeybind enabled(boolean enabled) {
-        setEnabled(enabled);
         return this;
     }
 
@@ -197,12 +183,13 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public void setGUI(boolean enabled) {
+    @LuaMethodDoc("gui")
+    public FiguraKeybind setGUI(boolean enabled) {
         this.gui = enabled;
+        return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("setGUI")
     public FiguraKeybind gui(boolean enabled) {
         setGUI(enabled);
         return this;

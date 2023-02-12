@@ -50,14 +50,9 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setEnabled(boolean enabled) {
+    @LuaMethodDoc("enabled")
+    public RenderTask setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setEnabled")
-    public RenderTask enabled(boolean enabled) {
-        setEnabled(enabled);
         return this;
     }
 
@@ -67,24 +62,14 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setLight(@LuaNotNil FiguraVec2 light) {
-        setLight((int) light.x, (int) light.y);
+    public RenderTask setLight(@LuaNotNil FiguraVec2 light) {
+        return setLight((int) light.x, (int) light.y);
     }
 
     @LuaWhitelist
-    public void setLight(int blockLight, int skyLight) {
+    @LuaMethodDoc("light")
+    public RenderTask setLight(int blockLight, int skyLight) {
         this.light = LightTexture.pack(blockLight, skyLight);
-    }
-
-    @LuaWhitelist
-    public RenderTask light(@LuaNotNil FiguraVec2 light) {
-        return light((int) light.x, (int) light.y);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setLight")
-    public RenderTask light(int blockLight, int skyLight) {
-        setLight(blockLight, skyLight);
         return this;
     }
 
@@ -94,24 +79,14 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setOverlay(FiguraVec2 overlay) {
-        setOverlay((int) overlay.x, (int) overlay.y);
+    public RenderTask setOverlay(FiguraVec2 overlay) {
+        return setOverlay((int) overlay.x, (int) overlay.y);
     }
 
     @LuaWhitelist
-    public void setOverlay(int whiteOverlay, int hurtOverlay) {
+    @LuaMethodDoc("overlay")
+    public RenderTask setOverlay(int whiteOverlay, int hurtOverlay) {
         this.overlay = OverlayTexture.pack(whiteOverlay, hurtOverlay);
-    }
-
-    @LuaWhitelist
-    public RenderTask overlay(FiguraVec2 overlay) {
-        return overlay((int) overlay.x, (int) overlay.y);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setOverlay")
-    public RenderTask overlay(int whiteOverlay, int hurtOverlay) {
-        setOverlay(whiteOverlay, hurtOverlay);
         return this;
     }
 
@@ -121,24 +96,14 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setPos(double x, double y, double z) {
-        setPos(FiguraVec3.oneUse(x, y, z));
+    public RenderTask setPos(double x, double y, double z) {
+        return setPos(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
-    public void setPos(@LuaNotNil FiguraVec3 pos) {
+    @LuaMethodDoc("pos")
+    public RenderTask setPos(@LuaNotNil FiguraVec3 pos) {
         this.pos.set(pos);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setPos")
-    public RenderTask pos(double x, double y, double z) {
-        return pos(FiguraVec3.oneUse(x, y, z));
-    }
-
-    @LuaWhitelist
-    public RenderTask pos(@LuaNotNil FiguraVec3 pos) {
-        setPos(pos);
         return this;
     }
 
@@ -148,24 +113,14 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setRot(double x, double y, double z) {
-        setRot(FiguraVec3.oneUse(x, y, z));
+    public RenderTask setRot(double x, double y, double z) {
+        return setRot(FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
-    public void setRot(@LuaNotNil FiguraVec3 rot) {
+    @LuaMethodDoc("rot")
+    public RenderTask setRot(@LuaNotNil FiguraVec3 rot) {
         this.rot.set(rot);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setRot")
-    public RenderTask rot(double x, double y, double z) {
-        return rot(FiguraVec3.oneUse(x, y, z));
-    }
-
-    @LuaWhitelist
-    public RenderTask rot(@LuaNotNil FiguraVec3 rot) {
-        setRot(rot);
         return this;
     }
 
@@ -175,24 +130,14 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public void setScale (Double x, Double y, Double z) {
-        setScale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
+    public RenderTask setScale (Double x, Double y, Double z) {
+        return setScale(LuaUtils.freeVec3("setScale", x, y, z, 1, 1, 1));
     }
 
     @LuaWhitelist
-    public void setScale(@LuaNotNil FiguraVec3 scale) {
+    @LuaMethodDoc("scale")
+    public RenderTask setScale(@LuaNotNil FiguraVec3 scale) {
         this.scale.set(scale);
-    }
-
-    @LuaWhitelist
-    public RenderTask scale(Double x, Double y, Double z) {
-        return scale(LuaUtils.freeVec3("scale", x, y, z, 1, 1, 1));
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setScale")
-    public RenderTask scale(@LuaNotNil FiguraVec3 scale) {
-        setScale(scale);
         return this;
     }
 

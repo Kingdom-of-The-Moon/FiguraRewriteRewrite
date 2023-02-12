@@ -174,40 +174,25 @@ public class FiguraTexture extends SimpleTexture {
     }
 
     @LuaWhitelist
-    public void setPixel(int x, int y, @LuaNotNil FiguraVec3 rgb) {
-        setPixel(x, y, rgb.x, rgb.y, rgb.z, 0);
+    public FiguraTexture setPixel(int x, int y, @LuaNotNil FiguraVec3 rgb) {
+        return setPixel(x, y, rgb.x, rgb.y, rgb.z, 0);
     }
 
     @LuaWhitelist
-    public void setPixel(int x, int y, @LuaNotNil FiguraVec4 rgba) {
-        setPixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
+    public FiguraTexture setPixel(int x, int y, @LuaNotNil FiguraVec4 rgba) {
+        return setPixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
     }
 
     @LuaWhitelist
-    public void setPixel(int x, int y, double r, double g, double b, double a) {
+    @LuaMethodDoc("pixel")
+    public FiguraTexture setPixel(int x, int y, double r, double g, double b, double a) {
         try {
             backupImage();
             texture.setPixelRGBA(x, y, ColorUtils.rgbaToIntABGR(parseColor("setPixel", r, g, b, a)));
+            return this;
         } catch (Exception e) {
             throw new LuaError(e.getMessage());
         }
-    }
-
-    @LuaWhitelist
-    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec3 rgb) {
-        return pixel(x, y, rgb.x, rgb.y, rgb.z, 0);
-    }
-
-    @LuaWhitelist
-    public FiguraTexture pixel(int x, int y, @LuaNotNil FiguraVec4 rgba) {
-        return pixel(x, y, rgba.x, rgba.y, rgba.z, rgba.w);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("setPixel")
-    public FiguraTexture pixel(int x ,int y, double r, double g, double b, double a) {
-        setPixel(x, y, r, g, b, a);
-        return this;
     }
 
     @LuaWhitelist
