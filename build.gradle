@@ -14,7 +14,6 @@ repositories {
 	maven { url 'https://maven.terraformersmc.com/releases/' }
 	maven { url 'https://api.modrinth.com/maven' }
 	maven { url 'https://maven.quiltmc.org/repository/release/' }
-	mavenLocal()
 }
 
 dependencies {
@@ -27,24 +26,14 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:$loader_version"
 
 	// Libraries
-	include(implementation("org.luaj:luaj-core:$luaj"))
-	include(implementation("org.luaj:luaj-jse:$luaj"))
+	include(implementation("com.github.Moonlight-MC.LuaJ:luaj-core:$luaj-figura"))
+	include(implementation("com.github.Moonlight-MC.LuaJ:luaj-jse:$luaj-figura"))
 	include(implementation("org.java-websocket:Java-WebSocket:$websocket"))
 
-	// Fabric API
-	modImplementation "net.fabricmc.fabric-api:fabric-api:$fabric_api"
-
 	// Mods
+	modImplementation "net.fabricmc.fabric-api:fabric-api:$fabric_api"
 	modImplementation "com.terraformersmc:modmenu:$modmenu"
 	modCompileOnly "maven.modrinth:iris:$iris"
-
-	// Addons
-	runtimeOnly fileTree("libs") { include "**/*.jar" }
-	modRuntimeOnly fileTree("addons") { include "**/*.jar" }
-}
-
-loom {
-	accessWidenerPath = file "src/main/resources/figura.accesswidener"
 }
 
 processResources {
@@ -62,11 +51,12 @@ processResources {
 	}
 }
 
-tasks.withType(JavaCompile) configureEach {
-	options.encoding = "UTF-8"
-	options.release = Integer.valueOf(java_version)
-	options.compilerArgs << "-parameters"
-	options.compilerArgs << "-Xlint:deprecation"
+tasks.withType(JavaCompile) {
+	configure {
+		options.encoding = "UTF-8"
+		options.release = Integer.valueOf(java_version)
+		options.compilerArgs << "-parameters"
+	}
 }
 
 java {
