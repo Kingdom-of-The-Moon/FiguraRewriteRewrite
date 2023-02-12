@@ -21,7 +21,6 @@ import org.moon.figura.gui.screens.WardrobeScreen;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.api.particle.ParticleAPI;
 import org.moon.figura.lua.api.sound.SoundAPI;
-import org.moon.figura.utils.EntityUtils;
 import org.moon.figura.utils.FiguraText;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -96,7 +95,7 @@ public abstract class MinecraftMixin {
             PopupMenu.setEnabled(true);
 
             if (!PopupMenu.hasEntity()) {
-                Entity target = EntityUtils.getViewedEntity(32);
+                Entity target = FiguraMod.extendedPickEntity;
                 if (this.player != null && target instanceof Player && !target.isInvisibleTo(this.player)) {
                     PopupMenu.setEntity(target);
                 } else if (!this.options.getCameraType().isFirstPerson()) {
@@ -138,6 +137,7 @@ public abstract class MinecraftMixin {
     private void clearLevel(Screen screen, CallbackInfo ci) {
         AvatarManager.clearAllAvatars();
         FiguraLuaPrinter.clearPrintQueue();
+        NetworkStuff.unsubscribeAll();
     }
 
     @Inject(at = @At("RETURN"), method = "setLevel")

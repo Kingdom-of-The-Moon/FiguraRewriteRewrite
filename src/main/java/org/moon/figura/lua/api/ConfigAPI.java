@@ -11,12 +11,11 @@ import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
+import org.moon.figura.utils.IOUtils;
 import org.moon.figura.utils.MathUtils;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -39,9 +38,9 @@ public class ConfigAPI {
         MATRIX
     }
 
-    private final LuaTable luaTable = new LuaTable();
     private final Avatar owner;
     private final boolean isHost;
+    private LuaTable luaTable;
     private String name;
     private boolean loaded = false;
 
@@ -56,15 +55,7 @@ public class ConfigAPI {
 
 
     public static Path getConfigDataDir() {
-        Path p = FiguraMod.getFiguraDirectory().resolve("data");
-        try {
-            Files.createDirectories(p);
-        } catch (FileAlreadyExistsException ignored) {
-        } catch (Exception e) {
-            FiguraMod.LOGGER.error("Failed to create avatar data directory", e);
-        }
-
-        return p;
+        return IOUtils.getOrCreateDir(FiguraMod.getFiguraDirectory(), "data");
     }
 
     private Path getPath() {
@@ -166,6 +157,9 @@ public class ConfigAPI {
 
     //read
     private void init() {
+        if (loaded) return;
+        luaTable = new LuaTable();
+
         //read file
         Path path = getPath();
         JsonObject root;
@@ -185,6 +179,8 @@ public class ConfigAPI {
             FiguraMod.LOGGER.error("", e);
             throw new LuaError("Failed to load avatar data file");
         }
+
+        loaded = true;
     }
 
     private static LuaValue readArg(JsonElement json, Avatar owner) {
@@ -236,6 +232,11 @@ public class ConfigAPI {
 
 
     @LuaWhitelist
+    public String getName() {
+        return name;
+    }
+
+    @LuaWhitelist
     @LuaMethodDoc("name")
     public ConfigAPI setName(@LuaNotNil String name) {
         if (!isHost) return null;
@@ -249,10 +250,7 @@ public class ConfigAPI {
         if (!isHost)
             return this;
 
-        if (!loaded) {
-            init();
-            loaded = true;
-        }
+        init();
 
         val = val != null && (val.isboolean() || val.isstring() || val.isnumber() || val.istable() || val.isuserdata(FiguraVector.class) || val.isuserdata(FiguraMatrix.class)) ? val : LuaValue.NIL;
         luaTable.set(key, val);
@@ -271,11 +269,7 @@ public class ConfigAPI {
         if (!isHost)
             return null;
 
-        if (!loaded) {
-            init();
-            loaded = true;
-        }
-
+        init();
         return luaTable.get(key);
     }
 

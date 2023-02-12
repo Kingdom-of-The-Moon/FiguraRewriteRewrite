@@ -2,11 +2,11 @@ package org.moon.figura.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
-import org.moon.figura.model.rendering.texture.FiguraTextureSet;
-import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.model.rendering.texture.FiguraTextureSet;
+import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.caching.CacheStack;
 import org.moon.figura.utils.caching.CacheUtils;
 import org.moon.figura.utils.caching.CachedType;
@@ -26,7 +26,9 @@ public class PartCustomization implements CachedType<PartCustomization> {
     public FiguraMat3 normalMatrix = FiguraMat3.of();
 
     public boolean needsMatrixRecalculation = true;
+    public boolean render = true;
     public Boolean visible = null;
+    public Boolean vanillaVisible = null;
 
     private FiguraVec3 position = FiguraVec3.of();
     private FiguraVec3 rotation = FiguraVec3.of();
@@ -37,6 +39,7 @@ public class PartCustomization implements CachedType<PartCustomization> {
     private FiguraVec3 offsetPivot = FiguraVec3.of();
     private FiguraVec3 offsetPos = FiguraVec3.of();
     private FiguraVec3 offsetRot = FiguraVec3.of();
+    private FiguraVec3 offsetScale = FiguraVec3.of(1, 1, 1);
 
     //These values are set by animation players. They can be queried, though not set, by script.
     private FiguraVec3 animPos = FiguraVec3.of();
@@ -44,12 +47,15 @@ public class PartCustomization implements CachedType<PartCustomization> {
     private FiguraVec3 animScale = FiguraVec3.of(1, 1, 1);
 
     public FiguraVec3 color = FiguraVec3.of(1, 1, 1);
+    public FiguraVec3 color2 = FiguraVec3.of(1, 1, 1);
     public Float alpha = null;
     public Integer light = null;
     public Integer overlay = null;
 
     private RenderTypes primaryRenderType, secondaryRenderType;
     public Pair<FiguraTextureSet.OverrideType, Object> primaryTexture, secondaryTexture;
+
+    public Stack cachedStack;
 
     public void applyToStack(PoseStack stack) {
         stack.mulPoseMatrix(positionMatrix.toMatrix4f());
@@ -72,9 +78,9 @@ public class PartCustomization implements CachedType<PartCustomization> {
 
             //Scale the model part around the pivot
             positionMatrix.scale(
-                    scale.x * animScale.x,
-                    scale.y * animScale.y,
-                    scale.z * animScale.z
+                    offsetScale.x * scale.x * animScale.x,
+                    offsetScale.y * scale.y * animScale.y,
+                    offsetScale.z * scale.z * animScale.z
             );
 
             //Rotate the model part around the pivot
@@ -203,22 +209,33 @@ public class PartCustomization implements CachedType<PartCustomization> {
         return offsetRot.copy();
     }
 
-    public void setAnimPos(FiguraVec3 vec) {
-        animPos.set(vec);
+    public void offsetScale(FiguraVec3 scale) {
+        offsetScale(scale.x, scale.y, scale.z);
+    }
+    public void offsetScale(double x, double y, double z) {
+        offsetScale.set(x, y, z);
+        needsMatrixRecalculation = true;
+    }
+    public FiguraVec3 getOffsetScale() {
+        return offsetScale.copy();
+    }
+
+    public void setAnimPos(double x, double y, double z) {
+        animPos.set(x, y, z);
         needsMatrixRecalculation = true;
     }
     public FiguraVec3 getAnimPos() {
         return animPos.copy();
     }
-    public void setAnimRot(FiguraVec3 vec) {
-        animRot.set(vec);
+    public void setAnimRot(double x, double y, double z) {
+        animRot.set(x, y, z);
         needsMatrixRecalculation = true;
     }
     public FiguraVec3 getAnimRot() {
         return animRot.copy();
     }
-    public void setAnimScale(FiguraVec3 vec) {
-        animScale.set(vec);
+    public void setAnimScale(double x, double y, double z) {
+        animScale.set(x, y, z);
         needsMatrixRecalculation = true;
     }
     public FiguraVec3 getAnimScale() {
@@ -286,7 +303,9 @@ public class PartCustomization implements CachedType<PartCustomization> {
         offsetPivot = FiguraVec3.of();
         offsetPos = FiguraVec3.of();
         offsetRot = FiguraVec3.of();
+        offsetScale = FiguraVec3.of(1, 1, 1);
         color = FiguraVec3.of(1, 1, 1);
+        color2 = FiguraVec3.of(1, 1, 1);
         animPos = FiguraVec3.of();
         animRot = FiguraVec3.of();
         animScale = FiguraVec3.of(1, 1, 1);
@@ -294,6 +313,7 @@ public class PartCustomization implements CachedType<PartCustomization> {
         light = null;
         needsMatrixRecalculation = false;
         visible = null;
+        vanillaVisible = null;
         primaryTexture = null;
         secondaryTexture = null;
         return this;
@@ -309,7 +329,9 @@ public class PartCustomization implements CachedType<PartCustomization> {
         offsetPivot.free();
         offsetPos.free();
         offsetRot.free();
+        offsetScale.free();
         color.free();
+        color2.free();
     }
     public static PartCustomization of() {
         return CACHE.getFresh();
@@ -340,12 +362,16 @@ public class PartCustomization implements CachedType<PartCustomization> {
             to.offsetPivot(from.offsetPivot);
             to.offsetPos(from.offsetPos);
             to.offsetRot(from.offsetRot);
+            to.offsetScale(from.offsetScale);
             to.color.set(from.color);
+            to.color2.set(from.color2);
             to.alpha = from.alpha;
             to.light = from.light;
             to.overlay = from.overlay;
             to.needsMatrixRecalculation = from.needsMatrixRecalculation;
+            to.render = from.render;
             to.visible = from.visible;
+            to.vanillaVisible = from.vanillaVisible;
             to.setPrimaryRenderType(from.primaryRenderType);
             to.setSecondaryRenderType(from.secondaryRenderType);
             to.primaryTexture = from.primaryTexture;
@@ -364,8 +390,13 @@ public class PartCustomization implements CachedType<PartCustomization> {
         if (other.secondaryRenderType != null)
             setSecondaryRenderType(other.secondaryRenderType);
 
+        render = other.render;
+
         if (other.visible != null)
             visible = other.visible;
+
+        if (other.vanillaVisible != null)
+            vanillaVisible = other.vanillaVisible;
 
         if (other.light != null)
             light = other.light;
@@ -381,6 +412,7 @@ public class PartCustomization implements CachedType<PartCustomization> {
         }
 
         color.mul(other.color);
+        color2.mul(other.color2);
 
         if (other.primaryTexture != null)
             primaryTexture = other.primaryTexture;

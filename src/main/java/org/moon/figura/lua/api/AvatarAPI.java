@@ -8,7 +8,7 @@ import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.LuaUtils;
 
@@ -26,8 +26,8 @@ public class AvatarAPI {
         this.avatar = avatar;
     }
 
-    private boolean bool(Trust trust) {
-        return trust.asBoolean(avatar.trust.get(trust));
+    private boolean bool(Permissions permissions) {
+        return permissions.asBoolean(avatar.permissions.get(permissions));
     }
 
     @LuaWhitelist
@@ -95,8 +95,8 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
-    public String getTrustLevel() {
-        return avatar.trust.getGroup().name();
+    public String getPermissionLevel() {
+        return avatar.permissions.getCategory().name();
     }
 
     @LuaWhitelist
@@ -111,7 +111,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxInitCount() {
-        return avatar.trust.get(Trust.INIT_INST);
+        return avatar.permissions.get(Permissions.INIT_INST);
     }
 
     @LuaWhitelist
@@ -121,7 +121,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxTickCount() {
-        return avatar.trust.get(Trust.TICK_INST);
+        return avatar.permissions.get(Permissions.TICK_INST);
     }
 
     @LuaWhitelist
@@ -131,7 +131,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxRenderCount() {
-        return avatar.trust.get(Trust.RENDER_INST);
+        return avatar.permissions.get(Permissions.RENDER_INST);
     }
 
     @LuaWhitelist
@@ -141,7 +141,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxWorldTickCount() {
-        return avatar.trust.get(Trust.WORLD_TICK_INST);
+        return avatar.permissions.get(Permissions.WORLD_TICK_INST);
     }
 
     @LuaWhitelist
@@ -151,7 +151,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxWorldRenderCount() {
-        return avatar.trust.get(Trust.WORLD_RENDER_INST);
+        return avatar.permissions.get(Permissions.WORLD_RENDER_INST);
     }
 
     @LuaWhitelist
@@ -161,7 +161,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxComplexity() {
-        return avatar.trust.get(Trust.COMPLEXITY);
+        return avatar.permissions.get(Permissions.COMPLEXITY);
     }
 
     @LuaWhitelist
@@ -171,7 +171,7 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxParticles() {
-        return avatar.trust.get(Trust.PARTICLES);
+        return avatar.permissions.get(Permissions.PARTICLES);
     }
 
     @LuaWhitelist
@@ -181,12 +181,12 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxSounds() {
-        return avatar.trust.get(Trust.SOUNDS);
+        return avatar.permissions.get(Permissions.SOUNDS);
     }
 
     @LuaWhitelist
     public int getVolume() {
-        return avatar.trust.get(Trust.VOLUME);
+        return avatar.permissions.get(Permissions.VOLUME);
     }
 
     @LuaWhitelist
@@ -196,37 +196,37 @@ public class AvatarAPI {
 
     @LuaWhitelist
     public int getMaxAnimationComplexity() {
-        return avatar.trust.get(Trust.BB_ANIMATIONS);
+        return avatar.permissions.get(Permissions.BB_ANIMATIONS);
     }
 
     @LuaWhitelist
     public int getMaxTextureSize() {
-        return avatar.trust.get(Trust.TEXTURE_SIZE);
+        return avatar.permissions.get(Permissions.TEXTURE_SIZE);
     }
 
     @LuaWhitelist
     public boolean canEditVanillaModel() {
-        return bool(Trust.VANILLA_MODEL_EDIT);
+        return bool(Permissions.VANILLA_MODEL_EDIT);
     }
 
     @LuaWhitelist
     public boolean canEditNameplate() {
-        return bool(Trust.NAMEPLATE_EDIT);
+        return bool(Permissions.NAMEPLATE_EDIT);
     }
 
     @LuaWhitelist
     public boolean canRenderOffscreen() {
-        return bool(Trust.OFFSCREEN_RENDERING);
+        return bool(Permissions.OFFSCREEN_RENDERING);
     }
 
     @LuaWhitelist
     public boolean canUseCustomSounds() {
-        return bool(Trust.CUSTOM_SOUNDS);
+        return bool(Permissions.CUSTOM_SOUNDS);
     }
 
     @LuaWhitelist
     public boolean canHaveCustomHeads() {
-        return bool(Trust.CUSTOM_HEADS);
+        return bool(Permissions.CUSTOM_HEADS);
     }
 
     @Override

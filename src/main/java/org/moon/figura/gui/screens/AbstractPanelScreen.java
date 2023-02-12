@@ -60,7 +60,7 @@ public abstract class AbstractPanelScreen extends Screen {
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
         //setup figura framebuffer
-        UIHelper.useFiguraGuiFramebuffer();
+        //UIHelper.useFiguraGuiFramebuffer();
 
         //render background
         this.renderBackground(delta);
@@ -72,7 +72,7 @@ public abstract class AbstractPanelScreen extends Screen {
         this.renderOverlays(stack, mouseX, mouseY, delta);
 
         //restore vanilla framebuffer
-        UIHelper.useVanillaFramebuffer();
+        //UIHelper.useVanillaFramebuffer();
     }
 
     public void renderBackground(float delta) {
@@ -121,8 +121,8 @@ public abstract class AbstractPanelScreen extends Screen {
             //attempt to click on the context menu
             boolean clicked = contextMenu.mouseClicked(mouseX, mouseY, button);
 
-            //then try to click on the parent container and suppress it
-            //let the parent handle the context menu visibility
+            //then try to click on the category container and suppress it
+            //let the category handle the context menu visibility
             if (!clicked && contextMenu.parent != null && contextMenu.parent.mouseClicked(mouseX, mouseY, button))
                 return true;
 
@@ -169,8 +169,11 @@ public abstract class AbstractPanelScreen extends Screen {
         if (EGG.equals(egg)) {
             Minecraft.getInstance().setScreen(new GameScreen(this, index));
             return true;
-        } else {
-            return super.keyPressed(keyCode, scanCode, modifiers);
         }
+
+        if (children().contains(panels) && panels.cycleTab(keyCode))
+            return true;
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }

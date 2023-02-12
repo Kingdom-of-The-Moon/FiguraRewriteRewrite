@@ -28,6 +28,7 @@ import org.moon.figura.lua.api.sound.SoundAPI;
 import org.moon.figura.lua.api.vanilla_model.VanillaGroupPart;
 import org.moon.figura.lua.api.vanilla_model.VanillaModelAPI;
 import org.moon.figura.lua.api.vanilla_model.VanillaModelPart;
+import org.moon.figura.lua.api.vanilla_model.VanillaPart;
 import org.moon.figura.lua.api.world.BiomeAPI;
 import org.moon.figura.lua.api.world.BlockStateAPI;
 import org.moon.figura.lua.api.world.ItemStackAPI;
@@ -35,13 +36,12 @@ import org.moon.figura.lua.api.world.WorldAPI;
 import org.moon.figura.math.matrix.FiguraMat2;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
-import org.moon.figura.math.vector.*;
+import org.moon.figura.math.vector.FiguraVec2;
+import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.math.vector.FiguraVec4;
 import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
-import org.moon.figura.model.rendertasks.BlockTask;
-import org.moon.figura.model.rendertasks.ItemTask;
-import org.moon.figura.model.rendertasks.RenderTask;
-import org.moon.figura.model.rendertasks.TextTask;
+import org.moon.figura.model.rendertasks.*;
 import org.moon.figura.utils.IOUtils;
 
 import java.util.HashSet;
@@ -64,8 +64,6 @@ public class FiguraAPIManager {
         add(FiguraVec2.class);
         add(FiguraVec3.class);
         add(FiguraVec4.class);
-        add(FiguraVec5.class);
-        add(FiguraVec6.class);
 
         add(FiguraMat2.class);
         add(FiguraMat3.class);
@@ -84,6 +82,7 @@ public class FiguraAPIManager {
         add(ItemTask.class);
         add(BlockTask.class);
         add(TextTask.class);
+        add(SpriteTask.class);
 
         add(SoundAPI.class);
         add(LuaSound.class);
@@ -92,6 +91,7 @@ public class FiguraAPIManager {
         add(LuaParticle.class);
 
         add(VanillaModelAPI.class);
+        add(VanillaPart.class);
         add(VanillaGroupPart.class);
         add(VanillaModelPart.class);
 

@@ -49,6 +49,10 @@ public class BlockTask extends RenderTask {
         return cachedComplexity;
     }
 
+
+    // -- lua -- //
+
+
     @LuaWhitelist
     public RenderTask setBlock(String block) {
         return block(LuaUtils.parseBlockState("setBlock", block));

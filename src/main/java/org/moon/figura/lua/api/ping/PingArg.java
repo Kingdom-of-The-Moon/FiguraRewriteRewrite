@@ -3,7 +3,6 @@ package org.moon.figura.lua.api.ping;
 import org.luaj.vm2.*;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
-import org.moon.figura.lua.api.action_wheel.Action;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
 import org.moon.figura.utils.MathUtils;
@@ -62,20 +61,21 @@ public class PingArg {
             dos.writeByte(DOUBLE);
             dos.writeDouble(val.checkdouble());
         } else if (val.istable()) {
+            dos.writeByte(TABLE);
             writeTable(val.checktable(), dos);
         } else if (val.isuserdata(FiguraVector.class)) {
+            dos.writeByte(VECTOR);
             writeVec((FiguraVector<?, ?>) val.checkuserdata(), dos);
         } else if (val.isuserdata(FiguraMatrix.class)) {
+            dos.writeByte(MATRIX);
             writeMat((FiguraMatrix<?, ?>) val.checkuserdata(), dos);
-        } else if (val.isnil() || val.isuserdata(Action.class)) {
-            dos.writeByte(NIL);
         } else {
-            throw new IllegalArgumentException("Invalid ping argument \"" + val + "\"");
+            dos.writeByte(NIL);
+            //dos.writeNull();
         }
     }
 
     private static void writeTable(LuaTable table, DataOutputStream dos) throws IOException {
-        dos.writeByte(TABLE);
         dos.writeInt(table.keyCount());
 
         for (LuaValue key : table.keys()) {
@@ -85,7 +85,6 @@ public class PingArg {
     }
 
     private static void writeVec(FiguraVector<?, ?> vector, DataOutputStream dos) throws IOException {
-        dos.writeByte(VECTOR);
         dos.writeByte(vector.size());
 
         for (int i = 0; i < vector.size(); i++)
@@ -93,7 +92,6 @@ public class PingArg {
     }
 
     private static void writeMat(FiguraMatrix<?, ?> matrix, DataOutputStream dos) throws IOException {
-        dos.writeByte(MATRIX);
         dos.writeByte(matrix.cols());
 
         for (int i = 0; i < matrix.cols(); i++) {
@@ -158,10 +156,8 @@ public class PingArg {
         byte columns = dis.readByte();
 
         FiguraVector<? ,?>[] vectors = new FiguraVector[columns];
-        for (int i = 0; i < columns; i++) {
-            dis.readByte(); //vec type - ignored
+        for (int i = 0; i < columns; i++)
             vectors[i] = readVec(dis);
-        }
 
         return MathUtils.sizedMat(vectors);
     }

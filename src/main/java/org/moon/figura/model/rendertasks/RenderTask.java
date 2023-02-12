@@ -7,6 +7,8 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
+import org.moon.figura.math.matrix.FiguraMat3;
+import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.model.PartCustomization;
@@ -24,9 +26,8 @@ public abstract class RenderTask {
     protected boolean enabled = true;
     protected Integer light = null;
     protected Integer overlay = null;
-    protected final FiguraVec3 pos = FiguraVec3.of();
-    protected final FiguraVec3 rot = FiguraVec3.of();
-    protected final FiguraVec3 scale = FiguraVec3.of(1, 1, 1);
+
+    private final PartCustomization customization = PartCustomization.of();
 
     public RenderTask(String name) {
         this.name = name;
@@ -35,13 +36,19 @@ public abstract class RenderTask {
     //Return true if something was rendered, false if the function cancels for some reason
     public abstract boolean render(PartCustomization.Stack stack, MultiBufferSource buffer, int light, int overlay);
     public abstract int getComplexity();
-    private static final PartCustomization dummyCustomization = PartCustomization.of();
+
     public void pushOntoStack(PartCustomization.Stack stack) {
-        dummyCustomization.setScale(scale);
-        dummyCustomization.setPos(pos);
-        dummyCustomization.setRot(rot);
-        dummyCustomization.recalculate();
-        stack.push(dummyCustomization);
+        customization.recalculate();
+        stack.push(customization);
+    }
+
+
+    // -- lua stuff -- //
+
+
+    @LuaWhitelist
+    public String getName() {
+        return this.name;
     }
 
     @LuaWhitelist
@@ -68,8 +75,8 @@ public abstract class RenderTask {
 
     @LuaWhitelist
     @LuaMethodDoc("light")
-    public RenderTask setLight(int blockLight, int skyLight) {
-        this.light = LightTexture.pack(blockLight, skyLight);
+    public RenderTask setLight(Integer blockLight, int skyLight) {
+        this.light = blockLight == null ? null : LightTexture.pack(blockLight, skyLight);
         return this;
     }
 
@@ -79,20 +86,20 @@ public abstract class RenderTask {
     }
 
     @LuaWhitelist
-    public RenderTask setOverlay(FiguraVec2 overlay) {
+    public RenderTask setOverlay(@LuaNotNil FiguraVec2 overlay) {
         return setOverlay((int) overlay.x, (int) overlay.y);
     }
 
     @LuaWhitelist
     @LuaMethodDoc("overlay")
-    public RenderTask setOverlay(int whiteOverlay, int hurtOverlay) {
-        this.overlay = OverlayTexture.pack(whiteOverlay, hurtOverlay);
+    public RenderTask setOverlay(Integer whiteOverlay, int hurtOverlay) {
+        this.overlay = whiteOverlay == null ? null : OverlayTexture.pack(whiteOverlay, hurtOverlay);
         return this;
     }
 
     @LuaWhitelist
     public FiguraVec3 getPos() {
-        return this.pos;
+        return this.customization.getPos();
     }
 
     @LuaWhitelist
@@ -103,13 +110,13 @@ public abstract class RenderTask {
     @LuaWhitelist
     @LuaMethodDoc("pos")
     public RenderTask setPos(@LuaNotNil FiguraVec3 pos) {
-        this.pos.set(pos);
+        this.customization.setPos(pos);
         return this;
     }
 
     @LuaWhitelist
     public FiguraVec3 getRot() {
-        return this.rot;
+        return this.customization.getRot();
     }
 
     @LuaWhitelist
@@ -120,13 +127,13 @@ public abstract class RenderTask {
     @LuaWhitelist
     @LuaMethodDoc("rot")
     public RenderTask setRot(@LuaNotNil FiguraVec3 rot) {
-        this.rot.set(rot);
+        this.customization.setRot(rot);
         return this;
     }
 
     @LuaWhitelist
     public FiguraVec3 getScale() {
-        return this.scale;
+        return this.customization.getScale();
     }
 
     @LuaWhitelist
@@ -137,7 +144,36 @@ public abstract class RenderTask {
     @LuaWhitelist
     @LuaMethodDoc("scale")
     public RenderTask setScale(@LuaNotNil FiguraVec3 scale) {
-        this.scale.set(scale);
+        this.customization.setScale(scale);
+        return this;
+    }
+
+    @LuaWhitelist
+    public FiguraMat4 getPositionMatrix() {
+        this.customization.recalculate();
+        return this.customization.getPositionMatrix();
+    }
+
+    @LuaWhitelist
+    public FiguraMat4 getPositionMatrixRaw() {
+        return this.customization.getPositionMatrix();
+    }
+
+    @LuaWhitelist
+    public FiguraMat3 getNormalMatrix() {
+        this.customization.recalculate();
+        return this.customization.getNormalMatrix();
+    }
+
+    @LuaWhitelist
+    public FiguraMat3 getNormalMatrixRaw() {
+        return this.customization.getNormalMatrix();
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("matrix")
+    public RenderTask setMatrix(@LuaNotNil FiguraMat4 matrix) {
+        this.customization.setMatrix(matrix);
         return this;
     }
 

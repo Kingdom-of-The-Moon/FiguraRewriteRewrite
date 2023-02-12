@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -33,6 +34,8 @@ public class RendererAPI {
     public boolean renderCrosshair = true;
     @LuaWhitelist
     public boolean forcePaperdoll;
+    @LuaWhitelist
+    public boolean hideHUD;
 
     public FiguraVec3 cameraPos;
     public FiguraVec3 cameraPivot;
@@ -41,6 +44,7 @@ public class RendererAPI {
     public FiguraVec3 cameraOffsetRot;
     public ResourceLocation postShader;
     public FiguraVec2 crosshairOffset;
+    public FiguraVec3 outlineColor;
 
     public RendererAPI(Avatar owner) {
         this.owner = owner.owner;
@@ -57,8 +61,9 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setRenderFire(boolean renderFire) {
+    public RendererAPI setRenderFire(boolean renderFire) {
         this.renderFire = renderFire;
+        return this;
     }
 
     @LuaWhitelist
@@ -67,8 +72,9 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setRenderVehicle(boolean renderVehicle) {
+    public RendererAPI setRenderVehicle(boolean renderVehicle) {
         this.renderVehicle = renderVehicle;
+        return this;
     }
 
     @LuaWhitelist
@@ -77,8 +83,9 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setRenderCrosshair(boolean renderCrosshair) {
+    public RendererAPI setRenderCrosshair(boolean renderCrosshair) {
         this.renderCrosshair = renderCrosshair;
+        return this;
     }
 
     @LuaWhitelist
@@ -87,8 +94,21 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    public void setForcePaperdoll(boolean forcePaperdoll) {
+    public RendererAPI setForcePaperdoll(boolean forcePaperdoll) {
         this.forcePaperdoll = forcePaperdoll;
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean shouldHideHUD() {
+        return hideHUD;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("hideHUD")
+    public RendererAPI setHideHUD(boolean hideHUD) {
+        this.hideHUD = hideHUD;
+        return this;
     }
 
     @LuaWhitelist
@@ -158,7 +178,7 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(value = {"offsetCameraPivot"},key = "setOffsetCameraPivot")
+    @LuaMethodDoc(value = {"offsetCameraPivot"}, key = "setOffsetCameraPivot")
     public RendererAPI setCameraOffsetPivot(FiguraVec3 pivotOffset) {
         this.cameraOffsetPivot = pivotOffset == null ? null : pivotOffset.copy();
         return this;
@@ -240,6 +260,23 @@ public class RendererAPI {
     }
 
     @LuaWhitelist
+    public FiguraVec3 getOutlineColor() {
+        return outlineColor;
+    }
+    
+    @LuaWhitelist
+    public RendererAPI setOutlineColor(@LuaNotNil double r, double g, double b){
+        return setOutlineColor(FiguraVec3.oneUse(r, g, b));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("outlineColor")
+    public RendererAPI setOutlineColor(FiguraVec3 outlineColor) {
+        this.outlineColor = outlineColor == null ? null : outlineColor.copy();
+        return this;
+    }
+
+    @LuaWhitelist
     public Object __index(String arg) {
         if (arg == null) return null;
         return switch (arg) {
@@ -247,18 +284,20 @@ public class RendererAPI {
             case "renderVehicle" -> renderVehicle;
             case "renderCrosshair" -> renderCrosshair;
             case "forcePaperdoll" -> forcePaperdoll;
+            case "hideHUD" -> hideHUD;
             default -> null;
         };
     }
 
     @LuaWhitelist
-    public void __newindex(String key, boolean value) {
-        if (key == null) return;
+    public void __newindex(@LuaNotNil String key, boolean value) {
         switch (key) {
             case "renderFire" -> renderFire = value;
             case "renderVehicle" -> renderVehicle = value;
             case "renderCrosshair" -> renderCrosshair = value;
             case "forcePaperdoll" -> forcePaperdoll = value;
+            case "hideHUD" -> hideHUD = value;
+            default -> throw new LuaError("Cannot assign value on key \"" + key + "\"");
         }
     }
 

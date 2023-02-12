@@ -58,9 +58,10 @@ public class AnimationAPI {
     }
 
     @LuaWhitelist
-    public void stopAll() {
+    public AnimationAPI stopAll() {
         for (Animation animation : avatar.animations.values())
             animation.stop();
+        return this;
     }
 
     @LuaWhitelist

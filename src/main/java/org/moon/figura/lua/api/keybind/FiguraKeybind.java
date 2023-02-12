@@ -113,6 +113,10 @@ public class FiguraKeybind {
         return false;
     }
 
+
+    // -- lua -- //
+
+
     @LuaWhitelist
     @LuaMethodDoc("onPress")
     public FiguraKeybind setOnPress(LuaFunction function) {
@@ -131,12 +135,6 @@ public class FiguraKeybind {
     @LuaMethodDoc("key")
     public FiguraKeybind setKey(@LuaNotNil String key) {
         this.key = parseStringKey(key);
-        return this;
-    }
-
-    @LuaWhitelist
-    public FiguraKeybind key(@LuaNotNil String key) {
-        setKey(key);
         return this;
     }
 
@@ -178,7 +176,7 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public boolean hasGUI() {
+    public boolean isGuiEnabled() {
         return this.gui;
     }
 
@@ -186,12 +184,6 @@ public class FiguraKeybind {
     @LuaMethodDoc("gui")
     public FiguraKeybind setGUI(boolean enabled) {
         this.gui = enabled;
-        return this;
-    }
-
-    @LuaWhitelist
-    public FiguraKeybind gui(boolean enabled) {
-        setGUI(enabled);
         return this;
     }
 
@@ -206,11 +198,11 @@ public class FiguraKeybind {
     }
 
     @LuaWhitelist
-    public void __newindex(String key, LuaFunction function) {
-        if (key == null) return;
+    public void __newindex(@LuaNotNil String key, LuaFunction function) {
         switch (key) {
             case "press" -> press = function;
             case "release" -> release = function;
+            default -> throw new LuaError("Cannot assign value on key \"" + key + "\"");
         }
     }
 

@@ -1,5 +1,6 @@
 package org.moon.figura.lua.api.nameplate;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
@@ -18,13 +19,28 @@ import org.moon.figura.utils.LuaUtils;
 )
 public class EntityNameplateCustomization extends NameplateCustomization {
 
-    private FiguraVec3 position;
-    private FiguraVec3 scale;
+    private FiguraVec3 pivot, position, scale;
     public Integer background, outlineColor, light;
-    public Double alpha;
 
     public boolean visible = true;
     public boolean shadow, outline;
+
+    @LuaWhitelist
+    public FiguraVec3 getPivot() {
+        return this.pivot;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("pivot")
+    public EntityNameplateCustomization setPivot(Object x, Double y, Double z) {
+        this.pivot = x == null ? null : LuaUtils.parseVec3("setPivot", x, y, z);
+        return this;
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization pivot(Object x, Double y, Double z) {
+        return setPivot(x, y, z);
+    }
 
     @LuaWhitelist
     public FiguraVec3 getPos() {
@@ -37,9 +53,9 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("set")
+    @LuaMethodDoc("pos")
     public EntityNameplateCustomization setPos(FiguraVec3 pos) {
-        this.position = pos.copy();
+        this.position = pos == null? null : pos.copy();
         return this;
     }
 
@@ -61,25 +77,29 @@ public class EntityNameplateCustomization extends NameplateCustomization {
     }
 
     @LuaWhitelist
-    public EntityNameplateCustomization setBackgroundColor(Double r, double g, double b, Double a) {
-        return setBackgroundColor(r == null ? null : FiguraVec3.oneUse(r, g, b), a);
+    public FiguraVec4 getBackgroundColor() {
+        return this.background == null ? null : ColorUtils.intToARGB(this.background);
     }
 
     @LuaWhitelist
-    public EntityNameplateCustomization setBackgroundColor(@LuaNotNil FiguraVec4 rgba) {
-        return setBackgroundColor(FiguraVec3.oneUse(rgba.x, rgba.y, rgba.z), rgba.w);
+    public EntityNameplateCustomization setBackgroundColor(@LuaNotNil FiguraVec3 rgb, Double a) {
+        return setBackgroundColor(rgb.x, rgb.y, rgb.z, a);
+    }
+
+    @LuaWhitelist
+    public EntityNameplateCustomization setBackgroundColor(@LuaNotNil double r, double g, double b, Double a) {
+        return setBackgroundColor(FiguraVec4.oneUse(r, g, b, a == null? Minecraft.getInstance().options.getBackgroundOpacity(0.25f) : a));
     }
 
     @LuaWhitelist
     @LuaMethodDoc({"backgroundColor", "setBackgroundColour", "backgroundColour"})
-    public EntityNameplateCustomization setBackgroundColor(@LuaNotNil FiguraVec3 rgb, Double a) {
-        this.background = rgb == null ? null : ColorUtils.rgbToInt(rgb);
-        this.alpha = a;
+    public EntityNameplateCustomization setBackgroundColor(FiguraVec4 rgba) {
+        this.background = rgba == null ? null : ColorUtils.rgbaToIntABGR(rgba);
         return this;
     }
 
     @LuaWhitelist
-    public EntityNameplateCustomization setOutlineColor(Double r, double g, double b) {
+    public EntityNameplateCustomization setOutlineColor(double r, double g, double b) {
         return setOutlineColor(FiguraVec3.oneUse(r, g, b));
     }
 

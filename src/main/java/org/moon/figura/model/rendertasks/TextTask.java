@@ -1,22 +1,28 @@
 package org.moon.figura.model.rendertasks;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
+import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Badges;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.math.vector.FiguraVec4;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -25,12 +31,13 @@ import java.util.List;
 )
 public class TextTask extends RenderTask {
 
+    private String textCached;
     private List<Component> text;
-    private boolean centered = false;
-    private boolean rtl = false;
-    private boolean shadow = false;
-    private boolean outline = false;
-    private FiguraVec3 outlineColor;
+    private Alignment alignment = Alignment.LEFT;
+    private boolean shadow = false, outline = false;
+    private boolean background = false, seeThrough = false;
+    private Integer outlineColor, backgroundColor;
+    private int width = 0;
 
     private int cachedComplexity;
 
@@ -45,19 +52,28 @@ public class TextTask extends RenderTask {
 
         this.pushOntoStack(stack);
         PoseStack poseStack = stack.peek().copyIntoGlobalPoseStack();
-        poseStack.scale(-1, -1, 1);
+        poseStack.scale(-1, -1, -1);
 
         Font font = Minecraft.getInstance().font;
+        Matrix4f matrix = poseStack.last().pose();
+
+        int l = this.light != null ? this.light : light;
+        int bgColor = backgroundColor != null ? backgroundColor : background ? (int) (Minecraft.getInstance().options.getBackgroundOpacity(0.25f) * 0xFF) << 24 : 0;
+        int outlineColor = this.outlineColor != null ? this.outlineColor : 0x202020;
 
         for (int i = 0; i < text.size(); i++) {
             Component text = this.text.get(i);
-            int x = centered ? -font.width(text) / 2 : rtl ? -font.width(text) : 0;
-            int y = i * font.lineHeight;
+            int x = -alignment.apply(font, text);
+            int y = (font.lineHeight + 1) * i;
+
+            if (background || seeThrough) {
+                font.drawInBatch(text, x, y, 0x20FFFFFF, false, matrix, buffer, seeThrough, bgColor, l);
+            }
 
             if (outline) {
-                UIHelper.renderOutlineText(poseStack, font, text, x, y, 0xFFFFFF, outlineColor == null ? 0 : ColorUtils.rgbToInt(outlineColor));
+                UIHelper.renderOutlineText(poseStack, font, text, x, y, 0xFFFFFF, outlineColor);
             } else {
-                font.drawInBatch(text, x, y, 0xFFFFFF, shadow, poseStack.last().pose(), buffer, false, 0, this.light != null ? this.light : light);
+                font.drawInBatch(text, x, y, 0xFFFFFF, shadow, matrix, buffer, false, 0, l);
             }
         }
 
@@ -70,37 +86,56 @@ public class TextTask extends RenderTask {
         return cachedComplexity;
     }
 
+    private void updateText() {
+        if (this.textCached == null) {
+            this.text = null;
+            return;
+        }
+
+        Component component = Badges.noBadges4U(TextUtils.tryParseJson(this.textCached));
+        if (this.width > 0) {
+            List<FormattedCharSequence> warped = TextUtils.wrapText(component, this.width, Minecraft.getInstance().font);
+            List<Component> newList = new ArrayList<>();
+            for (FormattedCharSequence charSequence : warped)
+                newList.add(TextUtils.charSequenceToText(charSequence));
+            this.text = newList;
+        } else {
+            this.text = TextUtils.splitText(component, "\n");
+        }
+    }
+
+
+    // -- lua -- //
+
+
+    @LuaWhitelist
+    public String getText() {
+        return textCached;
+    }
+
     @LuaWhitelist
     @LuaMethodDoc("text")
     public TextTask setText(String text) {
-        this.text = text == null ? null : TextUtils.splitText(Badges.noBadges4U(TextUtils.tryParseJson(text)), "\n");
-        if (text != null)
-            this.cachedComplexity = text.length() + 1;
+        this.textCached = text;
+        updateText();
+        if (text != null) this.cachedComplexity = text.length() + 1;
         return this;
     }
-
+    
     @LuaWhitelist
-    public boolean isCentered() {
-        return this.centered;
+    public String getAlignment(){
+        return this.alignment.name();
     }
-
+    
     @LuaWhitelist
-    @LuaMethodDoc("centered")
-    public TextTask setCentered(boolean centered) {
-        this.centered = centered;
-        return this;
-    }
-
-    @LuaWhitelist
-    public boolean isRight() {
-        return this.rtl;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("right")
-    public TextTask setRight(boolean right) {
-        this.rtl = right;
-        return this;
+    @LuaMethodDoc("alignment")
+    public TextTask setAlignment(@LuaNotNil String alignment){
+        try {
+            this.alignment = Alignment.valueOf(alignment.toUpperCase());
+            return this;
+        } catch (Exception exception){
+            throw new LuaError("Invalid alignment type\"" + alignment + "\"");
+        }
     }
 
     @LuaWhitelist
@@ -129,23 +164,98 @@ public class TextTask extends RenderTask {
 
     @LuaWhitelist
     public FiguraVec3 getOutlineColor() {
-        return this.outlineColor;
+        return ColorUtils.intToRGB(this.outlineColor);
     }
 
     @LuaWhitelist
-    public TextTask setOutlineColor(double r, double g, double b) {
-        return setOutlineColor(FiguraVec3.oneUse(r, g, b));
+    public TextTask setOutlineColor(double x, double y, double z) {
+        return setOutlineColor(FiguraVec3.oneUse(x, y, z));
     }
-
+    
     @LuaWhitelist
     @LuaMethodDoc("outlineColor")
-    public TextTask setOutlineColor(@LuaNotNil FiguraVec3 color) {
-        this.outlineColor = color.copy();
+    public TextTask setOutlineColor(@LuaNotNil FiguraVec3 color){
+        this.outlineColor = ColorUtils.rgbToInt(color);
+        return this;
+    }
+    
+    @LuaWhitelist
+    public int getWidth(){
+        return width;
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("width")
+    public TextTask setWidth(int width){
+        this.width = width;
+        updateText();
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean isSeeThrough() {
+        return this.seeThrough;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("seeThrough")
+    public TextTask setSeeThrough(boolean seeThrough) {
+        this.seeThrough = seeThrough;
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean hasBackground() {
+        return this.background;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("background")
+    public TextTask setBackground(boolean background) {
+        this.background = background;
+        return this;
+    }
+
+    @LuaWhitelist
+    public TextTask background(boolean background) {
+        return setBackground(background);
+    }
+
+    @LuaWhitelist
+    public FiguraVec4 getBackgroundColor() {
+        return this.backgroundColor == null ? null : ColorUtils.intToARGB(this.backgroundColor);
+    }
+    
+    @LuaWhitelist
+    public TextTask setBackgroundColor(double r, double g, double b, Double a){
+        return setBackgroundColor(FiguraVec4.oneUse(r, g, b, a == null? Minecraft.getInstance().options.getBackgroundOpacity(0.25f) : a));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("backgroundColor")
+    public TextTask setBackgroundColor(@LuaNotNil FiguraVec4 color) {
+        this.backgroundColor = ColorUtils.rgbaToIntARGB(color);
         return this;
     }
 
     @Override
     public String toString() {
         return name + " (Text Render Task)";
+    }
+
+    private enum Alignment {
+        LEFT((font, component) -> 0),
+        RIGHT(Font::width),
+        CENTER((font, component) -> font.width(component) / 2);
+
+        private final BiFunction<Font, Component, Integer> function;
+
+        Alignment(BiFunction<Font, Component, Integer> function) {
+            this.function = function;
+        }
+
+        public int apply(Font font, Component component) {
+            return function.apply(font, component);
+        }
     }
 }

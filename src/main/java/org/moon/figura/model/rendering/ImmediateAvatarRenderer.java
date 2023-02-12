@@ -1,16 +1,20 @@
 package org.moon.figura.model.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.config.Config;
+import org.moon.figura.lua.api.ClientAPI;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -23,9 +27,12 @@ import org.moon.figura.model.rendering.texture.FiguraTextureSet;
 import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.model.rendertasks.RenderTask;
 import org.moon.figura.utils.ColorUtils;
+import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ImmediateAvatarRenderer extends AvatarRenderer {
@@ -35,6 +42,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
 
     public static final FiguraMat4 VIEW_TO_WORLD_MATRIX = FiguraMat4.of();
     private static final PartCustomization pivotOffsetter = PartCustomization.of();
+    protected static final VertexBuffer VERTEX_BUFFER = new VertexBuffer();
 
     public ImmediateAvatarRenderer(Avatar avatar) {
         super(avatar);
@@ -45,6 +53,8 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
 
         for (int i = 0; i < textureSets.size() && i < builders.size(); i++)
             buffers.add(builders.get(i).build(textureSets.get(i), customizationStack));
+
+        sortParts();
     }
 
     @Override
@@ -110,6 +120,11 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         //Free customization after use
         customization.free();
 
+        //iris fix
+        int irisConfig = UIHelper.paperdoll || !ClientAPI.hasIris() ? 0 : Config.IRIS_COMPATIBILITY_FIX.asInt();
+        doIrisEmissiveFix = irisConfig >= 2 && (ClientAPI.hasIrisShader() || (avatar.renderMode != EntityRenderMode.RENDER && avatar.renderMode != EntityRenderMode.WORLD));
+        offsetRenderLayers = irisConfig >= 1;
+
         //Iterate and setup each buffer
         for (FiguraImmediateBuffer buffer : buffers) {
             //Reset buffers
@@ -124,7 +139,10 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
 
         //Set shouldRenderPivots
         int config = Config.RENDER_DEBUG_PARTS_PIVOT.asInt();
-        shouldRenderPivots = !Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes() ? 0 : config;
+        if (!Minecraft.getInstance().getEntityRenderDispatcher().shouldRenderHitBoxes() || (!avatar.isHost && config < 3))
+            shouldRenderPivots = 0;
+        else
+            shouldRenderPivots = config;
 
         //world matrices
         if (allowMatrixUpdate)
@@ -138,6 +156,14 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         Boolean initialValue = currentFilterScheme.initialValue(root);
         if (initialValue != null)
             renderPart(root, remainingComplexity, initialValue);
+
+        //push vertices to vertex consumer
+        FiguraMod.pushProfiler("draw");
+        FiguraMod.pushProfiler("primary");
+        VERTEX_BUFFER.consume(true, bufferSource);
+        FiguraMod.popPushProfiler("secondary");
+        VERTEX_BUFFER.consume(false, bufferSource);
+        FiguraMod.popProfiler(2);
 
         //finish rendering
         customizationStack.pop();
@@ -171,7 +197,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         posMat.free();
         normalMat.free();
 
-        customization.visible = true;
+        customization.render = true;
         customization.light = light;
         customization.alpha = alpha;
         customization.overlay = overlay;
@@ -188,22 +214,38 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         PartCustomization custom = part.customization;
 
         //test the current filter scheme
+        FiguraMod.pushProfiler("predicate");
         Boolean thisPassedPredicate = currentFilterScheme.test(part.parentType, prevPredicate);
         if (thisPassedPredicate == null) {
             part.advanceVerticesImmediate(this); //stinky
-            FiguraMod.popProfiler();
+            FiguraMod.popProfiler(2);
             return true;
         }
 
         //calculate part transforms
 
         //calculate vanilla parent
+        FiguraMod.popPushProfiler("copyVanillaPart");
         part.applyVanillaTransforms(vanillaModelData);
         part.applyExtraTransforms(customizationStack.peek().positionMatrix);
 
+        //visibility
+        FiguraMod.popPushProfiler("checkVisibility");
+
+        if (thisPassedPredicate) {
+            Boolean vanillaVisible = custom.vanillaVisible == null ? customizationStack.peek().vanillaVisible : custom.vanillaVisible;
+            if (!currentFilterScheme.ignoreVanillaVisible && vanillaVisible != null && !vanillaVisible) {
+                custom.render = false;
+            } else {
+                Boolean visible = custom.visible == null ? customizationStack.peek().visible : custom.visible;
+                custom.render = (visible == null || visible) && (currentFilterScheme.ignoreVanillaVisible || vanillaVisible == null || vanillaVisible);
+            }
+        } else {
+            custom.render = false;
+        }
+
         //recalculate stuff
-        Boolean storedVisibility = custom.visible;
-        custom.visible = part.getVisible() && (currentFilterScheme.ignoreVanillaVisible || part.getVanillaVisible()) && thisPassedPredicate;
+        FiguraMod.popPushProfiler("calculatePartMatrices");
         custom.recalculate();
 
         //void blocked matrices
@@ -212,6 +254,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         FiguraMat3 normalCopy = null;
         boolean voidMatrices = !allowHiddenTransforms && !prevPredicate;
         if (voidMatrices) {
+            FiguraMod.popPushProfiler("clearMatrices");
             positionCopy = custom.positionMatrix.copy();
             normalCopy = custom.normalMatrix.copy();
             custom.positionMatrix.reset();
@@ -219,20 +262,23 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         }
 
         //push stack
+        FiguraMod.popPushProfiler("pushCustomizationStack");
         customizationStack.push(custom);
 
         //restore variables
-        custom.visible = storedVisibility;
-
         if (voidMatrices) {
+            FiguraMod.popPushProfiler("restoreMatrices");
             custom.positionMatrix.set(positionCopy);
             custom.normalMatrix.set(normalCopy);
             positionCopy.free();
             normalCopy.free();
         }
 
+        FiguraMod.popProfiler();
+
         if (thisPassedPredicate) {
             //recalculate world matrices
+            FiguraMod.pushProfiler("worldMatrices");
             if (allowMatrixUpdate) {
                 FiguraMat4 mat = partToWorldMatrices(custom);
                 part.savedPartToWorldMat.set(mat);
@@ -240,6 +286,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
             }
 
             //recalculate light
+            FiguraMod.popPushProfiler("calculateLight");
             Level l;
             if (custom.light != null)
                 updateLight = false;
@@ -250,35 +297,45 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
                 customizationStack.peek().light = LightTexture.pack(block, sky);
                 pos.free();
             }
+            FiguraMod.popProfiler();
         }
 
         //render this
+        FiguraMod.pushProfiler("pushVertices");
         if (!part.pushVerticesImmediate(this, remainingComplexity)) {
             customizationStack.pop();
-            FiguraMod.popProfiler();
+            FiguraMod.popProfiler(2);
             return false;
         }
 
         //render extras
+        FiguraMod.popPushProfiler("extras");
         if (thisPassedPredicate) {
             PartCustomization peek = customizationStack.peek();
 
-            //fix pivots
-            FiguraVec3 pivot = custom.getPivot();
-            FiguraVec3 offsetPivot = custom.getOffsetPivot();
-            pivotOffsetter.setPos(pivot.add(offsetPivot));
-            pivotOffsetter.recalculate();
-            customizationStack.push(pivotOffsetter);
-            pivot.free();
-            offsetPivot.free();
+            boolean renderPivot = shouldRenderPivots > 0 && (shouldRenderPivots % 2 == 0 || peek.render);
+            boolean renderTasks = peek.render && allowRenderTasks && !part.renderTasks.isEmpty();
+            boolean renderPivotParts = peek.render && part.parentType.isPivot && allowPivotParts;
 
-            //render pivot indicators
-            if (shouldRenderPivots > 1 || shouldRenderPivots == 1 && peek.visible)
-                renderPivot(part);
+            if (renderPivot || renderTasks || renderPivotParts) {
+                //fix pivots
+                FiguraMod.pushProfiler("fixMatricesPivot");
 
-            if (peek.visible) {
+                FiguraVec3 pivot = custom.getPivot();
+                pivotOffsetter.setPos(pivot);
+                pivotOffsetter.recalculate();
+                customizationStack.push(pivotOffsetter);
+                pivot.free();
+
+                //render pivot indicators
+                if (renderPivot) {
+                    FiguraMod.popPushProfiler("renderPivotCube");
+                    renderPivot(part);
+                }
+
                 //render tasks
-                if (allowRenderTasks) {
+                if (renderTasks) {
+                    FiguraMod.popPushProfiler("renderTasks");
                     int light = peek.light;
                     int overlay = peek.overlay;
                     allowSkullRendering = false;
@@ -286,34 +343,42 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
                         int neededComplexity = task.getComplexity();
                         if (neededComplexity > remainingComplexity[0])
                             continue;
+                        FiguraMod.pushProfiler(task.getName());
                         if (task.render(customizationStack, bufferSource, light, overlay))
                             remainingComplexity[0] -= neededComplexity;
+                        FiguraMod.popProfiler();
                     }
                     allowSkullRendering = true;
                 }
 
                 //render pivot parts
-                if (part.parentType.isPivot && allowPivotParts)
-                    savePivotTransform(part.parentType);
-            }
+                if (renderPivotParts) {
+                    FiguraMod.popPushProfiler("savePivotParts");
+                    if (part.parentType.isPivot && allowPivotParts)
+                        savePivotTransform(part.parentType);
+                }
 
-            customizationStack.pop();
+                customizationStack.pop();
+                FiguraMod.popProfiler();
+            }
         }
 
         //render children
+        FiguraMod.popPushProfiler("children");
         for (FiguraModelPart child : part.children)
             if (!renderPart(child, remainingComplexity, thisPassedPredicate)) {
                 customizationStack.pop();
-                FiguraMod.popProfiler();
+                FiguraMod.popProfiler(2);
                 return false;
             }
 
         //reset the parent
+        FiguraMod.popPushProfiler("removeVanillaTransforms");
         part.resetVanillaTransforms();
 
         //pop
         customizationStack.pop();
-        FiguraMod.popProfiler();
+        FiguraMod.popProfiler(2);
 
         return true;
     }
@@ -360,31 +425,37 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         PartCustomization custom = part.customization;
 
         //Store old visibility, but overwrite it in case we only want to render certain parts
+        FiguraMod.pushProfiler("predicate");
         Boolean thisPassedPredicate = currentFilterScheme.test(part.parentType, true);
         if (thisPassedPredicate == null) {
-            FiguraMod.popProfiler();
+            FiguraMod.popProfiler(2);
             return;
         }
 
         //calculate part transforms
 
         //calculate vanilla parent
+        FiguraMod.popPushProfiler("copyVanillaPart");
         part.applyVanillaTransforms(vanillaModelData);
         part.applyExtraTransforms(customizationStack.peek().positionMatrix);
 
         //push customization stack
+        FiguraMod.popPushProfiler("calculatePartMatrices");
         custom.recalculate();
+        FiguraMod.popPushProfiler("applyOnStack");
         customizationStack.push(custom);
 
         //render extras
         if (thisPassedPredicate) {
             //part to world matrices
+            FiguraMod.popPushProfiler("worldMatrices");
             FiguraMat4 mat = partToWorldMatrices(custom);
             part.savedPartToWorldMat.set(mat);
             mat.free();
         }
 
         //render children
+        FiguraMod.popPushProfiler("children");
         for (FiguraModelPart child : part.children)
             calculatePartMatrices(child);
 
@@ -393,7 +464,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
 
         //pop
         customizationStack.pop();
-        FiguraMod.popProfiler();
+        FiguraMod.popProfiler(2);
     }
 
     public void pushFaces(int texIndex, int faceCount, int[] remainingComplexity) {
@@ -402,5 +473,52 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
 
     public void advanceFaces(int texIndex, int faceCount) {
         buffers.get(texIndex).advanceBuffers(faceCount);
+    }
+
+    protected static class VertexBuffer {
+        private final HashMap<RenderType, FloatArrayList> primaryBuffers = new HashMap<>();
+        private final HashMap<RenderType, FloatArrayList> secondaryBuffers = new HashMap<>();
+
+        public FloatArrayList getBufferFor(RenderType renderType, boolean primary) {
+            HashMap<RenderType, FloatArrayList> buffer = primary ? primaryBuffers : secondaryBuffers;
+            return buffer.computeIfAbsent(renderType, renderType1 -> new FloatArrayList());
+        }
+
+        public void consume(boolean primary, MultiBufferSource bufferSource) {
+            HashMap<RenderType, FloatArrayList> map = primary ? primaryBuffers : secondaryBuffers;
+            for (Map.Entry<RenderType, FloatArrayList> entry : map.entrySet()) {
+                VertexConsumer consumer = bufferSource.getBuffer(entry.getKey());
+                FloatArrayList vertex = entry.getValue();
+
+                for (int i = 0; i < vertex.size(); ) {
+                    consumer.vertex(
+                            //pos
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+
+                            //color
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+
+                            //uv
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+
+                            //overlay, light
+                            (int) vertex.getFloat(i++),
+                            (int) vertex.getFloat(i++),
+
+                            //normal
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++),
+                            vertex.getFloat(i++)
+                    );
+                }
+            }
+            map.clear();
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.moon.figura.model.rendering.texture;
+package org.moon.figura.model.rendering;
 
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
@@ -8,6 +8,8 @@ public enum EntityRenderMode {
     PAPERDOLL,
     MINECRAFT_GUI,
     FIRST_PERSON,
+    FIRST_PERSON_WORLD,
     RENDER,
+    WORLD,
     OTHER
 }

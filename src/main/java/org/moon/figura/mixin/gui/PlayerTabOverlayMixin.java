@@ -14,7 +14,7 @@ import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.avatar.Badges;
 import org.moon.figura.config.Config;
 import org.moon.figura.lua.api.nameplate.NameplateCustomization;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.TextUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -50,14 +50,17 @@ public class PlayerTabOverlayMixin {
         Avatar avatar = AvatarManager.getAvatarForPlayer(uuid);
         NameplateCustomization custom = avatar == null || avatar.luaRuntime == null ? null : avatar.luaRuntime.nameplate.LIST;
 
-        Component replacement = custom != null && custom.getText() != null && avatar.trust.get(Trust.NAMEPLATE_EDIT) == 1 ?
-                NameplateCustomization.applyCustomization(custom.getText().replaceAll("\n|\\\\n", " ")) : name;
+        Component replacement = custom != null && custom.getJson() != null && avatar.permissions.get(Permissions.NAMEPLATE_EDIT) == 1 ?
+                TextUtils.replaceInText(custom.getJson().copy(), "\n|\\\\n", " ") : name;
 
         //name
         replacement = TextUtils.replaceInText(replacement, "\\$\\{name\\}", name);
 
         //badges
         replacement = Badges.appendBadges(replacement, uuid, config > 1);
+
+        //trim
+        replacement = TextUtils.trim(replacement);
 
         text = TextUtils.replaceInText(text, "\\b" + Pattern.quote(playerInfo.getProfile().getName()) + "\\b", replacement);
 

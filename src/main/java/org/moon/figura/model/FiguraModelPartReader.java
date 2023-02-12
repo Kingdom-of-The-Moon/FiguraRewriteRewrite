@@ -1,11 +1,13 @@
 package org.moon.figura.model;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.Mth;
+import org.moon.figura.FiguraMod;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.animation.Interpolation;
 import org.moon.figura.animation.Keyframe;
@@ -60,7 +62,7 @@ public class FiguraModelPartReader {
         while (textureSets.size() > facesByTexture.size())
             facesByTexture.add(0);
         while (textureSets.size() > bufferBuilders.size())
-            bufferBuilders.add(FiguraImmediateBuffer.builder());
+            bufferBuilders.add(new FiguraImmediateBuffer.Builder());
 
         //Read vertex data
         if (hasCubeData(partCompound)) {
@@ -80,7 +82,7 @@ public class FiguraModelPartReader {
                 children.add(read(owner, (CompoundTag) tag, bufferBuilders, textureSets));
         }
 
-        FiguraModelPart result = new FiguraModelPart(name, customization, children);
+        FiguraModelPart result = new FiguraModelPart(owner, name, customization, children);
         result.facesByTexture = facesByTexture;
         storeTextures(result, textureSets);
         if (partCompound.contains("pt"))
@@ -115,18 +117,30 @@ public class FiguraModelPartReader {
                     for (Tag keyframeTag : keyframeList) {
                         CompoundTag keyframeNbt = (CompoundTag) keyframeTag;
                         float time = keyframeNbt.getFloat("time");
-                        Interpolation interpolation = Interpolation.valueOf(keyframeNbt.getString("int").toUpperCase());
-
-                        FiguraVec3 pos = FiguraVec3.of();
-                        readVec3(pos, keyframeNbt, "pre");
-
-                        if (keyframeNbt.contains("end")) {
-                            FiguraVec3 end = FiguraVec3.of();
-                            readVec3(end, keyframeNbt, "end");
-                            keyframes.add(new Keyframe(time, interpolation, pos, end));
-                        } else {
-                            keyframes.add(new Keyframe(time, interpolation, pos));
+                        Interpolation interpolation;
+                        try {
+                            interpolation = Interpolation.valueOf(keyframeNbt.getString("int").toUpperCase());
+                        } catch (Exception e) {
+                            FiguraMod.LOGGER.error("", e);
+                            continue;
                         }
+
+                        Pair<FiguraVec3, String[]> pre = parseKeyframeData(keyframeNbt, "pre");
+                        if (pre == null) pre = Pair.of(FiguraVec3.of(), null);
+                        Pair<FiguraVec3, String[]> end = parseKeyframeData(keyframeNbt, "end");
+                        if (end == null) end = pre;
+
+                        FiguraVec3 bezierLeft = FiguraVec3.of();
+                        FiguraVec3 bezierRight = FiguraVec3.of();
+                        readVec3(bezierLeft, keyframeNbt, "bl");
+                        readVec3(bezierRight, keyframeNbt, "br");
+
+                        FiguraVec3 bezierLeftTime = FiguraVec3.of(-0.1, -0.1, -0.1);
+                        FiguraVec3 bezierRightTime = FiguraVec3.of(0.1, 0.1, 0.1);
+                        readVec3(bezierLeftTime, keyframeNbt, "blt");
+                        readVec3(bezierRightTime, keyframeNbt, "brt");
+
+                        keyframes.add(new Keyframe(owner, time, interpolation, pre, end, bezierLeft, bezierRight, bezierLeftTime, bezierRightTime));
                     }
 
                     keyframes.sort(Keyframe::compareTo);
@@ -136,6 +150,21 @@ public class FiguraModelPartReader {
         }
 
         return result;
+    }
+
+    private static Pair<FiguraVec3, String[]> parseKeyframeData(CompoundTag keyframeNbt, String tag) {
+        if (!keyframeNbt.contains(tag))
+            return null;
+
+        ListTag floatList = keyframeNbt.getList(tag, Tag.TAG_FLOAT);
+        if (!floatList.isEmpty()) {
+            FiguraVec3 ret = FiguraVec3.of();
+            readVec3(ret, floatList);
+            return Pair.of(ret, null);
+        } else {
+            ListTag stringList = keyframeNbt.getList(tag, Tag.TAG_STRING);
+            return Pair.of(null, new String[]{stringList.getString(0), stringList.getString(1), stringList.getString(2)});
+        }
     }
 
     /**
@@ -196,24 +225,20 @@ public class FiguraModelPartReader {
     }
 
     private static void readVec3(FiguraVec3 target, CompoundTag tag, String name) {
-        readVec3(target, tag, name, 0, 0, 0);
+        if (tag.contains(name))
+            readVec3(target, (ListTag) tag.get(name));
     }
 
-    private static void readVec3(FiguraVec3 target, CompoundTag tag, String name, double defX, double defY, double defZ) {
-        if (tag.contains(name)) {
-            ListTag list = (ListTag) tag.get(name);
-            switch (list.getElementType()) {
-                case Tag.TAG_FLOAT -> target.set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-                case Tag.TAG_INT -> target.set(list.getInt(0), list.getInt(1), list.getInt(2));
-                case Tag.TAG_SHORT -> target.set(list.getShort(0), list.getShort(1), list.getShort(2));
-                case Tag.TAG_BYTE -> target.set(
-                        ((ByteTag) list.get(0)).getAsByte(),
-                        ((ByteTag) list.get(1)).getAsByte(),
-                        ((ByteTag) list.get(2)).getAsByte()
-                );
-            }
-        } else {
-            target.set(defX, defY, defZ);
+    private static void readVec3(FiguraVec3 target, ListTag list) {
+        switch (list.getElementType()) {
+            case Tag.TAG_FLOAT -> target.set(list.getFloat(0), list.getFloat(1), list.getFloat(2));
+            case Tag.TAG_INT -> target.set(list.getInt(0), list.getInt(1), list.getInt(2));
+            case Tag.TAG_SHORT -> target.set(list.getShort(0), list.getShort(1), list.getShort(2));
+            case Tag.TAG_BYTE -> target.set(
+                    ((ByteTag) list.get(0)).getAsByte(),
+                    ((ByteTag) list.get(1)).getAsByte(),
+                    ((ByteTag) list.get(2)).getAsByte()
+            );
         }
     }
 

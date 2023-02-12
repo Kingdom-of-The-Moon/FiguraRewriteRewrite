@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.UUID;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -54,7 +55,7 @@ public class FiguraTexture extends SimpleTexture {
     private boolean isClosed = false;
 
     public FiguraTexture(Avatar owner, String name, byte[] data) {
-        super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/" + FiguraIdentifier.formatPath(name)));
+        super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/" + UUID.randomUUID()));
 
         //Read image from wrapper
         NativeImage image;
@@ -74,7 +75,7 @@ public class FiguraTexture extends SimpleTexture {
     }
 
     public FiguraTexture(Avatar owner, String name, NativeImage image) {
-        super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/custom/" + FiguraIdentifier.formatPath(name)));
+        super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/custom/" + UUID.randomUUID()));
         this.texture = image;
         this.name = name;
         this.owner = owner;
@@ -104,7 +105,7 @@ public class FiguraTexture extends SimpleTexture {
             registered = true;
         }
 
-        if (dirty) {
+        if (dirty && !isClosed) {
             dirty = false;
 
             RenderCall runnable = () -> {
@@ -128,10 +129,14 @@ public class FiguraTexture extends SimpleTexture {
 
     private void backupImage() {
         this.modified = true;
-        if (this.backup == null) {
-            backup = new NativeImage(texture.format(), texture.getWidth(), texture.getHeight(), true);
-            backup.copyFrom(texture);
-        }
+        if (this.backup == null)
+            backup = copy();
+    }
+
+    public NativeImage copy() {
+        NativeImage image = new NativeImage(texture.format(), texture.getWidth(), texture.getHeight(), true);
+        image.copyFrom(texture);
+        return image;
     }
 
     public int getWidth() {

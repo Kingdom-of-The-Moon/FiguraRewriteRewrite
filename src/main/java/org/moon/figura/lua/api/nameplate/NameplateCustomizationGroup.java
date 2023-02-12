@@ -20,9 +20,10 @@ public class NameplateCustomizationGroup {
     }
 
     @LuaWhitelist
-    public void setText(String text) {
+    public NameplateCustomizationGroup setText(String text) {
         for (NameplateCustomization customization : customizations)
             customization.setText(text);
+        return this;
     }
 
     @Override

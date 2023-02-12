@@ -61,6 +61,10 @@ public class AvatarWizard {
         map.put(entry, value);
     }
 
+    public Object getEntry(WizardEntry entry, Object fallback) {
+        return map.getOrDefault(entry, fallback);
+    }
+
     public boolean canBuild() {
         String name = (String) map.get(WizardEntry.NAME);
         return name != null && !name.isBlank();
@@ -141,7 +145,7 @@ public class AvatarWizard {
         root.add("authors", authorsJson);
 
         //color
-        root.addProperty("color", "#" + ColorUtils.rgbToHex(ColorUtils.Colors.FRAN_PINK.vec));
+        root.addProperty("color", "#" + ColorUtils.rgbToHex(ColorUtils.Colors.random().vec));
 
         //write file
         path = path.resolve("avatar.json");

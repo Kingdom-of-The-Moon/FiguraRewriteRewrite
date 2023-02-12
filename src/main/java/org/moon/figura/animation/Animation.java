@@ -126,10 +126,27 @@ public class Animation {
         }
     }
 
+
     // -- lua methods -- //
 
+
     @LuaWhitelist
-    public void play() {
+    public boolean isPlaying() {
+        return this.playState == PlayState.PLAYING;
+    }
+
+    @LuaWhitelist
+    public boolean isPaused() {
+        return this.playState == PlayState.PAUSED;
+    }
+
+    @LuaWhitelist
+    public boolean isStopped() {
+        return this.playState == PlayState.STOPPED;
+    }
+
+    @LuaWhitelist
+    public Animation play() {
         switch (playState) {
             case PAUSED -> controller.resume();
             case STOPPED -> {
@@ -138,28 +155,32 @@ public class Animation {
                 lastTime = time;
                 frameTime = 0f;
             }
-            default -> {return;}
+            default -> {return this;}
         }
 
         playState = PlayState.PLAYING;
+        return this;
     }
 
     @LuaWhitelist
-    public void pause() {
+    public Animation pause() {
         controller.pause();
         playState = PlayState.PAUSED;
+        return this;
     }
 
     @LuaWhitelist
-    public void stop() {
+    public Animation stop() {
         controller.reset();
         playState = PlayState.STOPPED;
+        return this;
     }
 
     @LuaWhitelist
-    public void restart() {
+    public Animation restart() {
         stop();
         play();
+        return this;
     }
 
     @LuaWhitelist

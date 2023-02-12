@@ -10,6 +10,7 @@ import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.input.KeyMappingAccessor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -29,7 +30,7 @@ public class KeybindAPI {
     @LuaMethodDoc("of")
     public FiguraKeybind newKeybind(@LuaNotNil String name, String key, boolean gui) {
         if (key == null) key = "key.keyboard.unknown";
-        FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).gui(gui);
+        FiguraKeybind binding = new FiguraKeybind(this.owner, name, FiguraKeybind.parseStringKey(key)).setGUI(gui);
         this.keyBindings.add(binding);
         return binding;
     }
@@ -47,6 +48,14 @@ public class KeybindAPI {
     public String getVanillaKey(@LuaNotNil String id) {
         KeyMapping key = KeyMappingAccessor.getAll().get(id);
         return key == null ? null : key.saveString();
+    }
+
+    @LuaWhitelist
+    public HashMap<String, FiguraKeybind> getKeybinds() {
+        HashMap<String, FiguraKeybind> map = new HashMap<>();
+        for (FiguraKeybind keyBinding : keyBindings)
+            map.put(keyBinding.getName(), keyBinding);
+        return map;
     }
 
     @Override

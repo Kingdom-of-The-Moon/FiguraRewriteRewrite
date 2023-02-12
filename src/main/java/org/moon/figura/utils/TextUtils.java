@@ -87,14 +87,15 @@ public class TextUtils {
     }
 
     public static Component replaceInText(Component text, String regex, Object replacement) {
-        return replaceInText(text, regex, replacement, (s, style) -> true);
+        return replaceInText(text, regex, replacement, (s, style) -> true, Integer.MAX_VALUE);
     }
 
-    public static Component replaceInText(Component text, String regex, Object replacement, BiPredicate<String, Style> predicate) {
+    public static Component replaceInText(Component text, String regex, Object replacement, BiPredicate<String, Style> predicate, int times) {
         //fix replacement object
         Component replace = replacement instanceof Component c ? c : Component.literal(replacement.toString());
         MutableComponent ret = Component.empty();
 
+        int[] remaining = {times};
         text.visit((style, string) -> {
             //test predicate
             if (!predicate.test(string, style)) {
@@ -106,10 +107,12 @@ public class TextUtils {
             String[] split = string.split("((?<=" + regex + ")|(?=" + regex + "))");
             for (String s : split) {
                 //append the text if it does not match the split, otherwise append the replacement instead
-                if (!s.matches(regex))
+                if (!s.matches(regex) || remaining[0] <= 0)
                     ret.append(Component.literal(s).withStyle(style));
-                else
+                else {
                     ret.append(Component.empty().withStyle(style).append(replace));
+                    remaining[0]--;
+                }
             }
 
             return Optional.empty();
@@ -137,7 +140,7 @@ public class TextUtils {
         return TextUtils.replaceInText(text, "\\t", TAB);
     }
 
-    public static List<FormattedCharSequence> warpTooltip(Component text, Font font, int mousePos, int screenWidth) {
+    public static List<FormattedCharSequence> wrapTooltip(Component text, Font font, int mousePos, int screenWidth) {
         //first split the new line text
         List<Component> splitText = TextUtils.splitText(text, "\n");
 
@@ -152,7 +155,7 @@ public class TextUtils {
         int side = largest <= right ? right : largest <= left ? left : Math.max(left, right);
 
         //warp the unmodified text
-        return warpText(text, side, font);
+        return wrapText(text, side, font);
     }
 
     //get the largest text width from a list
@@ -185,7 +188,7 @@ public class TextUtils {
         return ret;
     }
 
-    public static List<FormattedCharSequence> warpText(Component text, int width, Font font) {
+    public static List<FormattedCharSequence> wrapText(Component text, int width, Font font) {
         List<FormattedCharSequence> warp = new ArrayList<>();
         font.getSplitter().splitLines(text, width, Style.EMPTY, (formattedText, aBoolean) -> warp.add(Language.getInstance().getVisualOrder(formattedText)));
         return warp;
@@ -277,5 +280,20 @@ public class TextUtils {
             builder = Component.literal(str.toString()).withStyle(entry.getStyle()).append(builder);
         }
         return builder;
+    }
+
+    public static Component trim(Component text) {
+        String string = text.getString();
+        int start = 0;
+        int end = string.length();
+
+        //trim
+        while (start < end && string.charAt(start) <= ' ')
+            start++;
+        while (start < end && string.charAt(end - 1) <= ' ')
+            end--;
+
+        //apply trim
+        return substring(text, start, end);
     }
 }

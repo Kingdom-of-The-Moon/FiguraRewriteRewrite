@@ -16,7 +16,7 @@ import org.moon.figura.lua.api.world.WorldAPI;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.mixin.sound.SoundManagerAccessor;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.permissions.Permissions;
 
 import java.util.Base64;
 
@@ -59,21 +59,36 @@ public class SoundAPI {
     }
 
     @LuaWhitelist
-    public void stopSound(String id) {
+    public SoundAPI stopSound(String id) {
         getSoundEngine().figura$stopSound(owner.owner, id);
+        return this;
     }
 
     @LuaWhitelist
-    public void newSound(String name, String base64Text) {
-        newSound(name, Base64.getDecoder().decode(base64Text));
+    public SoundAPI newSound(String name, String base64Text) {
+        return newSound(name, Base64.getDecoder().decode(base64Text));
     }
 
     @LuaWhitelist
-    public void newSound(String name, byte[] byteArray) {
+    public SoundAPI newSound(String name, byte[] byteArray) {
         try {
             owner.loadSound(name, byteArray);
+            return this;
         } catch (Exception e) {
             throw new LuaError("Failed to add custom sound \"" + name + "\"");
+        }
+    }
+
+    @LuaWhitelist
+    public boolean isPresent(String id) {
+        if (id == null)
+            return false;
+        if (owner.customSounds.get(id) != null)
+            return true;
+        try {
+            return Minecraft.getInstance().getSoundManager().getSoundEvent(new ResourceLocation(id)) != null;
+        } catch (Exception ignored) {
+            return false;
         }
     }
 
@@ -81,10 +96,10 @@ public class SoundAPI {
     public LuaSound __index(String id) {
         SoundBuffer buffer = owner.customSounds.get(id);
         if (buffer != null) {
-            if (owner.trust.get(Trust.CUSTOM_SOUNDS) == 1) {
+            if (owner.permissions.get(Permissions.CUSTOM_SOUNDS) == 1) {
                 return new LuaSound(buffer, id, owner);
             } else {
-                owner.trustIssues.add(Trust.CUSTOM_SOUNDS);
+                owner.noPermissions.add(Permissions.CUSTOM_SOUNDS);
             }
         }
 
@@ -93,11 +108,11 @@ public class SoundAPI {
             if (events != null) {
                 Sound sound = events.getSound(RandomSource.create(WorldAPI.getCurrentWorld().random.nextLong()));
                 if (sound != SoundManager.EMPTY_SOUND) {
-                    owner.trustIssues.remove(Trust.CUSTOM_SOUNDS);
+                    owner.noPermissions.remove(Permissions.CUSTOM_SOUNDS);
                     return new LuaSound(sound, id, owner);
                 }
             }
-            throw new LuaError("Unable to find sound \"" + id + "\"");
+            return new LuaSound((SoundBuffer) null, id, owner);
         } catch (Exception e) {
             throw new LuaError(e.getMessage());
         }

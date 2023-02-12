@@ -12,7 +12,7 @@ import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
@@ -55,7 +55,7 @@ public class LuaSound {
     }
 
     private float calculateVolume() {
-        return volume * SoundAPI.getSoundEngine().figura$getVolume(SoundSource.PLAYERS) * (owner.trust.get(Trust.VOLUME) / 100f);
+        return volume * SoundAPI.getSoundEngine().figura$getVolume(SoundSource.PLAYERS) * (owner.permissions.get(Permissions.VOLUME) / 100f);
     }
 
     @LuaWhitelist
@@ -64,11 +64,11 @@ public class LuaSound {
             return this;
 
         if (!owner.soundsRemaining.use()) {
-            owner.trustIssues.add(Trust.SOUNDS);
+            owner.noPermissions.add(Permissions.SOUNDS);
             return this;
         }
 
-        owner.trustIssues.remove(Trust.SOUNDS);
+        owner.noPermissions.remove(Permissions.SOUNDS);
 
         if (handle != null) {
             handle.execute(Channel::unpause);
@@ -135,7 +135,8 @@ public class LuaSound {
         return this.playing;
     }
 
-    @LuaWhitelist //TODO - no worky
+    @LuaWhitelist
+    @LuaMethodDoc(value = {}, key = "") //TODO - no worky
     public LuaSound pause() {
         this.playing = false;
         if (handle != null)

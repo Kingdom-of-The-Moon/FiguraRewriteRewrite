@@ -1,7 +1,7 @@
 package org.moon.figura.config;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.impl.client.keybinding.KeyBindingRegistryImpl;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -13,8 +13,8 @@ import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.gui.widgets.TextField;
 import org.moon.figura.lua.FiguraLuaPrinter;
-import org.moon.figura.trust.Trust;
-import org.moon.figura.trust.TrustManager;
+import org.moon.figura.permissions.PermissionManager;
+import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraText;
 
@@ -33,9 +33,11 @@ public enum Config {
 
     Nameplate,
     SELF_NAMEPLATE(false),
+    NAMEPLATE_RENDER(0, 3),
     PREVIEW_NAMEPLATE(true),
     CHAT_NAMEPLATE(2, 3) {{
         String path = "config.nameplate_level";
+        this.enumTooltip = FiguraText.of(path + ".enum");
         this.enumList = List.of(
                 FiguraText.of(path + ".1"),
                 FiguraText.of(path + ".2"),
@@ -44,6 +46,7 @@ public enum Config {
     }},
     ENTITY_NAMEPLATE(2, 3) {{
         String path = "config.nameplate_level";
+        this.enumTooltip = FiguraText.of(path + ".enum");
         this.enumList = List.of(
                 FiguraText.of(path + ".1"),
                 FiguraText.of(path + ".2"),
@@ -52,6 +55,7 @@ public enum Config {
     }},
     LIST_NAMEPLATE(2, 3) {{
         String path = "config.nameplate_level";
+        this.enumTooltip = FiguraText.of(path + ".enum");
         this.enumList = List.of(
                 FiguraText.of(path + ".1"),
                 FiguraText.of(path + ".2"),
@@ -61,7 +65,6 @@ public enum Config {
 
     Script,
     LOG_LOCATION(0, 2),
-    ALLOW_FP_HANDS(false),
     LOG_NUMBER_LENGTH(5, InputType.POSITIVE_INT) {
         @Override
         public void onChange() {
@@ -82,11 +85,23 @@ public enum Config {
         }
     },
 
+    Rendering,
+    IRIS_COMPATIBILITY_FIX(2, 3),
+    ALLOW_FP_HANDS(false),
+    RENDER_DEBUG_PARTS_PIVOT(1, 5) {{
+        String tooltip = "config.render_debug_parts_pivot.tooltip";
+        this.tooltip = FiguraText.of(tooltip,
+                FiguraText.of(tooltip + ".cubes").setStyle(ColorUtils.Colors.FRAN_PINK.style),
+                FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.MAYA_BLUE.style));
+    }},
+    FIRST_PERSON_MATRICES(true),
+
     ActionWheel,
     ACTION_WHEEL_BUTTON("key.keyboard.b"),
     ACTION_WHEEL_MODE(0, 4),
     ACTION_WHEEL_SCALE(1f, InputType.FLOAT),
     ACTION_WHEEL_TITLE(0, 5),
+    ACTION_WHEEL_SLOTS_INDICATOR(0, 3),
     ACTION_WHEEL_DECORATIONS(true),
 
     UI,
@@ -101,11 +116,13 @@ public enum Config {
     TOAST_TIME(5f, InputType.FLOAT),
     TOAST_TITLE_TIME(2f, InputType.FLOAT),
     WARDROBE_FILE_NAMES(false),
+    PREVIEW_HEAD_ROTATION(false),
 
     Paperdoll,
     HAS_PAPERDOLL(false),
     PAPERDOLL_ALWAYS_ON(false),
     FIRST_PERSON_PAPERDOLL(true),
+    PAPERDOLL_INVISIBLE(false),
     PAPERDOLL_SCALE(1f, InputType.FLOAT),
     PAPERDOLL_X(0f, InputType.FLOAT),
     PAPERDOLL_Y(0f, InputType.FLOAT),
@@ -125,17 +142,18 @@ public enum Config {
             NetworkStuff.checkVersion();
         }
     },
-    DEFAULT_TRUST(1, Trust.Group.values().length - 1) {{
+    DEFAULT_PERMISSION_LEVEL(2, Permissions.Category.values().length) {{
         List<Component> list = new ArrayList<>();
-        Trust.Group[] groups = Trust.Group.values();
-        for (int i = 0; i < groups.length - 1; i++)
-            list.add(groups[i].text.copy());
+        Permissions.Category[] categories = Permissions.Category.values();
+        for (Permissions.Category category : categories)
+            list.add(category.text.copy());
         this.enumList = list;
+        this.enumTooltip = null;
     }
         @Override
         public void onChange() {
             super.onChange();
-            TrustManager.saveToDisk();
+            PermissionManager.saveToDisk();
         }
     },
     CHAT_EMOJIS(false),
@@ -143,13 +161,6 @@ public enum Config {
 
     Dev {{this.name = this.name.copy().withStyle(ChatFormatting.RED);}},
     CONNECTION_TOASTS(true),
-    RENDER_DEBUG_PARTS_PIVOT(1, 3) {{
-        String tooltip = "config.render_debug_parts_pivot.tooltip";
-        this.tooltip = FiguraText.of(tooltip,
-                FiguraText.of(tooltip + ".cubes").setStyle(ColorUtils.Colors.FRAN_PINK.style),
-                FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.MAYA_BLUE.style));
-    }},
-    FIRST_PERSON_MATRICES(true),
     LOG_OTHERS(false),
     LOG_PINGS(0, 3),
     SYNC_PINGS(false) {{
@@ -194,6 +205,7 @@ public enum Config {
      * do not edit below this line :p
      * why not ? lol
      * *stabs*
+     * *dies*
      */
 
 
@@ -208,6 +220,7 @@ public enum Config {
     public final ConfigType type;
 
     //special properties
+    public Component enumTooltip;
     public List<Component> enumList;
     public ConfigKeyBind keyBind;
     public final InputType inputType;
@@ -246,8 +259,11 @@ public enum Config {
         this.name = FiguraText.of(name);
         this.tooltip = FiguraText.of(name + ".tooltip");
 
-        //generate enum list
+        //enums
         if (length != null) {
+            this.enumTooltip = FiguraText.of(name + ".enum");
+
+            //generate enum list
             ArrayList<Component> enumList = new ArrayList<>();
             for (int i = 1; i <= length; i++)
                 enumList.add(FiguraText.of(name + "." + i));
@@ -372,7 +388,7 @@ public enum Config {
             this.config = config;
 
             if (FiguraMod.DEBUG_MODE || !config.disabled)
-                KeyBindingRegistryImpl.registerKeyBinding(this);
+                KeyBindingHelper.registerKeyBinding(this);
         }
 
         @Override

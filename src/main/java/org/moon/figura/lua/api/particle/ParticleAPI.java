@@ -11,7 +11,6 @@ import org.moon.figura.ducks.ParticleEngineAccessor;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -43,7 +42,7 @@ public class ParticleAPI {
 
     @LuaWhitelist
     public LuaParticle newParticle(String name, Double x, Double y, Double z) {
-       return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z));
+       return newParticle(name, FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
@@ -53,17 +52,17 @@ public class ParticleAPI {
 
     @LuaWhitelist
     public LuaParticle newParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ) {
-       return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z), LuaUtils.freeVec3("newParticle", axisX, axisY, axisZ));
+       return newParticle(name, FiguraVec3.oneUse(x, y, z), FiguraVec3.oneUse(axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
     public LuaParticle newParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ) {
-       return newParticle(name, vec, LuaUtils.freeVec3("newParticle", axisX, axisY, axisZ));
+       return newParticle(name, vec, FiguraVec3.oneUse(axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
     public LuaParticle newParticle(String name, Double x, Double y, Double z, FiguraVec3 axis) {
-       return newParticle(name, LuaUtils.freeVec3("newParticle", x, y, z), axis);
+       return newParticle(name, FiguraVec3.oneUse(x, y, z), axis);
     }
 
     @LuaWhitelist
@@ -74,8 +73,19 @@ public class ParticleAPI {
     }
 
     @LuaWhitelist
-    public void removeParticles() {
+    public ParticleAPI removeParticles() {
         getParticleEngine().figura$clearParticles(owner.owner);
+        return this;
+    }
+
+    @LuaWhitelist
+    public boolean isPresent(String id) {
+        try {
+            ParticleOptions options = ParticleArgument.readParticle(new StringReader(id));
+            return getParticleEngine().figura$makeParticle(options, 0, 0, 0, 0, 0, 0) != null;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     @LuaWhitelist

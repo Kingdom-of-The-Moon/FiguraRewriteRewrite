@@ -17,7 +17,7 @@ import org.moon.figura.animation.Animation;
 import org.moon.figura.mixin.input.KeyMappingAccessor;
 import org.moon.figura.mixin.render.GameRendererAccessor;
 import org.moon.figura.model.ParentType;
-import org.moon.figura.model.rendering.texture.EntityRenderMode;
+import org.moon.figura.model.rendering.EntityRenderMode;
 import org.moon.figura.model.rendering.texture.FiguraTextureSet;
 import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.ColorUtils;
@@ -50,7 +50,7 @@ public class FiguraListDocs {
         for (Pose value : Pose.values())
             add(value.name());
     }};
-    private static final LinkedHashSet<String> ITEM_RENDER_TYPES = new LinkedHashSet<>() {{
+    private static final LinkedHashSet<String> ITEM_DISPLAY_MODES = new LinkedHashSet<>() {{
         for (ItemTransforms.TransformType value : ItemTransforms.TransformType.values())
             add(value.name());
     }};
@@ -95,7 +95,7 @@ public class FiguraListDocs {
         TEXTURE_TYPES(() -> FiguraListDocs.TEXTURE_TYPES, "TextureTypes", "texture_types"),
         KEY_IDS(() -> new LinkedHashSet<>() {{this.addAll(KeyMappingAccessor.getAll().keySet());}}, "KeyIDs", "key_ids"),
         ENTITY_POSES(() -> FiguraListDocs.ENTITY_POSES, "EntityPoses", "entity_poses"),
-        ITEM_RENDER_TYPES(() -> FiguraListDocs.ITEM_RENDER_TYPES, "ItemRenderTypes", "item_render_types"),
+        ITEM_RENDER_TYPES(() -> FiguraListDocs.ITEM_DISPLAY_MODES, "ItemDisplayModes", "item_display_modes"),
         POST_EFFECTS(() -> FiguraListDocs.POST_EFFECTS, "PostEffects", "post_effects"),
         PLAY_STATES(() -> FiguraListDocs.PLAY_STATES, "PlayStates", "play_states"),
         LOOP_MODES(() -> FiguraListDocs.LOOP_MODES, "LoopModes", "loop_modes"),

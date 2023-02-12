@@ -6,7 +6,7 @@ import net.minecraft.world.level.BlockGetter;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.ui.UIHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,7 +32,7 @@ public abstract class CameraMixin {
     @Inject(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setRotation(FF)V", shift = At.Shift.AFTER))
     private void setupRot(BlockGetter area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta, CallbackInfo ci) {
         avatar = AvatarManager.getAvatar(focusedEntity);
-        if (avatar == null || avatar.luaRuntime == null || avatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 0) {
+        if (avatar == null || avatar.luaRuntime == null || avatar.permissions.get(Permissions.VANILLA_MODEL_EDIT) == 0) {
             avatar = null;
             return;
         }
@@ -58,7 +58,9 @@ public abstract class CameraMixin {
     @ModifyArgs(method = "setup", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;setPosition(DDD)V"))
     private void setupPivot(Args args) {
         if (avatar != null) {
-            int i = args.get(0) instanceof Camera ? 1 : 0;
+            int i = 0;
+            while (args.get(i) instanceof Camera)
+                i++;
 
             double x = args.get(i++);
             double y = args.get(i++);

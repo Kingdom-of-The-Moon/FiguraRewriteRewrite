@@ -1,10 +1,6 @@
 package org.moon.figura;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
@@ -22,25 +18,22 @@ import org.moon.figura.backend2.NetworkStuff;
 import org.moon.figura.commands.FiguraCommands;
 import org.moon.figura.config.Config;
 import org.moon.figura.config.ConfigManager;
-import org.moon.figura.gui.ActionWheel;
 import org.moon.figura.gui.Emojis;
-import org.moon.figura.gui.PaperDoll;
-import org.moon.figura.gui.PopupMenu;
+import org.moon.figura.lang.FiguraLangManager;
 import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.docs.FiguraDocsManager;
 import org.moon.figura.lua.newdocswip.NewDocsManager;
 import org.moon.figura.mixin.SkullBlockEntityAccessor;
-import org.moon.figura.trust.TrustManager;
+import org.moon.figura.permissions.PermissionManager;
 import org.moon.figura.utils.ColorUtils;
+import org.moon.figura.utils.IOUtils;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.Version;
 import org.moon.figura.wizards.AvatarWizard;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Calendar;
 import java.util.UUID;
@@ -55,26 +48,29 @@ public class FiguraMod implements ClientModInitializer {
     public static final Path GAME_DIR = FabricLoader.getInstance().getGameDir().normalize();
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_NAME);
 
-    public static int ticks = 0;
+    public static int ticks;
+    public static Entity extendedPickEntity;
+    public static Component splashText;
 
     @Override
     public void onInitializeClient() {
         //init managers
         ConfigManager.init();
-        TrustManager.init();
+        PermissionManager.init();
         LocalAvatarFetcher.init();
         CacheAvatarLoader.init();
         FiguraAPIManager.init();
         FiguraDocsManager.init();
         NewDocsManager.init();
         FiguraCommands.init();
+        FiguraLangManager.init();
 
-        //register events
-        WorldRenderEvents.START.register(levelRenderer -> AvatarManager.onWorldRender(levelRenderer.tickDelta()));
-        WorldRenderEvents.END.register(levelRenderer -> AvatarManager.afterWorldRender(levelRenderer.tickDelta()));
-        WorldRenderEvents.AFTER_ENTITIES.register(FiguraMod::renderFirstPersonWorldParts);
-        HudRenderCallback.EVENT.register(FiguraMod::hudRender);
-        registerResourceListener(ResourceManagerHelper.get(PackType.CLIENT_RESOURCES));
+        //register reload listeners
+        ResourceManagerHelper managerHelper = ResourceManagerHelper.get(PackType.CLIENT_RESOURCES);
+        managerHelper.registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
+        managerHelper.registerReloadListener(Emojis.RESOURCE_LISTENER);
+        managerHelper.registerReloadListener(AvatarWizard.RESOURCE_LISTENER);
+        managerHelper.registerReloadListener(NewDocsManager.RELOAD_LISTENER);
     }
 
     public static void tick() {
@@ -90,40 +86,6 @@ public class FiguraMod implements ClientModInitializer {
         ticks++;
     }
 
-    private static void renderFirstPersonWorldParts(WorldRenderContext context) {
-        if (!context.camera().isDetached()) {
-            Entity watcher = context.camera().getEntity();
-            Avatar avatar = AvatarManager.getAvatar(watcher);
-            if (avatar != null)
-                avatar.firstPersonWorldRender(watcher, context.consumers(), context.matrixStack(), context.camera(), context.tickDelta());
-        }
-    }
-
-    private static void hudRender(PoseStack stack, float delta) {
-        if (AvatarManager.panic)
-            return;
-
-        pushProfiler(MOD_ID);
-
-        pushProfiler("paperdoll");
-        PaperDoll.render(stack);
-
-        popPushProfiler("actionWheel");
-        ActionWheel.render(stack);
-
-        popPushProfiler("popupMenu");
-        PopupMenu.render(stack);
-
-        popProfiler(2);
-    }
-
-    private static void registerResourceListener(ResourceManagerHelper managerHelper) {
-        managerHelper.registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
-        managerHelper.registerReloadListener(Emojis.RESOURCE_LISTENER);
-        managerHelper.registerReloadListener(NewDocsManager.RELOAD_LISTENER);
-        managerHelper.registerReloadListener(AvatarWizard.RESOURCE_LISTENER);
-    }
-
     // -- Helper Functions -- //
 
     //debug print
@@ -136,27 +98,12 @@ public class FiguraMod implements ClientModInitializer {
     public static Path getFiguraDirectory() {
         String config = Config.MAIN_DIR.asString();
         Path p = config.isBlank() ? GAME_DIR.resolve(MOD_ID) : Path.of(config);
-        try {
-            Files.createDirectories(p);
-        } catch (FileAlreadyExistsException ignored) {
-        } catch (Exception e) {
-            LOGGER.error("Failed to create the main " + MOD_NAME + " directory", e);
-        }
-
-        return p;
+        return IOUtils.createDirIfNeeded(p);
     }
 
     //mod cache directory
     public static Path getCacheDirectory() {
-        Path p = getFiguraDirectory().resolve("cache");
-        try {
-            Files.createDirectories(p);
-        } catch (FileAlreadyExistsException ignored) {
-        } catch (Exception e) {
-            LOGGER.error("Failed to create cache directory", e);
-        }
-
-        return p;
+        return IOUtils.getOrCreateDir(getFiguraDirectory(), "cache");
     }
 
     //get local player uuid
@@ -216,6 +163,11 @@ public class FiguraMod implements ClientModInitializer {
 
     public static void popProfiler() {
         Minecraft.getInstance().getProfiler().pop();
+    }
+
+    public static <T> T popReturnProfiler(T var) {
+        Minecraft.getInstance().getProfiler().pop();
+        return var;
     }
 
     public static void popProfiler(int times) {

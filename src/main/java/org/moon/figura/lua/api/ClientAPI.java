@@ -34,7 +34,8 @@ import java.util.*;
 public class ClientAPI {
 
     public static final ClientAPI INSTANCE = new ClientAPI();
-    private static final boolean hasIris = FabricLoader.getInstance().isModLoaded("iris");
+    private static final HashMap<String, Boolean> LOADED_MODS = new HashMap<>();
+    private static final boolean HAS_IRIS = FabricLoader.getInstance().isModLoaded("iris"); //separated to avoid indexing the list every frame
 
     @LuaWhitelist
     public static int getFPS() {
@@ -194,8 +195,9 @@ public class ClientAPI {
     }
 
     @LuaWhitelist
-    public static int getTextHeight(@LuaNotNil String text) {
-        return Minecraft.getInstance().font.lineHeight * TextUtils.splitText(TextUtils.tryParseJson(text), "\n").size();
+    public static int getTextHeight(String text) {
+        int lineHeight = Minecraft.getInstance().font.lineHeight;
+        return text == null ? lineHeight : lineHeight * TextUtils.splitText(TextUtils.tryParseJson(text), "\n").size();
     }
 
     @LuaWhitelist
@@ -204,13 +206,19 @@ public class ClientAPI {
     }
 
     @LuaWhitelist
+    public static boolean isModLoaded(String modID) {
+        LOADED_MODS.putIfAbsent(modID, FabricLoader.getInstance().isModLoaded(modID));
+        return LOADED_MODS.get(modID);
+    }
+
+    @LuaWhitelist
     public static boolean hasIris() {
-        return hasIris;
+        return HAS_IRIS;
     }
 
     @LuaWhitelist
     public static boolean hasIrisShader() {
-        return hasIris && net.irisshaders.iris.api.v0.IrisApi.getInstance().isShaderPackInUse();
+        return HAS_IRIS && net.irisshaders.iris.api.v0.IrisApi.getInstance().isShaderPackInUse();
     }
 
     @LuaWhitelist
@@ -318,6 +326,11 @@ public class ClientAPI {
         map.put("day_name", f[4]);
 
         return map;
+    }
+
+    @LuaWhitelist
+    public static double getFrameTime() {
+        return Minecraft.getInstance().getFrameTime();
     }
 
     @Override

@@ -4,11 +4,14 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.model.ElytraModel;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
-import org.moon.figura.trust.Trust;
+import org.moon.figura.lua.api.vanilla_model.VanillaPart;
+import org.moon.figura.permissions.Permissions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -18,7 +21,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ElytraLayer.class)
-public abstract class ElytraLayerMixin<T extends LivingEntity, M extends EntityModel<T>> {
+public abstract class ElytraLayerMixin<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
+
+    public ElytraLayerMixin(RenderLayerParent<T, M> context) {
+        super(context);
+    }
 
     @Shadow @Final private ElytraModel<T> elytraModel;
     @Unique
@@ -30,13 +37,17 @@ public abstract class ElytraLayerMixin<T extends LivingEntity, M extends EntityM
         if (avatar == null)
             return;
 
-        if (avatar.luaRuntime != null)
-            avatar.luaRuntime.vanilla_model.ELYTRA.save(elytraModel);
+        if (avatar.luaRuntime != null) {
+            VanillaPart part = avatar.luaRuntime.vanilla_model.ELYTRA;
+            part.save(elytraModel);
+            if (avatar.permissions.get(Permissions.VANILLA_MODEL_EDIT) == 1)
+                part.preTransform(elytraModel);
+        }
 
         avatar.elytraRender(livingEntity, multiBufferSource, poseStack, light, tickDelta, elytraModel);
 
-        if (avatar.luaRuntime != null && avatar.trust.get(Trust.VANILLA_MODEL_EDIT) == 1)
-            avatar.luaRuntime.vanilla_model.ELYTRA.change(elytraModel);
+        if (avatar.luaRuntime != null && avatar.permissions.get(Permissions.VANILLA_MODEL_EDIT) == 1)
+            avatar.luaRuntime.vanilla_model.ELYTRA.posTransform(elytraModel);
     }
 
     @Inject(at = @At("RETURN"), method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/entity/LivingEntity;FFFFFF)V")
