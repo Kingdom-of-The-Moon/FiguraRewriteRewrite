@@ -36,6 +36,11 @@ dependencies {
 	modCompileOnly "maven.modrinth:iris:$iris"
 }
 
+loom {
+	accessWidenerPath = file "src/main/resources/figura.accesswidener"
+}
+
+
 processResources {
 	Map<String, Object> properties = new HashMap<>()
 
