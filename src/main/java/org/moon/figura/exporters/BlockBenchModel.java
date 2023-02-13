@@ -187,7 +187,7 @@ public class BlockBenchModel {
 
             scaleW = Math.abs(scaleW);
             scaleH = Math.abs(scaleH);
-            uv.multiply(scaleW, scaleH, scaleW, scaleH);
+            uv.mul(scaleW, scaleH, scaleW, scaleH);
 
             JsonObject face = new JsonObject();
             face.add("uv", vec4ToJson(uv));

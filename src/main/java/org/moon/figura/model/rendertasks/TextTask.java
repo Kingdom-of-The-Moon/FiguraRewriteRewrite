@@ -12,13 +12,11 @@ import org.moon.figura.avatar.Badges;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec4;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.ColorUtils;
-import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -111,223 +109,108 @@ public class TextTask extends RenderTask {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.get_text")
     public String getText() {
         return textCached;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "text"
-                    )
-            },
-            aliases = "text",
-            value = "text_task.set_text"
-    )
+    @LuaMethodDoc("text")
     public TextTask setText(String text) {
         this.textCached = text;
         updateText();
         if (text != null) this.cachedComplexity = text.length() + 1;
         return this;
     }
-
+    
     @LuaWhitelist
-    public TextTask text(String text) {
-        return setText(text);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.get_alignment")
-    public String getAlignment() {
+    public String getAlignment(){
         return this.alignment.name();
     }
-
+    
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "alignment"
-                    )
-            },
-            aliases = "alignment",
-            value = "text_task.set_alignment"
-    )
-    public TextTask setAlignment(@LuaNotNil String alignment) {
+    @LuaMethodDoc("alignment")
+    public TextTask setAlignment(@LuaNotNil String alignment){
         try {
             this.alignment = Alignment.valueOf(alignment.toUpperCase());
-        } catch (Exception ignored) {
-            throw new LuaError("Invalid alignment type \"" + alignment + "\"");
+            return this;
+        } catch (Exception exception){
+            throw new LuaError("Invalid alignment type\"" + alignment + "\"");
         }
-        return this;
     }
 
     @LuaWhitelist
-    public TextTask alignment(@LuaNotNil String alignment) {
-        return setAlignment(alignment);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.has_shadow")
     public boolean hasShadow() {
         return this.shadow;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "shadow"
-                    )
-            },
-            aliases = "shadow",
-            value = "text_task.set_shadow"
-    )
+    @LuaMethodDoc("shadow")
     public TextTask setShadow(boolean shadow) {
         this.shadow = shadow;
         return this;
     }
 
     @LuaWhitelist
-    public TextTask shadow(boolean shadow) {
-        return setShadow(shadow);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.has_outline")
     public boolean hasOutline() {
         return this.outline;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "outline"
-                    )
-            },
-            aliases = "outline",
-            value = "text_task.set_outline"
-    )
+    @LuaMethodDoc("outline")
     public TextTask setOutline(boolean outline) {
         this.outline = outline;
         return this;
     }
 
     @LuaWhitelist
-    public TextTask outline(boolean outline) {
-        return setOutline(outline);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.get_outline_color")
     public FiguraVec3 getOutlineColor() {
         return ColorUtils.intToRGB(this.outlineColor);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "color"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            aliases = "outlineColor",
-            value = "text_task.set_outline_color"
-    )
-    public TextTask setOutlineColor(Object x, Double y, Double z) {
-        FiguraVec3 vec = LuaUtils.parseVec3("setOutlineColor", x, y, z);
-        this.outlineColor = ColorUtils.rgbToInt(vec);
+    public TextTask setOutlineColor(double x, double y, double z) {
+        return setOutlineColor(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("outlineColor")
+    public TextTask setOutlineColor(@LuaNotNil FiguraVec3 color){
+        this.outlineColor = ColorUtils.rgbToInt(color);
         return this;
     }
-
+    
     @LuaWhitelist
-    public TextTask outlineColor(Object x, Double y, Double z) {
-        return setOutlineColor(x, y, z);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.get_width")
-    public int getWidth() {
+    public int getWidth(){
         return width;
     }
-
+    
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Integer.class,
-                            argumentNames = "width"
-                    )
-            },
-            aliases = "width",
-            value = "text_task.set_width"
-    )
-    public TextTask setWidth(int width) {
+    @LuaMethodDoc("width")
+    public TextTask setWidth(int width){
         this.width = width;
         updateText();
         return this;
     }
 
     @LuaWhitelist
-    public TextTask width(int width) {
-        return setWidth(width);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.is_see_through")
     public boolean isSeeThrough() {
         return this.seeThrough;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "seeThrough"
-                    )
-            },
-            aliases = "seeThrough",
-            value = "text_task.set_see_through"
-    )
+    @LuaMethodDoc("seeThrough")
     public TextTask setSeeThrough(boolean seeThrough) {
         this.seeThrough = seeThrough;
         return this;
     }
 
     @LuaWhitelist
-    public TextTask seeThrough(boolean seeThrough) {
-        return setSeeThrough(seeThrough);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("text_task.has_background")
     public boolean hasBackground() {
         return this.background;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "background"
-                    )
-            },
-            aliases = "background",
-            value = "text_task.set_background"
-    )
+    @LuaMethodDoc("background")
     public TextTask setBackground(boolean background) {
         this.background = background;
         return this;
@@ -339,35 +222,20 @@ public class TextTask extends RenderTask {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("text_task.get_background_color")
     public FiguraVec4 getBackgroundColor() {
         return this.backgroundColor == null ? null : ColorUtils.intToARGB(this.backgroundColor);
     }
-
+    
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "rgba"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b", "a"}
-                    )
-            },
-            aliases = "backgroundColor",
-            value = "text_task.set_background_color"
-    )
-    public TextTask setBackgroundColor(Object r, Double g, Double b, Double a) {
-        FiguraVec4 vec = LuaUtils.parseVec4("setBackgroundColor", r, g, b, a, 0, 0, 0,  Minecraft.getInstance().options.getBackgroundOpacity(0.25f));
-        this.backgroundColor = ColorUtils.rgbaToIntARGB(vec);
-        return this;
+    public TextTask setBackgroundColor(double r, double g, double b, Double a){
+        return setBackgroundColor(FiguraVec4.oneUse(r, g, b, a == null? Minecraft.getInstance().options.getBackgroundOpacity(0.25f) : a));
     }
 
     @LuaWhitelist
-    public TextTask backgroundColor(Object r, Double g, Double b, Double a) {
-        return setBackgroundColor(r, g, b, a);
+    @LuaMethodDoc("backgroundColor")
+    public TextTask setBackgroundColor(@LuaNotNil FiguraVec4 color) {
+        this.backgroundColor = ColorUtils.rgbaToIntARGB(color);
+        return this;
     }
 
     @Override
@@ -377,7 +245,7 @@ public class TextTask extends RenderTask {
 
     private enum Alignment {
         LEFT((font, component) -> 0),
-        RIGHT((font, component) -> font.width(component)),
+        RIGHT(Font::width),
         CENTER((font, component) -> font.width(component) / 2);
 
         private final BiFunction<Font, Component, Integer> function;

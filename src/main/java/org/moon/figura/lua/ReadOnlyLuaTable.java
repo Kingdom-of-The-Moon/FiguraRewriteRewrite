@@ -5,6 +5,7 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 
 public class ReadOnlyLuaTable extends LuaTable {
+
     public ReadOnlyLuaTable(LuaValue table) {
         presize(table.length(), 0);
         for (Varargs n = table.next(LuaValue.NIL); !n.arg1().isnil(); n = table
@@ -14,9 +15,28 @@ public class ReadOnlyLuaTable extends LuaTable {
             super.rawset(key, value.istable() ? value == table ? this : new ReadOnlyLuaTable(value) : value);
         }
     }
-    public LuaValue setmetatable(LuaValue metatable) { return error("table is read-only"); }
-    public void set(int key, LuaValue value) { error("table is read-only"); }
-    public void rawset(int key, LuaValue value) { error("table is read-only"); }
-    public void rawset(LuaValue key, LuaValue value) { error("table is read-only"); }
-    public LuaValue remove(int pos) { return error("table is read-only"); }
+
+    private LuaValue err() {
+        return error("table is read-only");
+    }
+
+    public LuaValue setmetatable(LuaValue metatable) {
+        return err();
+    }
+
+    public void set(int key, LuaValue value) {
+        err();
+    }
+
+    public void rawset(int key, LuaValue value) {
+        err();
+    }
+
+    public void rawset(LuaValue key, LuaValue value) {
+        err();
+    }
+
+    public LuaValue remove(int pos) {
+        return err();
+    }
 }

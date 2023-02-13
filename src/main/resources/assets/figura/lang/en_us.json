@@ -529,6 +529,11 @@
 
   "figura.docs": "The \"/figura docs\" command allows you to access documentation for all types and functions Figura adds to its Lua scripting environment",
   "figura.docs.text.type": "Type",
+  "figura.docs.text.global": "Global",
+  "figura.docs.text.key": "Key",
+  "figura.docs.text.value": "Value",
+  "figura.docs.text.subtypes": "Subtypes",
+  "figura.docs.text.no_subtypes": "There are none lol?",
   "figura.docs.text.description": "Description",
   "figura.docs.text.function": "Function",
   "figura.docs.text.syntax": "Syntax",
@@ -563,7 +568,7 @@
   "figura.docs.globals.vec": "An alias for \"vectors.vec\"",
   "figura.docs.globals.require": "The require() function takes the name of one of your scripts, without the .lua extension\nIf this script has not been already run before, it will run that script and return the value that script returns\nIf it has been run before, then it will not run the file again, but it will return the same thing as the first time\nIf a required script has no returns, then require() will return true\nIf the name you give isn't any of your scripts, it will error",
   "figura.docs.globals.list_files": "A function that returns a table with all script file names from the specified path\nIf no path is specified, it will fetch from the root folder\nA second argument, boolean, can be given to also list files inside subfolders",
-  "figura.docs.globals.type": "Figura overrides lua's type() function\nWhen used on Figura types, returns the type's name as seen in the docs and in the figuraMetatables global\nWhen called on a table that has a metatable with a __type key, returns the corresponding value",
+  "figura.docs.globals.type": "Figura overrides Lua's type() function\nWhen used on Figura types, returns the type's name as seen in the docs and in the figuraMetatables global\nWhen called on a table that has a metatable with a __type key, returns the corresponding value",
   "figura.docs.globals.print": "A function that writes its arguments to chat\nEven though the syntax says only one argument, you can put as many as you want\nAll of them will print, and they'll be separated by a tab space\nReturns the string representation of all values",
   "figura.docs.globals.print_table": "The first argument is either a Table, or it's a Userdata, which refers to any of the added Figura types\nPrints the table out to chat, specially formatted\nIf userdata is passed in, it is automatically converted to a table or string, and displayed\nIn the case of tables inside of tables, the \"maxDepth\" parameter will be used to determine how far to go\nDefault value for maxDepth is 1\nThird argument, \"silent\", will skip the chat print and will only return the string",
   "figura.docs.globals.print_json": "Takes a Minecraft json string as an argument, and prints it to the chat formatted, without the lua print header\nEven though the syntax says only one argument, you can put as many as you want\nAll of them will print, and they'll be appended in the end of the previous argument\nReturns the formatted string",
@@ -613,7 +618,7 @@
   "figura.docs.action_wheel.is_enabled": "Returns if the Action Wheel is being currently rendered or not",
   "figura.docs.action_wheel.get_selected": "Returns the index of the currently selected action",
   "figura.docs.action_wheel.get_selected_action": "Returns the Action that is currently selected in the Action Wheel",
-  "figura.docs.action_wheel.new_action": "Creates a new Action that is not automatically asigned to a Page",
+  "figura.docs.action_wheel.new_action": "Creates a new Action that is not automatically assigned to a Page",
   "figura.docs.action_wheel.new_page": "Creates a new Page for the action wheel\nA Title can be given to store this page internally\nIf no Title is given, the Page will just be returned from this function",
   "figura.docs.action_wheel.set_page": "Sets the Page of the action wheel to the given Title or Page",
   "figura.docs.action_wheel.get_page": "Returns an stored Page by the given title\nIf no title is given, returns a table with all registered Pages",
@@ -669,9 +674,9 @@
 
   "figura.docs.animation": "A Blockbench animation",
   "figura.docs.animation.name": "This animation's name",
-  "figura.docs.animation.animation.is_playing": "Checks if this animation is being played",
-  "figura.docs.animation.animation.is_paused": "Checks if this animation is paused",
-  "figura.docs.animation.animation.is_stopped": "Checks if this animation is stopped",
+  "figura.docs.animation.is_playing": "Checks if this animation is being played",
+  "figura.docs.animation.is_paused": "Checks if this animation is paused",
+  "figura.docs.animation.is_stopped": "Checks if this animation is stopped",
   "figura.docs.animation.play": "Initializes the animation\nResume the animation if it was paused",
   "figura.docs.animation.pause": "Pause the animation's playback",
   "figura.docs.animation.stop": "Stop the animation",
@@ -764,8 +769,7 @@
   "figura.docs.biome.get_downfall": "Gets this biome's humidity",
   "figura.docs.biome.is_hot": "Checks if this biome is hot",
   "figura.docs.biome.is_cold": "Checks if this biome is cold",
-
-
+  
   "figura.docs.blockstate": "A proxy for a block state from Minecraft\nInstances are obtained through the WorldAPI\nThis proxy also contains a saved position for the BlockState",
   "figura.docs.blockstate.id": "The identifier of the block this BlockState comes from",
   "figura.docs.blockstate.properties": "A table containing the properties of this BlockState\nIf this BlockState has no properties, it is nil",
@@ -826,7 +830,7 @@
   "figura.docs.client.get_fov": "Returns the current FOV option of the client, not including additional effects such as speed or sprinting",
   "figura.docs.client.get_system_time": "Returns the current system time in milliseconds",
   "figura.docs.client.get_mouse_pos": "Returns the position of the mouse in pixels, relative to the top-left corner",
-  "figura.docs.client.get_scaled_window_size": "Returns the size of the window in Minecraft's interal GUI units",
+  "figura.docs.client.get_scaled_window_size": "Returns the size of the window in Minecraft's internal GUI units",
   "figura.docs.client.get_gui_scale": "Returns the current value of your Gui Scale setting\nIf you use auto, then it gets the actual current scale",
   "figura.docs.client.get_camera_pos": "Returns the position of the viewer's camera",
   "figura.docs.client.get_camera_rot": "Returns the rotation of the viewer's camera",
@@ -881,7 +885,7 @@
   "figura.docs.entity.is_in_rain": "Returns true if this entity is currently standing in rain",
   "figura.docs.entity.has_avatar": "Returns true if Figura has an avatar loaded for this entity",
   "figura.docs.entity.is_sprinting": "Returns true if this entity is currently sprinting",
-  "figura.docs.entity.get_eye_y": "Returns the Y level of this entity's eyes\nNot to be confused with getEyeHeight, this function also takes the entity itself's Y position into account",
+  "figura.docs.entity.get_eye_y": "Returns the Y level of this entity's eyes\nNot to be confused with getEyeHeight, this function also takes the entity's Y position into account",
   "figura.docs.entity.is_glowing": "Returns true if this entity is currently glowing",
   "figura.docs.entity.is_invisible": "Returns true if this entity is invisible, for one reason or another",
   "figura.docs.entity.is_silent": "Returns true if this entity is silent",
@@ -897,7 +901,7 @@
   "figura.docs.entity.has_inventory": "Checks if the entity has an inventory (Horses, Camels, LLamas, ...)",
   "figura.docs.entity.get_targeted_block": "Returns a proxy for your currently targeted BlockState\nThis BlockState appears on the F3 screen\nMaximum and Default distance is 20, Minimum is -20",
   "figura.docs.entity.get_targeted_entity": "Returns a proxy for your currently targeted Entity\nThis Entity appears on the F3 screen\nMaximum and Default distance is 20, Minimum is 0",
-  "figura.docs.entity.get_variable": "Gets the value of a variable this entity stored in themselves using the Avatar api's store() function",
+  "figura.docs.entity.get_variable": "Gets the value of a variable this entity stored in themselves using store function in the Avatar API",
 
   "figura.docs.living_entity": "Acts as a proxy for a living entity in the Minecraft world",
   "figura.docs.living_entity.get_body_yaw": "Gets the yaw of this entity's body in degrees\nIf delta is passed in, then it will be used to linearly interpolate the rotation of the body between the previous tick and the current tick\nThe default value of delta is 1",
@@ -1077,6 +1081,7 @@
   "figura.docs.matrix3": "A matrix with 3 rows and 3 columns",
   "figura.docs.matrix4": "A matrix with 4 rows and 4 columns",
 
+  "figura.docs.matrix_n": "Base matrix class",
   "figura.docs.matrix_n.copy": "Creates and returns a new copy of this matrix",
   "figura.docs.matrix_n.get_column": "Gets the given column of this matrix, as a vector\nIndexing starts at 1, as usual",
   "figura.docs.matrix_n.get_row": "Gets the given row of this matrix, as a vector\nIndexing starts at 1, as usual",
@@ -1203,7 +1208,7 @@
   "figura.docs.nameplate_entity.set_visible": "Sets whether or not the nameplate should be rendered",
   "figura.docs.nameplate_entity.has_shadow": "Gets whether or not the nameplate should have shadow",
   "figura.docs.nameplate_entity.set_shadow": "Sets whether or not the nameplate should have shadow\nIncompatible with \"outline\"",
-  "figura.docs.nameplate_entity.has_outliner": "Gets whether or not the nameplate should have outline",
+  "figura.docs.nameplate_entity.has_outline": "Gets whether or not the nameplate should have outline",
   "figura.docs.nameplate_entity.set_outline": "Sets whether or not the nameplate should have outline\nIncompatible with \"shadow\"",
 
   "figura.docs.nameplate_group": "A customization that holds another nameplate customizations",
@@ -1338,6 +1343,7 @@
   "figura.docs.renderer.set_camera_rot": "Sets the absolute rotation of the camera\nThe position is not taken into account for roll\nNil values for rotation are assumed to be 0\nFor relative rotation values, check out the \"offset\" rot function",
   "figura.docs.renderer.get_camera_offset_rot": "Gets the offset rotation for the camera",
   "figura.docs.renderer.set_offset_camera_rot": "Sets the offset rotation for the camera\nNil values for rotation are assumed to be 0\nAngles are given in degrees\nFor absolute rotation values, check out the non-offset rot function",
+  "figura.docs.renderer.get_post_effect": "Gets the current rendering effect\nSame as the discontinued Super Secret Settings",
   "figura.docs.renderer.set_post_effect": "Sets the current rendering effect\nSame as the discontinued Super Secret Settings",
   "figura.docs.renderer.get_fov": "Gets the multiplier of your fov",
   "figura.docs.renderer.set_fov": "Sets the multiplier of your fov\nThe default value is nil, which means no changes will be applied to your fov",
@@ -1483,6 +1489,7 @@
   "figura.docs.vector3": "A vector that holds 3 numbers\nCan be created using functions in the \"vectors\" api",
   "figura.docs.vector4": "A vector that holds 4 numbers\nCan be created using functions in the \"vectors\" api",
 
+  "figura.docs.vector_n": "The base vector class",
   "figura.docs.vector_n.x": "The first coordinate of this vector\nCan also be gotten with the indices \"r\" and [1]",
   "figura.docs.vector_n.y": "The second coordinate of this vector\nCan also be gotten with the indices \"g\" and [2]",
   "figura.docs.vector_n.z": "The third coordinate of this vector\nCan also be gotten with the indices \"b\" and [3]",
@@ -1521,7 +1528,7 @@
 
   "figura.docs.world": "A global API dedicated to reading information from the Minecraft world\nAccessed using the name \"world\"",
   "figura.docs.world.get_biome": "Gets the Biome located at the given position",
-  "figura.docs.world.get_blockstate": "Gets the BlockState of the block at the given position",
+  "figura.docs.world.get_block_state": "Gets the BlockState of the block at the given position",
   "figura.docs.world.get_redstone_power": "Gets the redstone power level of the block at the given position",
   "figura.docs.world.get_strong_redstone_power": "Gets the direct redstone power level of the block at the given position",
   "figura.docs.world.get_time": "Gets the current game time of the world\nIf delta is passed in, then it adds delta to the time\nThe default value of delta is zero",
@@ -1539,5 +1546,8 @@
   "figura.docs.world.avatar_vars": "Returns a table containing variables stored from all loaded Avatars \"avatar:store()\" function\nThe table will be indexed by the avatar's owner UUID",
   "figura.docs.world.new_block": "Parses and create a new BlockState from the given string\nA world position can be optionally given for the blockstate functions that relies on its position",
   "figura.docs.world.new_item": "Parses and create a new ItemStack from the given string\nA count and damage can be given, to be applied on this itemstack",
-  "figura.docs.world.exists": "Checks whether or not a world currently exists\nThis will almost always be true, but might be false on some occasions such as while travelling between dimensions"
+  "figura.docs.world.exists": "Checks whether or not a world currently exists\nThis will almost always be true, but might be false on some occasions such as while travelling between dimensions",
+
+  "figura.doc_template.header": "\n•*+•* %s Docs *•+*•",
+  "figura.doc_template.bullet": "• %s"
 }

@@ -97,7 +97,7 @@ public class FiguraLuaRuntime {
     }
 
     public void setGlobal(String name, Object obj) {
-        userGlobals.set(name, typeManager.javaToLua(obj).arg1());
+        userGlobals.set(name, typeManager.javaToLua(obj));
     }
 
     public void setUser(Entity user) {
@@ -109,7 +109,7 @@ public class FiguraLuaRuntime {
             val = entityAPI = EntityAPI.wrap(user);
         }
 
-        userGlobals.set("user", typeManager.javaToLua(val).arg1());
+        userGlobals.set("user", typeManager.javaToLua(val));
         userGlobals.set("player", userGlobals.get("user"));
     }
 
@@ -138,7 +138,7 @@ public class FiguraLuaRuntime {
             String name = arg.checkjstring(1).replaceAll("[/\\\\]", ".");
             if (loadingScripts.contains(name))
                 throw new LuaError("Detected circular dependency in script " + loadingScripts.peek());
-            if (scripts.get(name) == null && arg.isfunction(2))
+            if (scripts.get(name) == null && arg(2).isfunction())
                 return arg.checkfunction(2).invoke(LuaValue.valueOf(name));
 
             return INIT_SCRIPT.apply(name);

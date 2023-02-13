@@ -171,7 +171,7 @@ public class FiguraImmediateBuffer {
             normal.set(normals.get(), normals.get(), normals.get());
             normal.transform(customization.normalMatrix);
             uv.set(uvs.get(), uvs.get(), 1);
-            uv.divide(uvFixer);
+            uv.div(uvFixer);
             uv.transform(customization.uvMatrix);
 
             buffer.add((float) pos.x);

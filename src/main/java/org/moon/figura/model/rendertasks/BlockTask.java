@@ -7,10 +7,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.BlockStateAPI;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.LuaUtils;
@@ -54,22 +54,18 @@ public class BlockTask extends RenderTask {
 
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "block"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = BlockStateAPI.class,
-                            argumentNames = "block"
-                    )
-            },
-            aliases = "block",
-            value = "block_task.set_block"
-    )
-    public BlockTask setBlock(Object block) {
-        this.block = LuaUtils.parseBlockState("block", block);
+    public RenderTask setBlock(String block) {
+        return block(LuaUtils.parseBlockState("setBlock", block));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("block")
+    public RenderTask setBlock(@LuaNotNil BlockStateAPI block) {
+        return block(LuaUtils.parseBlockState("setBlock", block));
+    }
+
+    public RenderTask block(BlockState block) {
+        this.block = block;
         Minecraft client = Minecraft.getInstance();
         RandomSource random = client.level != null ? client.level.random : RandomSource.create();
 
@@ -79,11 +75,6 @@ public class BlockTask extends RenderTask {
             cachedComplexity += blockModel.getQuads(this.block, dir, random).size();
 
         return this;
-    }
-
-    @LuaWhitelist
-    public BlockTask block(Object block) {
-        return setBlock(block);
     }
 
     @Override

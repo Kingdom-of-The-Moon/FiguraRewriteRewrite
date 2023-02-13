@@ -1,7 +1,6 @@
 package org.moon.figura.lua.api.particle;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.commands.arguments.ParticleArgument;
@@ -9,13 +8,9 @@ import net.minecraft.core.particles.ParticleOptions;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.ducks.ParticleEngineAccessor;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
-import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -46,67 +41,44 @@ public class ParticleAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class},
-                            argumentNames = {"name", "pos"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class, FiguraVec3.class},
-                            argumentNames = {"name", "pos", "vel"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "posX", "posY", "posZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, FiguraVec3.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "pos", "velX", "velY", "velZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class, FiguraVec3.class},
-                            argumentNames = {"name", "posX", "posY", "posZ", "vel"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"name", "posX", "posY", "posZ", "velX", "velY", "velZ"}
-                    )
-            },
-            value = "particles.new_particle"
-    )
-    public LuaParticle newParticle(@LuaNotNil String id, Object x, Object y, Double z, Object w, Double t, Double h) {
-        FiguraVec3 pos, vel;
-
-        //Parse pos and vel
-        Pair<FiguraVec3, FiguraVec3> pair = LuaUtils.parse2Vec3("newParticle", x, y, z, w, t, h);
-        pos = pair.getFirst();
-        vel = pair.getSecond();
-
-        LuaParticle particle = generate(id, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z);
-        particle.spawn();
-
-        pos.free();
-        vel.free();
-
-        return particle;
+    public LuaParticle newParticle(String name, Double x, Double y, Double z) {
+       return newParticle(name, FiguraVec3.oneUse(x, y, z));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("particles.remove_particles")
+    public LuaParticle newParticle(String name, FiguraVec3 vec) {
+       return newParticle(name, vec, FiguraVec3.oneUse());
+    }
+
+    @LuaWhitelist
+    public LuaParticle newParticle(String name, Double x, Double y, Double z, Double axisX, Double axisY, Double axisZ) {
+       return newParticle(name, FiguraVec3.oneUse(x, y, z), FiguraVec3.oneUse(axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public LuaParticle newParticle(String name, FiguraVec3 vec, Double axisX, Double axisY, Double axisZ) {
+       return newParticle(name, vec, FiguraVec3.oneUse(axisX, axisY, axisZ));
+    }
+
+    @LuaWhitelist
+    public LuaParticle newParticle(String name, Double x, Double y, Double z, FiguraVec3 axis) {
+       return newParticle(name, FiguraVec3.oneUse(x, y, z), axis);
+    }
+
+    @LuaWhitelist
+    public LuaParticle newParticle(String name, FiguraVec3 pos, FiguraVec3 vel) {
+
+       return generate(name, pos.x, pos.y, pos.z, vel.x, vel.y, vel.z).spawn();
+
+    }
+
+    @LuaWhitelist
     public ParticleAPI removeParticles() {
         getParticleEngine().figura$clearParticles(owner.owner);
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "id"
-            ),
-            value = "particles.is_present"
-    )
     public boolean isPresent(String id) {
         try {
             ParticleOptions options = ParticleArgument.readParticle(new StringReader(id));

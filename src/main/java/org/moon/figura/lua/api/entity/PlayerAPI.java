@@ -11,8 +11,6 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
 import org.moon.figura.lua.ReadOnlyLuaTable;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.utils.EntityUtils;
 
@@ -42,42 +40,36 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_food")
     public int getFood() {
         checkEntity();
         return entity.getFoodData().getFoodLevel();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_saturation")
     public float getSaturation() {
         checkEntity();
         return entity.getFoodData().getSaturationLevel();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_experience_progress")
     public float getExperienceProgress() {
         checkEntity();
         return entity.experienceProgress;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_experience_level")
     public int getExperienceLevel() {
         checkEntity();
         return entity.experienceLevel;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_model_type")
     public String getModelType() {
         checkEntity();
         return checkPlayerInfo() ? playerInfo.getModelName().toUpperCase() : DefaultPlayerSkin.getSkinModelName(entity.getUUID());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_gamemode")
     public String getGamemode() {
         checkEntity();
         if (!checkPlayerInfo())
@@ -88,27 +80,18 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.has_cape")
     public boolean hasCape() {
         checkEntity();
         return checkPlayerInfo() && playerInfo.isCapeLoaded();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.has_skin")
     public boolean hasSkin() {
         checkEntity();
         return checkPlayerInfo() && playerInfo.isSkinLoaded();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "part"
-            ),
-            value = "player.is_skin_layer_visible"
-    )
     public boolean isSkinLayerVisible(@LuaNotNil String part) {
         checkEntity();
         try {
@@ -121,29 +104,18 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.is_fishing")
     public boolean isFishing() {
         checkEntity();
         return entity.fishing != null;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("player.get_charged_attack_delay")
     public float getChargedAttackDelay() {
         checkEntity();
         return entity.getCurrentItemAttackStrengthDelay();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Boolean.class,
-                            argumentNames = "right"
-                    )
-            },
-            value = "player.get_shoulder_entity")
     public LuaTable getShoulderEntity(boolean right) {
         checkEntity();
         return new ReadOnlyLuaTable(NbtToLua.convert(right ? entity.getShoulderEntityRight() : entity.getShoulderEntityLeft()));
@@ -151,7 +123,6 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
 
     private static final String[] IP_MESSAGES = {":trol:", "lol", "cope", "ratio'd", "192.168.0.1", "doxxed", "IP grabbed!"};
     @LuaWhitelist
-    @LuaMethodDoc("player.get_ip_address")
     public String getIPAddress() {
         return IP_MESSAGES[(int) (Math.random() * IP_MESSAGES.length)];
     }

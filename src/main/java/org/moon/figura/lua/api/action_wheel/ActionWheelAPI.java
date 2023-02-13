@@ -2,15 +2,11 @@ package org.moon.figura.lua.api.action_wheel;
 
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.Varargs;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.gui.ActionWheel;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.HashMap;
@@ -27,13 +23,10 @@ public class ActionWheelAPI {
     private final boolean isHost;
 
     @LuaWhitelist
-    @LuaFieldDoc("action_wheel.left_click")
     public LuaFunction leftClick;
     @LuaWhitelist
-    @LuaFieldDoc("action_wheel.right_click")
     public LuaFunction rightClick;
     @LuaWhitelist
-    @LuaFieldDoc("action_wheel.scroll")
     public LuaFunction scroll;
 
     public ActionWheelAPI(Avatar owner) {
@@ -41,20 +34,6 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Integer.class,
-                            argumentNames = "index"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Boolean.class},
-                            argumentNames = {"index", "rightClick"}
-                    )
-            },
-            value = "action_wheel.execute"
-    )
     public ActionWheelAPI execute(Integer index, boolean right) {
         if (index != null && (index < 1 || index > 8))
             throw new LuaError("index must be between 1 and 8");
@@ -63,19 +42,16 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("action_wheel.is_enabled")
     public boolean isEnabled() {
         return this.isHost && ActionWheel.isEnabled();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("action_wheel.get_selected")
     public int getSelected() {
         return this.isHost ? ActionWheel.getSelected() + 1 : 0;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("action_wheel.get_selected_action")
     public Action getSelectedAction() {
         if (!this.isHost || this.currentPage == null)
             return null;
@@ -88,22 +64,11 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("action_wheel.new_action")
     public Action newAction() {
         return new Action();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "title"
-                    )
-            },
-            value = "action_wheel.new_page"
-    )
     public Page newPage(String title) {
         Page page = new Page(title);
         if (title != null) this.pages.put(title, page);
@@ -111,61 +76,24 @@ public class ActionWheelAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "pageTitle"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = Page.class,
-                            argumentNames = "page"
-                    )
-            },
-            value = "action_wheel.set_page"
-    )
-    public ActionWheelAPI setPage(Object page) {
-        Page currentPage;
-        if (page == null) {
-            currentPage = null;
-        } else if (page instanceof Page p) {
-            currentPage = p;
-        } else if (page instanceof String s) {
-            currentPage = this.pages.get(s);
-            if (currentPage == null) {
-                throw new LuaError("Page \"" + s + "\" not found");
-            }
-        } else {
-            throw new LuaError("Invalid page type, expected \"string\" or \"page\"");
-        }
-
-        if (currentPage != null && !currentPage.keepSlots)
-            currentPage.setSlotsShift(1);
-
-        this.currentPage = currentPage;
-        return this;
+    public void setPage(Page page) {
+        currentPage = page;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            returnType = LuaTable.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "pageTitle",
-                            returnType = Page.class
-                    )
-            },
-            value = "action_wheel.get_page"
-    )
-    public Object getPage(String pageTitle) {
-        return pageTitle != null ? this.pages.get(pageTitle) : this.pages;
+    public void setPage(@LuaNotNil String pageTitle) {
+        if (pages.containsKey(pageTitle))
+            currentPage = pages.get(pageTitle);
+        else
+            throw new LuaError("Page \"" + pageTitle + "\" not found");
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("action_wheel.get_current_page")
+    public Page getPage(String pageTitle) {
+        return this.pages.get(pageTitle);
+    }
+
+    @LuaWhitelist
     public Page getCurrentPage() {
         return this.currentPage;
     }

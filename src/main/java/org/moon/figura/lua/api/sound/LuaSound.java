@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.permissions.Permissions;
@@ -60,7 +59,6 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("sound.play")
     public LuaSound play() {
         if (this.playing)
             return this;
@@ -131,7 +129,6 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("sound.is_playing")
     public boolean isPlaying() {
         if (handle != null)
             handle.execute(channel -> this.playing = channel.playing());
@@ -139,7 +136,7 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("sound.pause") //TODO - no worky
+    @LuaMethodDoc(value = {}, key = "") //TODO - no worky
     public LuaSound pause() {
         this.playing = false;
         if (handle != null)
@@ -148,7 +145,6 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("sound.stop")
     public LuaSound stop() {
         this.playing = false;
         if (handle != null)
@@ -158,51 +154,31 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("sound.get_pos")
     public FiguraVec3 getPos() {
         return pos;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "pos",
-            value = "sound.set_pos")
-    public LuaSound setPos(Object x, Double y, Double z) {
-        this.pos = LuaUtils.parseVec3("setPos", x, y, z);
+    public LuaSound setPos(Double x, Double y, Double z) {
+        return setPos(LuaUtils.freeVec3("pos", x, y, z));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("pos")
+    public LuaSound setPos(FiguraVec3 pos) {
+        this.pos = pos.copy();
         if (handle != null)
             handle.execute(channel -> channel.setSelfPosition(pos.asVec3()));
         return this;
     }
 
     @LuaWhitelist
-    public LuaSound pos(Object x, Double y, Double z) {
-        return setPos(x, y, z);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sound.get_volume")
     public float getVolume() {
         return volume;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Float.class,
-                    argumentNames = "volume"
-            ),
-            aliases = "volume",
-            value = "sound.set_volume")
+    @LuaMethodDoc("volume")
     public LuaSound setVolume(float volume) {
         this.volume = Math.min(volume, 1);
         if (handle != null)
@@ -211,24 +187,12 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    public LuaSound volume(float volume) {
-        return setVolume(volume);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sound.get_attenuation")
     public float getAttenuation() {
         return attenuation;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Float.class,
-                    argumentNames = "attenuation"
-            ),
-            aliases = "attenuation",
-            value = "sound.set_attenuation")
+    @LuaMethodDoc("attenuation")
     public LuaSound setAttenuation(float attenuation) {
         this.attenuation = Math.max(attenuation, 1);
         if (handle != null)
@@ -237,24 +201,12 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    public LuaSound attenuation(float attenuation) {
-        return setAttenuation(attenuation);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sound.get_pitch")
     public float getPitch() {
         return pitch;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Float.class,
-                    argumentNames = "pitch"
-            ),
-            aliases = "pitch",
-            value = "sound.set_pitch")
+    @LuaMethodDoc("pitch")
     public LuaSound setPitch(float pitch) {
         this.pitch = Math.max(pitch, 0);
         if (handle != null)
@@ -263,34 +215,17 @@ public class LuaSound {
     }
 
     @LuaWhitelist
-    public LuaSound pitch(float pitch) {
-        return setPitch(pitch);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sound.is_looping")
     public boolean isLooping() {
         return loop;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "loop"
-            ),
-            aliases = "loop",
-            value = "sound.set_loop")
+    @LuaMethodDoc("loop")
     public LuaSound setLoop(boolean loop) {
         this.loop = loop;
         if (handle != null)
             handle.execute(channel -> channel.setLooping(this.loop));
         return this;
-    }
-
-    @LuaWhitelist
-    public LuaSound loop(boolean loop) {
-        return setLoop(loop);
     }
 
     @Override

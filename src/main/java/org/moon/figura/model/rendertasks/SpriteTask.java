@@ -12,7 +12,6 @@ import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -21,7 +20,6 @@ import org.moon.figura.model.PartCustomization;
 import org.moon.figura.model.rendering.texture.FiguraTexture;
 import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.ColorUtils;
-import org.moon.figura.utils.LuaUtils;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -83,53 +81,46 @@ public class SpriteTask extends RenderTask {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_texture")
     public String getTexture() {
         return texture == null ? null : texture.toString();
     }
+    
+    @LuaWhitelist
+    public SpriteTask setTexture(@LuaNotNil String textureLocation, Integer width, Integer height){
+        if (width == null || height == null)
+            throw new LuaError("Texture dimensions cannot be null");
+        try {
+            ResourceLocation resource = new ResourceLocation(textureLocation);
+            //noinspection ConstantValue
+            this.texture = Minecraft.getInstance().getTextureManager().getTexture(resource, null) != null ? resource : MissingTextureAtlasSprite.getLocation();
+            return this;
+        } catch (Exception e) {
+            throw new LuaError(e.getMessage());
+        }
+    }
+    
+    @LuaWhitelist
+    public SpriteTask setTexture(FiguraTexture texture){
+        if(texture == null){
+            this.texture = null;
+            return this;
+        } else {
+            return setTexture(texture, texture.getWidth(), texture.getHeight());
+        }
+    }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {String.class, Integer.class, Integer.class},
-                            argumentNames = {"textureLocation", "width", "height"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraTexture.class,
-                            argumentNames = "texture"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {FiguraTexture.class, Integer.class, Integer.class},
-                            argumentNames = {"texture", "width", "height"}
-                    )
-            },
-            aliases = "texture",
-            value = "sprite_task.set_texture"
-    )
-    public SpriteTask setTexture(Object texture, Integer width, Integer height) {
+    @LuaMethodDoc("texture")
+    public SpriteTask setTexture(FiguraTexture texture, Integer width, Integer height) {
         if (texture == null) {
             this.texture = null;
             return this;
         }
-
-        if (texture instanceof String s) {
-            try {
-                ResourceLocation resource = new ResourceLocation(s);
-                this.texture = Minecraft.getInstance().getTextureManager().getTexture(resource, null) != null ? resource : MissingTextureAtlasSprite.getLocation();
-            } catch (Exception e) {
-                throw new LuaError(e.getMessage());
-            }
-            if (width == null || height == null)
-                throw new LuaError("Texture dimensions cannot be null");
-        } else if (texture instanceof FiguraTexture tex) {
-            this.texture = tex.getLocation();
-            if (width == null || height == null) {
-                width = tex.getWidth();
-                height = tex.getHeight();
-            }
-        } else {
-            throw new LuaError("Illegal argument to setTexture(): " + texture.getClass().getSimpleName());
+        
+        this.texture = texture.getLocation();
+        if (width == null || height == null) {
+            width = texture.getWidth();
+            height = texture.getHeight();
         }
 
         if (width <= 0 || height <= 0)
@@ -141,210 +132,118 @@ public class SpriteTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public SpriteTask texture(Object texture, Integer width, Integer height) {
-        return setTexture(texture, width, height);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_dimensions")
     public FiguraVec2 getDimensions() {
         return FiguraVec2.of(textureW, textureH);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec2.class,
-                            argumentNames = "dimensions"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class},
-                            argumentNames = {"width", "height"}
-                    )
-            },
-            aliases = "dimensions",
-            value = "sprite_task.set_dimensions"
-    )
-    public SpriteTask setDimensions(Object w, Double h) {
-        FiguraVec2 vec = LuaUtils.parseVec2("setDimensions", w, h);
-        if (vec.x <= 0 || vec.y <= 0)
-            throw new LuaError("Invalid dimensions: " + vec.x + "x" + vec.y);
-        this.textureW = (int) Math.round(vec.x);
-        this.textureH = (int) Math.round(vec.y);
+    public SpriteTask setDimensions(@LuaNotNil FiguraVec2 dimensions){
+        return setDimensions(dimensions.x, dimensions.y);
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("dimensions")
+    public SpriteTask setDimensions(double w, double h) {
+        this.textureW = (int) Math.round(w);
+        this.textureH = (int) Math.round(h);
         return this;
     }
 
     @LuaWhitelist
-    public SpriteTask dimensions(Object w, Double h) {
-        return setDimensions(w, h);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_size")
     public FiguraVec2 getSize() {
         return FiguraVec2.of(width, height);
     }
+    
+    @LuaWhitelist
+    public SpriteTask setSize(@LuaNotNil FiguraVec2 size){
+        return setSize(size.x, size.y);
+    }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec2.class,
-                            argumentNames = "size"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class},
-                            argumentNames = {"width", "height"}
-                    )
-            },
-            aliases = "size",
-            value = "sprite_task.set_size"
-    )
-    public SpriteTask setSize(Object w, Double h) {
-        FiguraVec2 vec = LuaUtils.parseVec2("setSize", w, h);
-        this.width = (int) Math.round(vec.x);
-        this.height = (int) Math.round(vec.y);
+    @LuaMethodDoc("size")
+    public SpriteTask setSize(double width, double height) {
+        this.width = (int) Math.round(width);
+        this.height = (int) Math.round(height);
         return this;
     }
 
     @LuaWhitelist
-    public SpriteTask size(Object w, Double h) {
-        return setSize(w, h);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_region")
     public FiguraVec2 getRegion() {
         return FiguraVec2.of(regionW, regionH);
     }
+    
+    @LuaWhitelist
+    public SpriteTask setRegion(@LuaNotNil FiguraVec2 region){
+        return setRegion(region.x, region.y);
+    }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec2.class,
-                            argumentNames = "region"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Integer.class, Integer.class},
-                            argumentNames = {"width", "height"}
-                    )
-            },
-            aliases = "region",
-            value = "sprite_task.set_region"
-    )
-    public SpriteTask setRegion(Object w, Double h) {
-        FiguraVec2 vec = LuaUtils.parseVec2("setRegion", w, h);
-        this.regionW = (int) Math.round(vec.x);
-        this.regionH = (int) Math.round(vec.y);
+    @LuaMethodDoc("region")
+    public SpriteTask setRegion(double width, double height) {
+        this.regionW = (int) Math.round(width);
+        this.regionH = (int) Math.round(height);
         return this;
     }
 
     @LuaWhitelist
-    public SpriteTask region(Object w, Double h) {
-        return setRegion(w, h);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_uv")
     public FiguraVec2 getUV() {
         return FiguraVec2.of(u, v);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec2.class,
-                            argumentNames = "uv"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class},
-                            argumentNames = {"u", "v"}
-                    )
-            },
-            aliases = "uv",
-            value = "sprite_task.set_uv"
-    )
-    public SpriteTask setUV(Object u, Double v) {
-        FiguraVec2 vec = LuaUtils.parseVec2("setUV", u, v);
-        this.u = (float) vec.x;
-        this.v = (float) vec.y;
+    public SpriteTask setUV(@LuaNotNil FiguraVec2 uv){
+        return setUV(uv.x, uv.y);
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("uv")
+    public SpriteTask setUV(double u, double v) {
+        this.u = (float) u;
+        this.v = (float) v;
         return this;
     }
 
     @LuaWhitelist
-    public SpriteTask uv(Object u, Double v) {
-        return setUV(u, v);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_uv_pixels")
     public FiguraVec2 getUVPixels() {
         if (this.textureW == -1 || this.textureH == -1)
             throw new LuaError("Cannot call getUVPixels before defining the texture dimensions!");
-        return getUV().multiply(this.textureW, this.textureH);
+        return getUV().mul(this.textureW, this.textureH);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec2.class,
-                            argumentNames = "uv"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class},
-                            argumentNames = {"u", "v"}
-                    )
-            },
-            aliases = "uvPixels",
-            value = "sprite_task.set_uv_pixels")
-    public SpriteTask setUVPixels(Object u, Double v) {
+    public SpriteTask setUVPixels(@LuaNotNil FiguraVec2 uvPixels){
+        return setUVPixels(uvPixels.x, uvPixels.y);
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("uvPixels")
+    public SpriteTask setUVPixels(double u, double v) {
         if (this.textureW == -1 || this.textureH == -1)
             throw new LuaError("Cannot call setUVPixels before defining the texture dimensions!");
 
-        FiguraVec2 uv = LuaUtils.parseVec2("setUVPixels", u, v);
-        uv.divide(this.textureW, this.textureH);
-        setUV(uv.x, uv.y);
-
+        setUV(u / this.textureW, v / this.textureH);
         return this;
     }
 
     @LuaWhitelist
-    public SpriteTask uvPixels(Object u, Double v) {
-        return setUVPixels(u, v);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_color")
     public FiguraVec4 getColor() {
         return FiguraVec4.of(r, g, b, a).scale(1f / 255f);
     }
+    
+    @LuaWhitelist
+    public SpriteTask setColor(@LuaNotNil FiguraVec3 rgb){
+        return setColor(FiguraVec4.oneUse(rgb.x, rgb.y, rgb.z, 1));
+    }
+    
+    @LuaWhitelist
+    public SpriteTask setColor(double r, double g, double b, Double a){
+        return setColor(FiguraVec4.oneUse(r, g, b, a == null? 1 : a));
+    }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rgb"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec4.class,
-                            argumentNames = "rgba"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b", "a"}
-                    )
-            },
-            aliases = "color",
-            value = "sprite_task.set_color"
-    )
-    public SpriteTask setColor(Object r, Double g, Double b, Double a) {
-        FiguraVec4 vec = LuaUtils.parseVec4("setColor", r, g, b, a, 0, 0, 0, 1);
-        int i = ColorUtils.rgbaToInt(vec);
+    @LuaMethodDoc("color")
+    public SpriteTask setColor(@LuaNotNil FiguraVec4 rgba) {
+        int i = ColorUtils.rgbaToInt(rgba);
         this.r = i >> 24 & 0xFF;
         this.g = i >> 16 & 0xFF;
         this.b = i >> 8 & 0xFF;
@@ -353,25 +252,12 @@ public class SpriteTask extends RenderTask {
     }
 
     @LuaWhitelist
-    public SpriteTask color(Object r, Double g, Double b, Double a) {
-        return setColor(r, g, b, a);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("sprite_task.get_render_type")
     public String getRenderType() {
         return renderType.name();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "renderType"
-            ),
-            aliases = "renderType",
-            value = "sprite_task.set_render_type"
-    )
+    @LuaMethodDoc("renderType")
     public SpriteTask setRenderType(@LuaNotNil String renderType) {
         try {
             this.renderType = RenderTypes.valueOf(renderType.toUpperCase());
@@ -379,11 +265,6 @@ public class SpriteTask extends RenderTask {
         } catch (Exception ignored) {
             throw new LuaError("Illegal RenderType: \"" + renderType + "\".");
         }
-    }
-
-    @LuaWhitelist
-    public SpriteTask renderType(@LuaNotNil String renderType) {
-        return setRenderType(renderType);
     }
 
     @Override

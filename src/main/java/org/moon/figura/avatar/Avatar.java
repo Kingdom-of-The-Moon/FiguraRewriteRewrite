@@ -284,7 +284,7 @@ public class Avatar {
             //parse args
             LuaValue[] values = new LuaValue[args.length];
             for (int i = 0; i < values.length; i++)
-                values[i] = luaRuntime.typeManager.javaToLua(args[i]).arg1();
+                values[i] = luaRuntime.typeManager.javaToLua(args[i]);
 
             Varargs val = LuaValue.varargsOf(values);
 

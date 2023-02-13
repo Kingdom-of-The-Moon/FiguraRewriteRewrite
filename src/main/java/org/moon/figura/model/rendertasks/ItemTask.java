@@ -11,7 +11,6 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.api.world.ItemStackAPI;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.PartCustomization;
 import org.moon.figura.utils.LuaUtils;
@@ -60,61 +59,39 @@ public class ItemTask extends RenderTask {
 
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "item"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = ItemStackAPI.class,
-                            argumentNames = "item"
-                    )
-            },
-            aliases = "item",
-            value = "item_task.set_item"
-    )
-    public ItemTask setItem(Object item) {
-        this.item = LuaUtils.parseItemStack("item", item);
+    public ItemTask setItem(String itemId) {
+        return item(LuaUtils.parseItemStack("item", itemId));
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("item")
+    public ItemTask setItem(@LuaNotNil ItemStackAPI item) {
+        return item(LuaUtils.parseItemStack("item", item));
+    }
+
+    public ItemTask item(ItemStack item) {
+        this.item = item;
         Minecraft client = Minecraft.getInstance();
         RandomSource random = client.level != null ? client.level.random : RandomSource.create();
         cachedComplexity = client.getItemRenderer().getModel(this.item, null, null, 0).getQuads(null, null, random).size();
         return this;
     }
-
+    
     @LuaWhitelist
-    public ItemTask item(Object item) {
-        return setItem(item);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("item_task.get_display_mode")
     public String getDisplayMode() {
         return this.displayMode.name();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                        argumentTypes = String.class,
-                        argumentNames = "displayMode"
-            ),
-            aliases = "displayMode",
-            value = "item_task.set_display_mode"
-    )
-    public ItemTask setDisplayMode(@LuaNotNil String mode) {
+    @LuaMethodDoc("displayMode")
+    public ItemTask setDisplayMode(@LuaNotNil String displayMode) {
         try {
-            this.displayMode = ItemTransforms.TransformType.valueOf(mode.toUpperCase());
+            this.displayMode = ItemTransforms.TransformType.valueOf(displayMode.toUpperCase());
             this.left = this.displayMode == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND || this.displayMode == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
             return this;
         } catch (Exception ignored) {
-            throw new LuaError("Illegal display mode: \"" + mode + "\".");
+            throw new LuaError("Illegal display mode: \"" + displayMode + "\".");
         }
-    }
-
-    @LuaWhitelist
-    public ItemTask displayMode(@LuaNotNil String mode) {
-        return setDisplayMode(mode);
     }
 
     @Override

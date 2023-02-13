@@ -1,11 +1,6 @@
 package org.moon.figura.lua.api.math;
 
-import com.mojang.datafixers.util.Pair;
-import org.luaj.vm2.LuaError;
-import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
@@ -24,247 +19,143 @@ public class VectorsAPI {
     public static final VectorsAPI INSTANCE = new VectorsAPI();
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class},
-                            argumentNames = {"x", "y"},
-                            returnType = FiguraVec2.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"},
-                            returnType = FiguraVec3.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z", "w"},
-                            returnType = FiguraVec4.class
-                    )
-            },
-            value = "vectors.vec"
-    )
-    public static Object vec(Double x, Double y, Double z, Double w) {
-        if (w != null)
-            return vec4(x, y, z, w);
-        if (z != null)
-            return vec3(x, y, z);
-        if (y != null)
-            return vec2(x, y);
-        throw new LuaError("Invalid arguments to vec(), needs at least 2 numbers!");
+    public static FiguraVec2 vec2() {
+        return FiguraVec2.of();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Double.class, Double.class},
-                    argumentNames = {"x", "y"}
-            ),
-            value = "vectors.vec2"
-    )
     public static FiguraVec2 vec2(double x, double y) {
         return FiguraVec2.of(x, y);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Double.class, Double.class, Double.class},
-                    argumentNames = {"x", "y", "z"}
-            ),
-            value = "vectors.vec3"
-    )
+    public static FiguraVec2 vec(double x, double y) {
+        return vec2(x, y);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 vec3() {
+        return FiguraVec3.of();
+    }
+
+    @LuaWhitelist
     public static FiguraVec3 vec3(double x, double y, double z) {
         return FiguraVec3.of(x, y, z);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Double.class, Double.class, Double.class, Double.class},
-                    argumentNames = {"x", "y", "z", "w"}
-            ),
-            value = "vectors.vec4"
-    )
+    public static FiguraVec3 vec(double x, double y, double z) {
+        return vec3(x, y, z);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 vec4() {
+        return FiguraVec4.of();
+    }
+
+    @LuaWhitelist
     public static FiguraVec4 vec4(double x, double y, double z, double w) {
         return FiguraVec4.of(x, y, z, w);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 vec(double x, double y, double z, double w) {
+        return vec4(x, y, z, w);
     }
 
     // -- colors -- //
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rgb"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "vectors.rgb_to_int"
-    )
-    public static int rgbToInt(Object r, Double g, Double b) {
-        FiguraVec3 rgb = LuaUtils.parseVec3("rgbToInt", r, g, b);
+    public static int rgbToInt(double r, double g, double b) {
+        return rgbToInt(LuaUtils.freeVec3("rgbToInt", r, g, b));
+    }
+
+    @LuaWhitelist
+    public static int rgbToInt(FiguraVec3 rgb) {
         return ColorUtils.rgbToInt(rgb);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Integer.class,
-                    argumentNames = "color"
-            ),
-            value = "vectors.int_to_rgb"
-    )
     public static FiguraVec3 intToRGB(int color) {
         return ColorUtils.intToRGB(color);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "hex"
-            ),
-            value = "vectors.hex_to_rgb"
-    )
-    public static FiguraVec3 hexToRGB(@LuaNotNil String hex) {
+    public static FiguraVec3 hexToRGB(String hex) {
         return ColorUtils.userInputHex(hex, FiguraVec3.of());
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "hsv"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"h", "s", "v"}
-                    )
-            },
-            value = "vectors.hsv_to_rgb"
-    )
-    public static FiguraVec3 hsvToRGB(Object h, Double s, Double v) {
-        FiguraVec3 hsv = LuaUtils.parseVec3("hsvToRGB", h, s, v);
+    public static FiguraVec3 hsvToRGB(double h, double s, double v) {
+        return hsvToRGB(LuaUtils.freeVec3("hsvToRGB", h, s, v));
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 hsvToRGB(FiguraVec3 hsv) {
         return ColorUtils.hsvToRGB(hsv);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rgb"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "vectors.rgb_to_hsv"
-    )
-    public static FiguraVec3 rgbToHSV(Object r, Double g, Double b) {
-        FiguraVec3 rgb = LuaUtils.parseVec3("rgbToHSV", r, g, b);
+    public static FiguraVec3 rgbToHSV(double r, double g, double b) {
+        return rgbToHSV(LuaUtils.freeVec3("rgbToHSV", r, g, b));
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 rgbToHSV(FiguraVec3 rgb) {
         return ColorUtils.rgbToHSV(rgb);
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rgb"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"r", "g", "b"}
-                    )
-            },
-            value = "vectors.rgb_to_hex"
-    )
-    public static String rgbToHex(Object r, Double g, Double b) {
-        FiguraVec3 rgb = LuaUtils.parseVec3("rgbToHex", r, g, b);
+    public static String rgbToHex(double r, double g, double b) {
+        return rgbToHex(LuaUtils.freeVec3("rgbToHex", r, g, b));
+    }
+
+    @LuaWhitelist
+    public static String rgbToHex(FiguraVec3 rgb) {
         return ColorUtils.rgbToHex(rgb);
     }
 
     // -- math utils -- //
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, FiguraVec3.class, FiguraVec3.class},
-                            argumentNames = {"angle", "vec", "axis"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class, FiguraVec3.class},
-                            argumentNames = {"angle", "x", "y", "z", "axis"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, FiguraVec3.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"angle", "vec", "axisX", "axisY", "axisZ"}
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class},
-                            argumentNames = {"angle", "x", "y", "z", "axisX", "axisY", "axisZ"}
-                    )
-            },
-            value = "vectors.rotate_around_axis"
-    )
-    public static FiguraVec3 rotateAroundAxis(double angle, Object x, Object y, Double z, Object w, Double t, Double h) {
-        FiguraVec3 vec, axis;
-
-        Pair<FiguraVec3, FiguraVec3> pair = LuaUtils.parse2Vec3("rotateAroundAxis", x, y, z, w, t, h);
-        vec = pair.getFirst();
-        axis = pair.getSecond();
-
-        FiguraVec3 result = MathUtils.rotateAroundAxis(vec, axis, angle);
-
-        vec.free();
-        axis.free();
-
-        return result;
+    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, double axisX, double axisY, double axisZ) {
+        return rotateAroundAxis(angle, LuaUtils.freeVec3("rotateAroundAxis", x, y, z), LuaUtils.freeVec3("rotateAroundAxis", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "vectors.to_camera_space"
-    )
-    public static FiguraVec3 toCameraSpace(Object x, Double y, Double z) {
-        return MathUtils.toCameraSpace(LuaUtils.parseVec3("toCameraSpace", x, y, z));
+    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, double axisX, double axisY, double axisZ) {
+        return rotateAroundAxis(angle, vec, LuaUtils.freeVec3("rotateAroundAxis", axisX, axisY, axisZ));
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "vec"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            value = "vectors.world_to_screen_space"
-    )
-    public static FiguraVec4 worldToScreenSpace(Object x, Double y, Double z) {
-        return MathUtils.worldToScreenSpace(LuaUtils.parseVec3("worldToScreenSpace", x, y, z));
+    public static FiguraVec3 rotateAroundAxis(double angle, double x, double y, double z, FiguraVec3 axis) {
+        return rotateAroundAxis(angle, LuaUtils.freeVec3("rotateAroundAxis", x, y, z), axis);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 rotateAroundAxis(double angle, FiguraVec3 vec, FiguraVec3 axis) {
+
+        return MathUtils.rotateAroundAxis(vec, axis, angle);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 toCameraSpace(double x, double y, double z) {
+        return toCameraSpace(LuaUtils.freeVec3("toCameraSpace", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static FiguraVec3 toCameraSpace(FiguraVec3 vec) {
+        return MathUtils.toCameraSpace(vec);
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 worldToScreenSpace(double x, double y, double z) {
+        return worldToScreenSpace(LuaUtils.freeVec3("worldToScreenSpace", x, y, z));
+    }
+
+    @LuaWhitelist
+    public static FiguraVec4 worldToScreenSpace(FiguraVec3 vec) {
+        return MathUtils.worldToScreenSpace(vec);
     }
 
     @Override

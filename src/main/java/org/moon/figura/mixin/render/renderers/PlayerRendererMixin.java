@@ -95,7 +95,7 @@ public abstract class PlayerRendererMixin extends LivingEntityRenderer<AbstractC
         float scale = 0.025f;
         FiguraVec3 scaleVec = FiguraVec3.of(-scale, -scale, -scale);
         if (custom != null && custom.getScale() != null && trust)
-            scaleVec.multiply(custom.getScale());
+            scaleVec.mul(custom.getScale());
 
         stack.scale((float) scaleVec.x, (float) scaleVec.y, (float) scaleVec.z);
 

@@ -6,6 +6,7 @@ import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.mixin.render.layers.elytra.ElytraLayerAccessor;
 
 import java.util.UUID;
@@ -94,6 +95,7 @@ public class FiguraTextureSet {
         };
     }
 
+    @LuaTypeDoc(value = "texture_types", name = "TextureTypes")
     public enum OverrideType {
         SKIN,
         CAPE,

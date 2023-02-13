@@ -1,11 +1,10 @@
 package org.moon.figura.lua.api.vanilla_model;
 
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.lua.LuaWhitelist;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.model.ParentType;
 import org.moon.figura.model.VanillaModelProvider;
-import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
-import org.moon.figura.lua.docs.LuaTypeDoc;
 
 @LuaWhitelist
 @LuaTypeDoc(
@@ -17,117 +16,86 @@ public class VanillaModelAPI {
     // -- body -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.head")
     public final VanillaModelPart HEAD;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.body")
     public final VanillaModelPart BODY;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_arm")
     public final VanillaModelPart LEFT_ARM;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_arm")
     public final VanillaModelPart RIGHT_ARM;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_leg")
     public final VanillaModelPart LEFT_LEG;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_leg")
     public final VanillaModelPart RIGHT_LEG;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.hat")
     public final VanillaModelPart HAT;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.jacket")
     public final VanillaModelPart JACKET;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_sleeve")
     public final VanillaModelPart LEFT_SLEEVE;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_sleeve")
     public final VanillaModelPart RIGHT_SLEEVE;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_pants")
     public final VanillaModelPart LEFT_PANTS;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_pants")
     public final VanillaModelPart RIGHT_PANTS;
 
     // -- cape -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.cape_model")
     public final VanillaModelPart CAPE_MODEL;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.fake_cape")
     public final VanillaModelPart FAKE_CAPE;
 
     // -- armor -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.helmet_item")
     public final VanillaModelPart HELMET_ITEM;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.helmet_head")
     public final VanillaModelPart HELMET_HEAD;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.helmet_hat")
     public final VanillaModelPart HELMET_HAT;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.chestplate_body")
     public final VanillaModelPart CHESTPLATE_BODY;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.chestplate_left_arm")
     public final VanillaModelPart CHESTPLATE_LEFT_ARM;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.chestplate_right_arm")
     public final VanillaModelPart CHESTPLATE_RIGHT_ARM;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.leggings_body")
     public final VanillaModelPart LEGGINGS_BODY;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.leggings_left_leg")
     public final VanillaModelPart LEGGINGS_LEFT_LEG;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.leggings_right_leg")
     public final VanillaModelPart LEGGINGS_RIGHT_LEG;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.boots_left_leg")
     public final VanillaModelPart BOOTS_LEFT_LEG;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.boots_right_leg")
     public final VanillaModelPart BOOTS_RIGHT_LEG;
 
     // -- elytra -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_elytra")
     public final VanillaModelPart LEFT_ELYTRA;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_elytra")
     public final VanillaModelPart RIGHT_ELYTRA;
 
     // -- held items -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_item")
     public final VanillaModelPart LEFT_ITEM;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_item")
     public final VanillaModelPart RIGHT_ITEM;
 
     // -- parrots -- //
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.left_parrot")
     public final VanillaModelPart LEFT_PARROT;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.right_parrot")
     public final VanillaModelPart RIGHT_PARROT;
 
 
@@ -135,49 +103,36 @@ public class VanillaModelAPI {
 
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.all")
     public final VanillaGroupPart ALL;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.player")
     public final VanillaGroupPart PLAYER;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.outer_layer")
     public final VanillaGroupPart OUTER_LAYER;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.inner_layer")
     public final VanillaGroupPart INNER_LAYER;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.cape")
     public final VanillaGroupPart CAPE;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.armor")
     public final VanillaGroupPart ARMOR;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.helmet")
     public final VanillaGroupPart HELMET;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.chestplate")
     public final VanillaGroupPart CHESTPLATE;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.leggings")
     public final VanillaGroupPart LEGGINGS;
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.boots")
     public final VanillaGroupPart BOOTS;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.elytra")
     public final VanillaGroupPart ELYTRA;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.held_items")
     public final VanillaGroupPart HELD_ITEMS;
 
     @LuaWhitelist
-    @LuaFieldDoc("vanilla_model.parrots")
     public final VanillaGroupPart PARROTS;
 
     public VanillaModelAPI(Avatar owner) {

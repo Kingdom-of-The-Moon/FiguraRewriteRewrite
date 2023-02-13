@@ -1,7 +1,6 @@
 package org.moon.figura.utils;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.blocks.BlockStateArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
@@ -33,38 +32,20 @@ public class LuaUtils {
         throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }
 
-    public static Pair<FiguraVec3, FiguraVec3> parse2Vec3(String methodName, Object x, Object y, Number z, Object w, Number t, Number h) {
-        FiguraVec3 a, b;
-
-        if (x instanceof FiguraVec3 vec1) {
-            a = vec1.copy();
-            if (y instanceof FiguraVec3 vec2) {
-                b = vec2.copy();
-            } else if (y == null || y instanceof Number) {
-                if (w == null || w instanceof Number) {
-                    b = parseVec3(methodName, y, z, (Number) w);
-                } else {
-                    throw new LuaError("Illegal argument to " + methodName + "(): " + w);
-                }
-            } else {
-                throw new LuaError("Illegal argument to " + methodName + "(): " + y);
-            }
-        } else if (x == null || x instanceof Number && y == null || y instanceof Number) {
-            a = parseVec3(methodName, x, (Number) y, z);
-            if (w instanceof FiguraVec3 vec1) {
-                b = vec1.copy();
-            } else if (w == null || w instanceof Number) {
-                b = parseVec3(methodName, w, t, h);
-            } else {
-                throw new LuaError("Illegal argument to " + methodName + "(): " + w);
-            }
-        } else {
-            throw new LuaError("Illegal argument to " + methodName + "(): " + x);
+    public static FiguraVec4 freeVec4(String methodName, Object x, Number y, Number z, Number w, double defaultX, double defaultY, double defaultZ, double defaultW) {
+        if (x instanceof FiguraVec3 vec)
+            return FiguraVec4.oneUse(vec.x, vec.y, vec.z, defaultW);
+        if (x instanceof FiguraVec4 vec)
+            return FiguraVec4.oneUse().set(vec);
+        if (x == null || x instanceof Number) {
+            if (x == null) x = defaultX;
+            if (y == null) y = defaultY;
+            if (z == null) z = defaultZ;
+            if (w == null) w = defaultW;
+            return FiguraVec4.oneUse(((Number) x).doubleValue(), y.doubleValue(), z.doubleValue(), w.doubleValue());
         }
-
-        return Pair.of(a, b);
+        throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }
-
     /**
      * This code gets repeated SO MUCH that I decided to put it in the utils class.
      * @param x Either the x coordinate of a vector, or a vector itself.
@@ -88,6 +69,22 @@ public class LuaUtils {
         throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }
 
+    public static FiguraVec3 freeVec3(String methodName, Object x, Number y, Number z) {
+        return freeVec3(methodName, x, y, z, 0, 0, 0);
+    }
+
+    public static FiguraVec3 freeVec3(String methodName, Object x, Number y, Number z, double defaultX, double defaultY, double defaultZ) {
+        if (x instanceof FiguraVec3 vec)
+            return FiguraVec3.oneUse().set(vec);
+        if (x == null || x instanceof Number) {
+            if (x == null) x = defaultX;
+            if (y == null) y = defaultY;
+            if (z == null) z = defaultZ;
+            return FiguraVec3.oneUse(((Number) x).doubleValue(), y.doubleValue(), z.doubleValue());
+        }
+        throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
+    }
+
     public static FiguraVec2 parseVec2(String methodName, Object x, Number y) {
         return parseVec2(methodName, x, y, 0, 0);
     }
@@ -99,6 +96,21 @@ public class LuaUtils {
             if (x == null) x = defaultX;
             if (y == null) y = defaultY;
             return FiguraVec2.of(((Number) x).doubleValue(), y.doubleValue());
+        }
+        throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
+    }
+
+    public static FiguraVec2 freeVec2(String methodName, Object x, Number y) {
+        return freeVec2(methodName, x, y, 0, 0);
+    }
+
+    public static FiguraVec2 freeVec2(String methodName, Object x, Number y, double defaultX, double defaultY) {
+        if (x instanceof FiguraVec2 vec)
+            return FiguraVec2.oneUse().set(vec);
+        if (x == null || x instanceof Number) {
+            if (x == null) x = defaultX;
+            if (y == null) y = defaultY;
+            return FiguraVec2.oneUse(((Number) x).doubleValue(), y.doubleValue());
         }
         throw new LuaError("Illegal argument to " + methodName + "(): " + x.getClass().getSimpleName());
     }

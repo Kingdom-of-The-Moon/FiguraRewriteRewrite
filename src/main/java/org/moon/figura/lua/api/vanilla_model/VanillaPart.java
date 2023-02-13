@@ -2,9 +2,9 @@ package org.moon.figura.lua.api.vanilla_model;
 
 import net.minecraft.client.model.EntityModel;
 import org.moon.figura.avatar.Avatar;
+import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.utils.LuaUtils;
@@ -39,186 +39,101 @@ public abstract class VanillaPart {
     public abstract void restore(EntityModel<?> model);
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_visible")
     public Boolean getVisible() {
         return this.visible;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "visible"
-            ),
-            aliases = "visible",
-            value = "vanilla_part.set_visible"
-    )
+    @LuaMethodDoc("visible")
     public VanillaPart setVisible(Boolean visible) {
         this.visible = visible;
         return this;
     }
 
     @LuaWhitelist
-    public VanillaPart visible(Boolean visible) {
-        return setVisible(visible);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_pos")
     public FiguraVec3 getPos() {
         return pos;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "pos",
-            value = "vanilla_part.set_pos"
-    )
-    public VanillaPart setPos(Object x, Double y, Double z) {
-        pos = x == null ? null : LuaUtils.parseVec3("setPos", x, y, z);
+    public VanillaPart setPos(@LuaNotNil double x, double y, double z){
+        return setPos(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("pos")
+    public VanillaPart setPos(FiguraVec3 pos) {
+        this.pos = pos == null ? null : pos.copy();
         return this;
     }
 
     @LuaWhitelist
-    public VanillaPart pos(Object x, Double y, Double z) {
-        setPos(x, y, z);
-        return this;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_rot")
     public FiguraVec3 getRot() {
         return rot;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rot"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "rot",
-            value = "vanilla_part.set_rot"
-    )
-    public VanillaPart setRot(Object x, Double y, Double z) {
-        rot = x == null ? null : LuaUtils.parseVec3("setRot", x, y, z);
+    public VanillaPart setRot(@LuaNotNil double x, double y, double z) {
+        return setRot(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("rot")
+    public VanillaPart setRot(FiguraVec3 rot){
+        this.rot = rot == null ? null : rot.copy();
         return this;
     }
 
     @LuaWhitelist
-    public VanillaPart rot(Object x, Double y, Double z) {
-        setRot(x, y, z);
-        return this;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_offset_rot")
     public FiguraVec3 getOffsetRot() {
         return offsetRot;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "offsetRot"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "offsetRot",
-            value = "vanilla_part.set_offset_rot"
-    )
-    public VanillaPart setOffsetRot(Object x, Double y, Double z) {
-        offsetRot = x == null ? null : LuaUtils.parseVec3("setOffsetRot", x, y, z);
+    public VanillaPart setOffsetRot(@LuaNotNil double x, double y, double z) {
+        return setOffsetRot(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("offsetRot")
+    public VanillaPart setOffsetRot(FiguraVec3 offsetRot) {
+        this.offsetRot = offsetRot == null ? null : offsetRot.copy();
         return this;
     }
 
-    @LuaWhitelist
-    public VanillaPart offsetRot(Object x, Double y, Double z) {
-        return setOffsetRot(x, y, z);
-    }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_scale")
     public FiguraVec3 getScale() {
         return scale;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "scale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "scale",
-            value = "vanilla_part.set_scale"
-    )
-    public VanillaPart setScale(Object x, Double y, Double z) {
-        scale = x == null ? null : LuaUtils.parseVec3("setScale", x, y, z, 1, 1, 1);
+    public VanillaPart setScale(Double x, Double y, Double z){
+        return setScale(LuaUtils.parseVec3("setScale", x, y, z, 1, 1, 1));
+    }
+    
+    @LuaWhitelist
+    @LuaMethodDoc("scale")
+    public VanillaPart setScale(FiguraVec3 scale) {
+        this.scale = scale == null ? null : scale.copy();
         return this;
     }
 
     @LuaWhitelist
-    public VanillaPart scale(Object x, Double y, Double z) {
-        setScale(x, y, z);
-        return this;
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("vanilla_part.get_offset_scale")
     public FiguraVec3 getOffsetScale() {
         return offsetScale;
     }
-
+    
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "offsetScale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "offsetScale",
-            value = "vanilla_part.set_offset_scale"
-    )
-    public VanillaPart setOffsetScale(Object x, Double y, Double z) {
-        offsetScale = x == null ? null : LuaUtils.parseVec3("setOffsetScale", x, y, z, 1, 1, 1);
-        return this;
+    public VanillaPart setOffsetScale(Double x, Double y, Double z){
+        return setOffsetScale(LuaUtils.parseVec3("setOffsetScale", x, y, z, 1, 1, 1));
     }
 
     @LuaWhitelist
-    public VanillaPart offsetScale(Object x, Double y, Double z) {
-        return setOffsetScale(x, y, z);
+    @LuaMethodDoc("offsetScale")
+    public VanillaPart setOffsetScale(FiguraVec3 offsetScale) {
+        this.offsetScale = offsetScale == null ? null : offsetScale.copy();
+        return this;
     }
 
     @Override

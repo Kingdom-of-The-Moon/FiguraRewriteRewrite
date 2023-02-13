@@ -404,9 +404,9 @@ public class BlockbenchModelParser {
         t3.set(point1);
         t4.set(point2);
 
-        t2.subtract(t1);
-        t3.subtract(t1);
-        t4.subtract(t1);
+        t2.sub(t1);
+        t3.sub(t1);
+        t4.sub(t1);
 
         t1.set(t2);
         t1.cross(t3);

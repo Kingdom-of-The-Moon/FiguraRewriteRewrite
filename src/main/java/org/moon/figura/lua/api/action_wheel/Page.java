@@ -3,9 +3,7 @@ package org.moon.figura.lua.api.action_wheel;
 import org.luaj.vm2.LuaError;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.Arrays;
@@ -26,7 +24,6 @@ public class Page {
     private int slotsShift = 0;
 
     @LuaWhitelist
-    @LuaFieldDoc("wheel_page.keep_slots")
     public boolean keepSlots = false;
 
     public Page(String title) {
@@ -87,40 +84,22 @@ public class Page {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_page.should_keep_slots")
     public boolean shouldKeepSlots() {
         return keepSlots;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "bool"
-            ),
-            value = "wheel_page.set_keep_slots")
     public Page setKeepSlots(boolean bool) {
         keepSlots = bool;
         return this;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("wheel_page.get_title")
     public String getTitle() {
         return title;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Integer.class,
-                            argumentNames = "index"
-                    )
-            },
-            value = "wheel_page.new_action"
-    )
     public Action newAction(Integer index) {
         //set the action
         Action action = new Action();
@@ -131,13 +110,6 @@ public class Page {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Integer.class,
-                    argumentNames = "index"
-            ),
-            value = "wheel_page.get_action"
-    )
     public Action getAction(int index) {
         if (index < 1)
             throw new LuaError("Index must be greater than 0!");
@@ -145,14 +117,7 @@ public class Page {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {Integer.class, Action.class},
-                    argumentNames = {"index", "action"}
-            ),
-            aliases = "action",
-            value = "wheel_page.set_action"
-    )
+    @LuaMethodDoc("action")
     public Page setAction(Integer index, Action action) {
         if (index == null || index == -1)
             //"why -1 is accepted" you might say
@@ -166,56 +131,30 @@ public class Page {
     }
 
     @LuaWhitelist
-    public Page action(Integer index, Action action) {
-        return setAction(index, action);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc("wheel_page.get_slots_shift")
     public int getSlotsShift() {
         return this.slotsShift + 1;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Integer.class,
-                    argumentNames = "shift"
-            ),
-            aliases = "slotsShift",
-            value = "wheel_page.set_slots_shift"
-    )
+    @LuaMethodDoc("slotsShift")
     public Page setSlotsShift(int shift) {
         slotsShift = Math.min(Math.max(shift - 1, 0), getGroupCount() - 1);
         return this;
     }
-
+    
     @LuaWhitelist
-    public Page slotsShift(int shift) {
-        return setSlotsShift(shift);
+    public HashMap<Integer, Action> getActions(){
+        HashMap<Integer, Action> map = new HashMap<>();
+        for (Map.Entry<Integer, Action> entry : actionsMap.entrySet())
+            map.put(entry.getKey() + 1, entry.getValue());
+        return map;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Integer.class,
-                            argumentNames = "shift"
-                    )
-            },
-            value = "wheel_page.get_actions")
-    public Object getActions(Integer shift) {
-        if (shift != null) {
-            if (shift < 1)
-                throw new LuaError("Shift must be greater than 0!");
-            return Arrays.asList(slots(shift - 1));
-        } else {
-            HashMap<Integer, Action> map = new HashMap<>();
-            for (Map.Entry<Integer, Action> entry : actionsMap.entrySet())
-                map.put(entry.getKey() + 1, entry.getValue());
-            return map;
-        }
+    public Object getActions(int shift) {
+        if (shift < 1)
+            throw new LuaError("Shift must be greater than 0!");
+        return Arrays.asList(slots(shift - 1));
     }
 
     @LuaWhitelist

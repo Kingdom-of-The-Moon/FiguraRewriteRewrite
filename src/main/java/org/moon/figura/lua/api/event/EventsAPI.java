@@ -4,10 +4,8 @@ import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaFunction;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaFieldDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc;
 import org.moon.figura.lua.docs.LuaMetamethodDoc.LuaMetamethodOverload;
-import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 
 import java.util.List;
@@ -24,53 +22,37 @@ public class EventsAPI {
     //Maybe in the __index comment we give a docs list of the events?
 
     @LuaWhitelist
-    @LuaFieldDoc("events.entity_init")
     public final LuaEvent ENTITY_INIT = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.tick")
     public final LuaEvent TICK = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.world_tick")
     public final LuaEvent WORLD_TICK = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.render")
     public final LuaEvent RENDER = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.post_render")
     public final LuaEvent POST_RENDER = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.world_render")
     public final LuaEvent WORLD_RENDER = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.post_world_render")
     public final LuaEvent POST_WORLD_RENDER = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.chat_send_message")
     public final LuaEvent CHAT_SEND_MESSAGE = new LuaEvent(true);
     @LuaWhitelist
-    @LuaFieldDoc("events.chat_receive_message")
     public final LuaEvent CHAT_RECEIVE_MESSAGE = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.skull_render")
     public final LuaEvent SKULL_RENDER = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.mouse_scroll")
     public final LuaEvent MOUSE_SCROLL = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.mouse_move")
     public final LuaEvent MOUSE_MOVE = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.key_press")
     public final LuaEvent KEY_PRESS = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.mouse_press")
     public final LuaEvent MOUSE_PRESS = new LuaEvent();
     @LuaWhitelist
-    @LuaFieldDoc("events.use_item")
     public final LuaEvent USE_ITEM = new LuaEvent();
 
     @LuaWhitelist
-    @LuaMethodDoc("events.get_events")
     public List<LuaEvent> getEvents() {
         return List.of(
                 ENTITY_INIT,

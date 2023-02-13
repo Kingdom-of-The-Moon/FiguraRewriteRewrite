@@ -69,8 +69,8 @@ public class ActionWheel {
         leftSlots = (int) Math.floor(slots / 2d);
         rightSlots = (int) Math.ceil(slots / 2d);
 
-        mouseX = minecraft.mouseHandler.xpos() * window.getGuiScaledWidth() / window.getScreenWidth();
-        mouseY = minecraft.mouseHandler.ypos() * window.getGuiScaledHeight() / window.getScreenHeight();
+        mouseX = minecraft.mouseHandler.xpos() / window.getGuiScale();
+        mouseY = minecraft.mouseHandler.ypos() / window.getGuiScale();
 
         //calculate selected slot
         FiguraMod.pushProfiler("selectedSlot");

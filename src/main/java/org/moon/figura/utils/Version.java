@@ -58,22 +58,13 @@ public class Version implements Comparable<Version> {
             ret = minor - o.minor;
         else if (patch != o.patch)
             ret = patch - o.patch;
-
-        else if (pre.isBlank() && !o.pre.isBlank())
-            ret = 1;
-        else if (!pre.isBlank() && o.pre.isBlank())
-            ret = -1;
-
-        else {
+        
+        else check_pre: {
             String[] split1 = pre.split("\\.");
             String[] split2 = o.pre.split("\\.");
             ret = 0;
 
-            for (int i = 0; i < split1.length; i++) {
-                if (i >= split2.length) {
-                    ret = 1;
-                    break;
-                }
+            for (int i = 0, count = Math.min(split1.length, split2.length); i < count; i++) {
 
                 String s1 = split1[i];
                 String s2 = split2[i];
@@ -87,11 +78,10 @@ public class Version implements Comparable<Version> {
                 }
 
                 if (ret != 0)
-                    break;
+                    break check_pre;
             }
 
-            if (split1.length < split2.length)
-                ret = -1;
+            ret = split2.length - split1.length;
         }
 
         return (int) Math.signum(ret);

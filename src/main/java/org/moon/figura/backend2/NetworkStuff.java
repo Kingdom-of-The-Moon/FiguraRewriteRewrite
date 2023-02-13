@@ -539,7 +539,7 @@ public class NetworkStuff {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            return o instanceof Request request && owner.equals(request.owner);
+            return o instanceof Request<?> request && owner.equals(request.owner);
         }
     }
 }

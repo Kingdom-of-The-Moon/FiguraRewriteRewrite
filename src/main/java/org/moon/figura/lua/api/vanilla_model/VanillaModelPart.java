@@ -4,7 +4,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
-import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.model.ParentType;
@@ -54,8 +53,8 @@ public class VanillaModelPart extends VanillaPart {
         originRot.scale(180 / Math.PI);
 
         FiguraVec3 pivot = parentType.offset.copy();
-        pivot.subtract(part.x, part.y, part.z);
-        pivot.multiply(1, -1, -1);
+        pivot.sub(part.x, part.y, part.z);
+        pivot.mul(1, -1, -1);
         originPos.set(pivot);
         pivot.free();
 
@@ -151,25 +150,21 @@ public class VanillaModelPart extends VanillaPart {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_model_part.get_origin_visible")
     public boolean getOriginVisible() {
         return this.originVisible;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_model_part.get_origin_rot")
     public FiguraVec3 getOriginRot() {
         return this.originRot.copy();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_model_part.get_origin_pos")
     public FiguraVec3 getOriginPos() {
         return this.originPos.copy();
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("vanilla_model_part.get_origin_scale")
     public FiguraVec3 getOriginScale() {
         return this.originScale.copy();
     }

@@ -23,6 +23,7 @@ import org.moon.figura.lang.FiguraLangManager;
 import org.moon.figura.lua.FiguraAPIManager;
 import org.moon.figura.lua.FiguraLuaPrinter;
 import org.moon.figura.lua.docs.FiguraDocsManager;
+import org.moon.figura.lua.newdocswip.NewDocsManager;
 import org.moon.figura.mixin.SkullBlockEntityAccessor;
 import org.moon.figura.permissions.PermissionManager;
 import org.moon.figura.utils.ColorUtils;
@@ -60,14 +61,16 @@ public class FiguraMod implements ClientModInitializer {
         CacheAvatarLoader.init();
         FiguraAPIManager.init();
         FiguraDocsManager.init();
+        NewDocsManager.init();
         FiguraCommands.init();
         FiguraLangManager.init();
 
-        //register reload listener
+        //register reload listeners
         ResourceManagerHelper managerHelper = ResourceManagerHelper.get(PackType.CLIENT_RESOURCES);
         managerHelper.registerReloadListener(LocalAvatarLoader.AVATAR_LISTENER);
         managerHelper.registerReloadListener(Emojis.RESOURCE_LISTENER);
         managerHelper.registerReloadListener(AvatarWizard.RESOURCE_LISTENER);
+        managerHelper.registerReloadListener(NewDocsManager.RELOAD_LISTENER);
     }
 
     public static void tick() {

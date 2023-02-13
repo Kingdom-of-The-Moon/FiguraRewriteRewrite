@@ -30,10 +30,8 @@ dependencies {
 	include(implementation("com.github.Moonlight-MC.LuaJ:luaj-jse:$luaj-figura"))
 	include(implementation("org.java-websocket:Java-WebSocket:$websocket"))
 
-	// Fabric API
-	modImplementation "net.fabricmc.fabric-api:fabric-api:$fabric_api"
-
 	// Mods
+	modImplementation "net.fabricmc.fabric-api:fabric-api:$fabric_api"
 	modImplementation "com.terraformersmc:modmenu:$modmenu"
 	modCompileOnly "maven.modrinth:iris:$iris"
 }
@@ -41,6 +39,7 @@ dependencies {
 loom {
 	accessWidenerPath = file "src/main/resources/figura.accesswidener"
 }
+
 
 processResources {
 	Map<String, Object> properties = new HashMap<>()
@@ -58,8 +57,11 @@ processResources {
 }
 
 tasks.withType(JavaCompile) {
-	it.options.encoding = "UTF-8"
-	it.options.release = Integer.valueOf(java_version)
+	configure {
+		options.encoding = "UTF-8"
+		options.release = Integer.valueOf(java_version)
+		options.compilerArgs << "-parameters"
+	}
 }
 
 java {

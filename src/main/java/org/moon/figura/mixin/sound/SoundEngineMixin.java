@@ -66,7 +66,7 @@ public abstract class SoundEngineMixin implements SoundEngineAccessor {
             return;
 
         for (LuaSound sound : figuraHandlers)
-            sound.volume(sound.getVolume());
+            sound.setVolume(sound.getVolume());
     }
 
     @Inject(at = @At("RETURN"), method = "stop(Lnet/minecraft/resources/ResourceLocation;Lnet/minecraft/sounds/SoundSource;)V")

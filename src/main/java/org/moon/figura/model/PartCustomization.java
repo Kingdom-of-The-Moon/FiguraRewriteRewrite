@@ -2,11 +2,11 @@ package org.moon.figura.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
-import org.moon.figura.model.rendering.texture.FiguraTextureSet;
-import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.model.rendering.texture.FiguraTextureSet;
+import org.moon.figura.model.rendering.texture.RenderTypes;
 import org.moon.figura.utils.caching.CacheStack;
 import org.moon.figura.utils.caching.CacheUtils;
 import org.moon.figura.utils.caching.CachedType;
@@ -411,8 +411,8 @@ public class PartCustomization implements CachedType<PartCustomization> {
                 alpha = other.alpha;
         }
 
-        color.multiply(other.color);
-        color2.multiply(other.color2);
+        color.mul(other.color);
+        color2.mul(other.color2);
 
         if (other.primaryTexture != null)
             primaryTexture = other.primaryTexture;

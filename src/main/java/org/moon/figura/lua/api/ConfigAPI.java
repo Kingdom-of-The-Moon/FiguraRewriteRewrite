@@ -8,7 +8,6 @@ import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.ReadOnlyLuaTable;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.matrix.FiguraMatrix;
 import org.moon.figura.math.vector.FiguraVector;
@@ -233,40 +232,20 @@ public class ConfigAPI {
 
 
     @LuaWhitelist
-    @LuaMethodDoc("config.get_name")
     public String getName() {
         return name;
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = String.class,
-                    argumentNames = "name"
-            ),
-            aliases = "name",
-            value = "config.set_name"
-    )
+    @LuaMethodDoc("name")
     public ConfigAPI setName(@LuaNotNil String name) {
-        if (!isHost) return this;
+        if (!isHost) return null;
         this.name = name;
         this.loaded = false;
         return this;
     }
 
     @LuaWhitelist
-    public ConfigAPI name(@LuaNotNil String name) {
-        return setName(name);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = {String.class, LuaValue.class},
-                    argumentNames = {"key", "value"}
-            ),
-            value = "config.save"
-    )
     public ConfigAPI save(@LuaNotNil String key, LuaValue val) {
         if (!isHost)
             return this;
@@ -281,25 +260,17 @@ public class ConfigAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            returnType = LuaTable.class
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = String.class,
-                            argumentNames = "key",
-                            returnType = Object.class
-                    )
-            },
-            value = "config.load"
-    )
-    public Object load(String key) {
+    public LuaTable load() {
+        return new ReadOnlyLuaTable(luaTable);
+    }
+
+    @LuaWhitelist
+    public LuaValue load(@LuaNotNil String key) {
         if (!isHost)
             return null;
 
         init();
-        return key != null ? luaTable.get(key) : new ReadOnlyLuaTable(luaTable);
+        return luaTable.get(key);
     }
 
     @Override

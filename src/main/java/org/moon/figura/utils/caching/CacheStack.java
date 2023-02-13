@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A stack which caches values as it grows, modifying them instead of allocating new ones.
  */
-public abstract class CacheStack<T extends CachedType, S> {
+public abstract class CacheStack<T extends CachedType<T>, S> {
 
     private int index = -1;
     private final T defaultVal;
@@ -33,7 +33,7 @@ public abstract class CacheStack<T extends CachedType, S> {
      * Fully clears the stack, removing any cached elements as well.
      */
     public void fullClear() {
-        for(T val : values)
+        for (T val : values)
             val.free();
         values.clear();
         index = -1;

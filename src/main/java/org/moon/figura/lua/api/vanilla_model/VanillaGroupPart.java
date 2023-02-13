@@ -4,9 +4,9 @@ import net.minecraft.client.model.EntityModel;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaMethodDoc;
-import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.utils.LuaUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,14 +55,7 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = @LuaMethodOverload(
-                    argumentTypes = Boolean.class,
-                    argumentNames = "visible"
-            ),
-            aliases = "visible",
-            value = "vanilla_group_part.set_visible"
-    )
+    @LuaMethodDoc("visible")
     public VanillaPart setVisible(Boolean visible) {
         for (VanillaPart part : cachedParts)
             part.setVisible(visible);
@@ -71,112 +64,77 @@ public class VanillaGroupPart extends VanillaPart {
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "pos"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "pos",
-            value = "vanilla_group_part.set_pos"
-    )
-    public VanillaPart setPos(Object x, Double y, Double z) {
+    public VanillaPart setPos(double x, double y, double z){
+        return setPos(FiguraVec3.oneUse(x, y, z));
+    }
+    
+    @Override
+    @LuaWhitelist
+    @LuaMethodDoc("pos")
+    public VanillaPart setPos(FiguraVec3 pos) {
         for (VanillaPart part : cachedParts)
-            part.setPos(x, y, z);
-        return super.setPos(x, y, z);
+            part.setPos(pos);
+        return super.setPos(pos);
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "rot"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "rot",
-            value = "vanilla_group_part.set_rot"
-    )
-    public VanillaPart setRot(Object x, Double y, Double z) {
-        for (VanillaPart part : cachedParts)
-            part.setRot(x, y, z);
-        return super.setRot(x, y, z);
+    public VanillaPart setRot(double x, double y, double z){
+        return setRot(FiguraVec3.oneUse(x, y, z));
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "offsetRot"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "offsetRot",
-            value = "vanilla_group_part.set_offset_rot"
-    )
-    public VanillaPart setOffsetRot(Object x, Double y, Double z) {
+    @LuaMethodDoc("rot")
+    public VanillaPart setRot(FiguraVec3 rot) {
         for (VanillaPart part : cachedParts)
-            part.setOffsetRot(x, y, z);
-        return super.setOffsetRot(x, y, z);
+            part.setRot(rot);
+        return super.setRot(rot);
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "scale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "scale",
-            value = "vanilla_group_part.set_scale"
-    )
-    public VanillaPart setScale(Object x, Double y, Double z) {
-        for (VanillaPart part : cachedParts)
-            part.setScale(x, y, z);
-        return super.setScale(x, y, z);
+    public VanillaPart setOffsetRot(double x, double y, double z){
+        return setOffsetRot(FiguraVec3.oneUse(x, y, z));
     }
 
     @Override
     @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload(
-                            argumentTypes = FiguraVec3.class,
-                            argumentNames = "offsetScale"
-                    ),
-                    @LuaMethodOverload(
-                            argumentTypes = {Double.class, Double.class, Double.class},
-                            argumentNames = {"x", "y", "z"}
-                    )
-            },
-            aliases = "offsetScale",
-            value = "vanilla_group_part.set_offset_scale"
-    )
-    public VanillaPart setOffsetScale(Object x, Double y, Double z) {
+    @LuaMethodDoc("offsetRot")
+    public VanillaPart setOffsetRot(FiguraVec3 rot) {
         for (VanillaPart part : cachedParts)
-            part.setOffsetScale(x, y, z);
-        return super.setOffsetScale(x, y, z);
+            part.setOffsetRot(rot);
+        return super.setOffsetRot(rot);
+    }
+
+    @Override
+    @LuaWhitelist
+    public VanillaPart setScale(Double x, Double y, Double z){
+        return setScale(LuaUtils.parseVec3("setScale", x, y, z, 1, 1, 1));
+    }
+    
+    @Override
+    @LuaWhitelist
+    @LuaMethodDoc("scale")
+    public VanillaPart setScale(FiguraVec3 scale) {
+        for (VanillaPart part : cachedParts)
+            part.setScale(scale);
+        return super.setScale(scale);
+    }
+
+    @Override
+    @LuaWhitelist
+    public VanillaPart setOffsetScale(Double x, Double y, Double z) {
+        return setOffsetScale(LuaUtils.parseVec3("setOffsetScale", x, y, z, 1, 1, 1));
+    }
+
+    @Override
+    @LuaWhitelist
+    @LuaMethodDoc("offsetScale")
+    public VanillaPart setOffsetScale(FiguraVec3 scale) {
+        for (VanillaPart part : cachedParts)
+            part.setOffsetScale(scale);
+        return super.setOffsetScale(scale);
     }
 
     @LuaWhitelist

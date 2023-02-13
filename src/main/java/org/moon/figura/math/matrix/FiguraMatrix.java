@@ -1,10 +1,15 @@
 package org.moon.figura.math.matrix;
 
 import org.moon.figura.lua.FiguraLuaPrinter;
+import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVector;
 import org.moon.figura.utils.caching.CacheUtils;
 import org.moon.figura.utils.caching.CachedType;
 
+@LuaTypeDoc(
+        name = "Matrix",
+        value = "matrix_n"
+)
 public abstract class FiguraMatrix<T extends FiguraMatrix<T, V>, V extends FiguraVector<V, T>> implements CachedType<T> {
 
     protected T cachedInverse = null;

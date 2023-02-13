@@ -7,6 +7,7 @@ import org.moon.figura.FiguraMod;
 import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.backend2.BackendCommands;
 import org.moon.figura.lua.docs.FiguraDocsManager;
+import org.moon.figura.lua.newdocswip.NewDocsManager;
 
 public class FiguraCommands {
 
@@ -16,6 +17,7 @@ public class FiguraCommands {
 
         //docs
         root.then(FiguraDocsManager.getCommand());
+        root.then(NewDocsManager.getCommand());
         root.then(FiguraDocsManager.getExportCommand());
 
         //links

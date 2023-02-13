@@ -15,11 +15,13 @@ public @interface LuaTypeDoc {
     /**
      * Returns a name to be used for this type.
      */
-    String name();
+    String name() default "";
 
     /**
      * Returns a translation key for the description of this type.
      */
     String value();
+
+    boolean blacklist() default false;
 
 }
