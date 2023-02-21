@@ -76,10 +76,10 @@ public class PingArg {
     }
 
     private static void writeString(LuaString string, DataOutputStream dos) throws IOException {
-        int strLen = string.m_length - string.m_offset;
+        short strLen = string.m_length > Short.MAX_VALUE ? Short.MAX_VALUE : (short)string.m_length;
         dos.writeByte(strLen / 255);
         dos.writeByte(strLen % 255);
-        dos.write(string.m_bytes, string.m_offset, string.m_length);
+        dos.write(string.m_bytes, string.m_offset, strLen);
     }
 
     private static void writeTable(LuaTable table, DataOutputStream dos) throws IOException {
