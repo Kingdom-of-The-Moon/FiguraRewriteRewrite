@@ -131,7 +131,7 @@ public class PingArg {
             case BOOL -> LuaValue.valueOf(dis.readBoolean());
             case INT -> LuaValue.valueOf(dis.readInt());
             case DOUBLE -> LuaValue.valueOf(dis.readDouble());
-            case STRING -> readString(dis, owner);
+            case STRING -> readString(dis);
             case TABLE -> readTable(dis, owner);
             case VECTOR -> owner.luaRuntime.typeManager.javaToLua(readVec(dis)).arg1();
             case MATRIX -> owner.luaRuntime.typeManager.javaToLua(readMat(dis)).arg1();
@@ -139,7 +139,7 @@ public class PingArg {
         };
     }
 
-    private static LuaValue readString(DataInputStream dis, Avatar owner) throws IOException {
+    private static LuaValue readString(DataInputStream dis) throws IOException {
         int strLen = dis.readByte() * 255 + dis.readByte();
         return LuaValue.valueOf(dis.readNBytes(strLen));
     }
