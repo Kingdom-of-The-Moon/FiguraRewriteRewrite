@@ -75,11 +75,11 @@ public class PingArg {
         }
     }
 
-    private static void writeString(LuaString string,DataOutputStream dos)throws IOException {
-        int strLen=string.m_length-string.m_offset;
-        dos.writeByte(strLen/255);
-        dos.writeByte(strLen%255);
-        dos.write(string.m_bytes,string.m_offset,string.m_length);
+    private static void writeString(LuaString string, DataOutputStream dos) throws IOException {
+        int strLen = string.m_length - string.m_offset;
+        dos.writeByte(strLen / 255);
+        dos.writeByte(strLen % 255);
+        dos.write(string.m_bytes, string.m_offset, string.m_length);
     }
 
     private static void writeTable(LuaTable table, DataOutputStream dos) throws IOException {
@@ -140,7 +140,7 @@ public class PingArg {
     }
 
     private static LuaValue readString(DataInputStream dis, Avatar owner) throws IOException {
-        int strLen=dis.readByte()*255+dis.readByte();
+        int strLen = dis.readByte() * 255 + dis.readByte();
         return LuaValue.valueOf(dis.readNBytes(strLen));
     }
 
