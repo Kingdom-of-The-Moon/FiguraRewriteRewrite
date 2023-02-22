@@ -76,7 +76,7 @@ public class PingArg {
     }
 
     private static void writeString(LuaString string, DataOutputStream dos) throws IOException {
-        int strLen = string.m_length & 0xFFFF;
+        int strLen = string.m_length > Short.MAX_VALUE*2+1 ? Short.MAX_VALUE*2+1 : string.m_length;
         dos.writeShort((short)strLen);
         dos.write(string.m_bytes, string.m_offset, strLen);
     }
