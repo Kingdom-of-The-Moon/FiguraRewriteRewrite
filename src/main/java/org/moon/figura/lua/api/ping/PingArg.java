@@ -76,9 +76,8 @@ public class PingArg {
     }
 
     private static void writeString(LuaString string, DataOutputStream dos) throws IOException {
-        short strLen = string.m_length > Short.MAX_VALUE ? Short.MAX_VALUE : (short)string.m_length;
-        dos.writeByte(strLen / 255);
-        dos.writeByte(strLen % 255);
+        int strLen = string.m_length > Short.MAX_VALUE*2+1 ? Short.MAX_VALUE*2+1 : string.m_length;
+        dos.writeShort((short)strLen);
         dos.write(string.m_bytes, string.m_offset, strLen);
     }
 
@@ -131,17 +130,12 @@ public class PingArg {
             case BOOL -> LuaValue.valueOf(dis.readBoolean());
             case INT -> LuaValue.valueOf(dis.readInt());
             case DOUBLE -> LuaValue.valueOf(dis.readDouble());
-            case STRING -> readString(dis);
+            case STRING -> LuaValue.valueOf(dis.readNBytes(dis.readUnsignedShort()));
             case TABLE -> readTable(dis, owner);
             case VECTOR -> owner.luaRuntime.typeManager.javaToLua(readVec(dis)).arg1();
             case MATRIX -> owner.luaRuntime.typeManager.javaToLua(readMat(dis)).arg1();
             default -> LuaValue.NIL;
         };
-    }
-
-    private static LuaValue readString(DataInputStream dis) throws IOException {
-        int strLen = dis.readByte() * 255 + dis.readByte();
-        return LuaValue.valueOf(dis.readNBytes(strLen));
     }
 
     private static LuaValue readTable(DataInputStream dis, Avatar owner) throws IOException {
