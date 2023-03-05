@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -59,6 +60,10 @@ public abstract class FiguraDoc {
 
         return 1;
     }
+
+    // -- Docs screen getters -- //
+    public abstract AbstractWidget getDocsWidget();
+    public abstract AbstractWidget getDocsContentsWidget();
 
     // -- Subtypes -- //
 
@@ -192,6 +197,11 @@ public abstract class FiguraDoc {
             json.add("fields", fields);
 
             return json;
+        }
+
+        @Override
+        public AbstractWidget getDocsWidget() {
+            return null;
         }
     }
 
@@ -357,6 +367,11 @@ public abstract class FiguraDoc {
 
             return json;
         }
+
+        @Override
+        public AbstractWidget getDocsWidget() {
+            return null;
+        }
     }
 
     public static class FieldDoc extends FiguraDoc {
@@ -433,6 +448,11 @@ public abstract class FiguraDoc {
             json.add("children", children);
 
             return json;
+        }
+
+        @Override
+        public AbstractWidget getDocsWidget() {
+            return null;
         }
     }
 }

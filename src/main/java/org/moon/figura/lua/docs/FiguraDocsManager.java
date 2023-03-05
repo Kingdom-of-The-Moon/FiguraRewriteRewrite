@@ -12,6 +12,7 @@ import net.minecraft.network.chat.*;
 import org.luaj.vm2.*;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.animation.Animation;
+import org.moon.figura.gui.widgets.lists.DocsList;
 import org.moon.figura.lua.api.*;
 import org.moon.figura.lua.api.action_wheel.Action;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
@@ -251,6 +252,7 @@ public class FiguraDocsManager {
         //generate globals
         Class<?> globalClass = FiguraGlobalsDocs.class;
         global = new FiguraDoc.ClassDoc(globalClass, globalClass.getAnnotation(LuaTypeDoc.class), GENERATED_CHILDREN);
+        DocsList.init(GENERATED_CHILDREN);
     }
 
     private static FiguraDoc.ClassDoc generateDocFor(Class<?> documentedClass, String pack) {

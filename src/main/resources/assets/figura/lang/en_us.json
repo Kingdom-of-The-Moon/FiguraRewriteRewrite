@@ -264,6 +264,7 @@
   "figura.gui.avatar_wizard.hide_elytra": "Hide Vanilla Elytra",
   "figura.gui.avatar_wizard.empty_events": "Include dummy events",
 
+  "figura.gui.docs.globals": "Globals",
 
   "figura.config.nameplate": "Nameplate",
   "figura.config.nameplate.tooltip": "Nameplate settings",

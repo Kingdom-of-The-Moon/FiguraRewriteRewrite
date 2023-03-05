@@ -3,11 +3,7 @@ package org.moon.figura.gui.widgets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.AbstractContainerWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.narration.NarratedElementType;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import org.moon.figura.gui.widgets.lists.DocsList;
-import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +21,7 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
     public AbstractTreeElement(int x, int y, int width) {
         super(x, y, width, LIST_ELEMENT_HEIGHT, Component.empty());
     }
-    public int getActualHeight() {
+    public int getElementHeight() {
         return LIST_ELEMENT_HEIGHT;
     }
     public int getLineStartOffset() {
@@ -33,9 +29,6 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
     }
     public int getLineColor() {
         return TREE_LINE_COLOR;
-    }
-    public int getElementHeight() {
-        return LIST_ELEMENT_HEIGHT;
     }
     public int getElementXOffset() {
         return LIST_ELEMENT_X_OFFSET;
@@ -77,17 +70,38 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!(visible && active)) return false;
-        return super.mouseClicked(mouseX, mouseY, button);
+        for (var e :
+                children) {
+            if (e.isVisible() && e.isActive() && e.mouseClicked(mouseX, mouseY, button)) return true;
+        }
+        return false;
     }
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (!(visible && active)) return false;
-        return super.mouseReleased(mouseX, mouseY, button);
+        for (var e :
+                children) {
+            if (e.isVisible() && e.isActive() && e.mouseReleased(mouseX, mouseY, button)) return true;
+        }
+        return false;
     }
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (!(visible && active)) return false;
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        for (var e :
+                children) {
+            if (e.isVisible() && e.isActive() && e.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+        }
+        return false;
+    }
+
+    public boolean isMouseOverElement(double mouseX, double mouseY) {
+        int x = getX();
+        int y = getY();
+        int width = getWidth();
+        int height = getElementHeight();
+        return mouseX >= x && mouseX < x + width &&
+                mouseY >= y && mouseY < y + height;
     }
 
     private int getDrawnCount() {
@@ -99,9 +113,14 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
     }
     @Override
     public int getHeight() {
-        int height = getActualHeight();
-        if (children.size() > 0 && isExpanded()) {
-            height += ((LIST_ELEMENT_HEIGHT+LIST_ELEMENT_Y_OFFSET) * children.size()) - LIST_ELEMENT_Y_OFFSET;
+        int height = getElementHeight();
+        if (getDrawnCount() > 0 && isExpanded()) {
+            int lastYOffset = 0;
+            for (var e :
+                    children) {
+                height += e.getHeight() + e.getElementYOffset();
+                lastYOffset = e.getElementYOffset();
+            }
         }
         return height;
     }
@@ -115,7 +134,7 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
         int x = getX();
         int y = getY();
         int width = getWidth();
-        int height = getActualHeight();
+        int height = getElementHeight();
 
         int elementXOffset = getElementXOffset();
         int elementYOffset = getElementYOffset();
@@ -134,7 +153,7 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
                     e.setWidth(width-elementXOffset);
                     e.setX(x+elementXOffset);
                     e.setY(yOffset);
-                    linePositions[i] = yOffset + (e.getActualHeight()/2);
+                    linePositions[i] = yOffset + (e.getElementHeight()/2);
                     yOffset += e.getHeight() + elementYOffset;
                     i++;
                 }
