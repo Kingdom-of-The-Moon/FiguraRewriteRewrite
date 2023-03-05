@@ -11,6 +11,7 @@ import org.moon.figura.gui.widgets.lists.AbstractList;
 import org.moon.figura.lua.docs.FiguraDoc;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.TextUtils;
+import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,12 +122,36 @@ public class ClassPage extends AbstractList implements DocsPage {
             }
             int h = yOffset - y;
             maxScroll = Math.max(0, h - height);
+            updateScissors(4,4,-4,-4);
         }
 
         @Override
         public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
             int scroll = (int)(scrollBar.getScrollProgress() * maxScroll);
+            int yOffset = y + 4 - scroll;
+            classNameLabel.y = yOffset;
+            yOffset += classNameLabel.getHeight() + 2;
+            if (fieldsLabel != null) {
+                fieldsLabel.y = yOffset;
+                yOffset += fieldsLabel.getHeight() + 2;
+                for (var f :
+                        fieldLabels) {
+                    f.y = yOffset;
+                    yOffset += f.getHeight() + 2;
+                }
+            }
+            if (functionsLabel != null) {
+                functionsLabel.y = yOffset;
+                yOffset += functionsLabel.getHeight() + 2;
+                for (var f :
+                        functionLabels) {
+                    f.y = yOffset;
+                    yOffset += f.getHeight() + 2;
+                }
+            }
+            UIHelper.setupScissor(x+scissorsX, y+scissorsY, width+scissorsWidth, height+scissorsHeight);
             super.render(stack, mouseX, mouseY, delta);
+            UIHelper.disableScissor();
         }
 
         public void goTo(String destination) {
