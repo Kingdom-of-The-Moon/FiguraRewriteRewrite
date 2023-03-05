@@ -6,10 +6,12 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.moon.figura.FiguraMod;
+import org.moon.figura.gui.widgets.docs.*;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.TextUtils;
@@ -62,8 +64,10 @@ public abstract class FiguraDoc {
     }
 
     // -- Docs screen getters -- //
-    public abstract AbstractWidget getDocsWidget();
-    public abstract AbstractWidget getDocsContentsWidget();
+    public abstract <T extends GuiEventListener & DocsPage> T getDocsWidget(int x, int y, int width, int height);
+    public AbstractContents getDocsContentsWidget(int x, int y, int width, int height) {
+        return null;
+    }
 
     // -- Subtypes -- //
 
@@ -200,8 +204,13 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public AbstractWidget getDocsWidget() {
-            return null;
+        public ClassPage getDocsWidget(int x, int y, int width, int height) {
+            return new ClassPage(x, y, width, height, this);
+        }
+
+        @Override
+        public AbstractContents getDocsContentsWidget(int x, int y, int width, int height) {
+            return new ClassPage.ClassContents(x, y, width, height, this);
         }
     }
 
@@ -369,8 +378,8 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public AbstractWidget getDocsWidget() {
-            return null;
+        public MethodPage getDocsWidget(int x, int y, int width, int height) {
+            return new MethodPage(x,y,width,height, this);
         }
     }
 
@@ -451,8 +460,8 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public AbstractWidget getDocsWidget() {
-            return null;
+        public FieldPage getDocsWidget(int x, int y, int width, int height) {
+            return new FieldPage(x,y,width,height,this);
         }
     }
 }
