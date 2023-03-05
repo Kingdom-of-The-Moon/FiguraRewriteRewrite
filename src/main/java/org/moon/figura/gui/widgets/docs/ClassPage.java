@@ -1,6 +1,7 @@
 package org.moon.figura.gui.widgets.docs;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import org.moon.figura.gui.screens.DocsScreen;
@@ -24,14 +25,20 @@ public class ClassPage extends AbstractList implements DocsPage {
 
     }
 
-    public static class ClassContents extends AbstractContents {
+    public static class ClassContents extends AbstractList {
         private final Label classNameLabel;
         private final Label fieldsLabel;
         private final Label functionsLabel;
         private final List<Label> fieldLabels = new ArrayList<>();
         private final List<Label> functionLabels = new ArrayList<>();
+        private final List<Label> contents = new ArrayList<>();
         private final ScrollBarWidget scrollBar;
         private final int maxScroll;
+
+        @Override
+        public List<? extends GuiEventListener> contents() {
+            return contents;
+        }
 
         public ClassContents(int x, int y, int width, int height, FiguraDoc.ClassDoc doc) {
             super(x, y, width, height);
@@ -46,6 +53,7 @@ public class ClassPage extends AbstractList implements DocsPage {
             classNameLabel.maxWidth = width - 22;
             classNameLabel.setScale(1.25f);
             children.add(classNameLabel);
+            contents.add(classNameLabel);
             int yOffset = classNameLabel.y + classNameLabel.getHeight() + 2;
 
             // Fields labels
@@ -61,6 +69,7 @@ public class ClassPage extends AbstractList implements DocsPage {
                 fieldsLabel.maxWidth = width - 22;
                 fieldsLabel.setScale(1.1f);
                 children.add(fieldsLabel);
+                contents.add(fieldsLabel);
                 yOffset += fieldsLabel.getHeight() + 2;
                 for (FiguraDoc.FieldDoc f :
                         doc.documentedFields) {
@@ -75,6 +84,7 @@ public class ClassPage extends AbstractList implements DocsPage {
                     fieldLabel.setScale(1);
                     yOffset += fieldLabel.getHeight() + 2;
                     children.add(fieldLabel);
+                    contents.add(fieldLabel);
                 }
             }
 
@@ -91,6 +101,7 @@ public class ClassPage extends AbstractList implements DocsPage {
                 functionsLabel.maxWidth = width - 22;
                 functionsLabel.setScale(1.1f);
                 children.add(functionsLabel);
+                contents.add(functionsLabel);
                 yOffset += functionsLabel.getHeight() + 2;
                 for (FiguraDoc.MethodDoc f :
                         doc.documentedMethods) {
@@ -100,11 +111,12 @@ public class ClassPage extends AbstractList implements DocsPage {
                                             () -> goTo("fn$"+f.name)
                                     ))
                             );
-                    Label fieldLabel = new Label(fieldLabelComponent, x+4,yOffset, TextUtils.Alignment.LEFT);
-                    fieldLabel.maxWidth = width - 22;
-                    fieldLabel.setScale(1);
-                    yOffset += fieldLabel.getHeight() + 2;
-                    children.add(fieldLabel);
+                    Label functionLabel = new Label(fieldLabelComponent, x+4,yOffset, TextUtils.Alignment.LEFT);
+                    functionLabel.maxWidth = width - 22;
+                    functionLabel.setScale(1);
+                    yOffset += functionLabel.getHeight() + 2;
+                    children.add(functionLabel);
+                    contents.add(functionLabel);
                 }
             }
             int h = yOffset - y;
@@ -115,6 +127,10 @@ public class ClassPage extends AbstractList implements DocsPage {
         public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
             int scroll = (int)(scrollBar.getScrollProgress() * maxScroll);
             super.render(stack, mouseX, mouseY, delta);
+        }
+
+        public void goTo(String destination) {
+
         }
     }
 

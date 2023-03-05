@@ -6,7 +6,9 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -64,10 +66,7 @@ public abstract class FiguraDoc {
     }
 
     // -- Docs screen getters -- //
-    public abstract <T extends GuiEventListener & DocsPage> T getDocsWidget(int x, int y, int width, int height);
-    public AbstractContents getDocsContentsWidget(int x, int y, int width, int height) {
-        return null;
-    }
+    public abstract <T extends GuiEventListener & NarratableEntry & Renderable & DocsPage> T getDocsWidget(int x, int y, int width, int height);
 
     // -- Subtypes -- //
 
@@ -206,11 +205,6 @@ public abstract class FiguraDoc {
         @Override
         public ClassPage getDocsWidget(int x, int y, int width, int height) {
             return new ClassPage(x, y, width, height, this);
-        }
-
-        @Override
-        public AbstractContents getDocsContentsWidget(int x, int y, int width, int height) {
-            return new ClassPage.ClassContents(x, y, width, height, this);
         }
     }
 
