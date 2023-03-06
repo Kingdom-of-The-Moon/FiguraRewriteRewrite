@@ -120,7 +120,9 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
         if (getDrawnCount() > 0 && isExpanded()) {
             for (var e :
                     children) {
-                height += e.getHeight() + e.getElementYOffset();
+                if (e.isVisible()) {
+                    height += e.getHeight() + e.getElementYOffset();
+                }
             }
         }
         return height;

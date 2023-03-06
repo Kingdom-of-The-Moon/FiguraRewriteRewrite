@@ -17,16 +17,20 @@ import org.moon.figura.utils.ui.UIHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class DocsList extends AbstractList{
     private static Map<String, List<FiguraDoc>> docs;
     private int currentScroll = 0;
     private int maxScroll = 0;
+    private int prevWidth, prevHeight;
     private final ScrollBarWidget.OnPress onScrollAction;
     private final List<DocsTreeElement> contents = new ArrayList<>();
+    private final TextField searchBar;
     public DocsList(int x, int y, int width, int height) {
         super(x, y, width, height);
-        children.add(new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, this::onSearchTextChanged));
+        searchBar = new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, this::onSearchTextChanged);
+        children.add(searchBar);
         scrollBar.setY(y+26);
         scrollBar.setHeight(height-28);
         onScrollAction = (s) -> currentScroll = (int)(maxScroll * s.getScrollProgress());
@@ -52,6 +56,8 @@ public class DocsList extends AbstractList{
         }
         contents.add(globalsTreeElement);
         children.add(globalsTreeElement);
+        prevWidth = width;
+        prevHeight = height;
     }
     private void onSelect(DocsTreeElement element) {
         DocsScreen.onSelect(element.getParentDoc());
@@ -66,6 +72,13 @@ public class DocsList extends AbstractList{
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
         UIHelper.renderSliced(stack, x, y, width, height, UIHelper.OUTLINE_FILL);
+        if (prevWidth != width || prevHeight != height) {
+            scrollBar.setX(x + width - 14);
+            scrollBar.setHeight(height-28);
+            searchBar.width = width - 8;
+            prevWidth = width;
+            prevHeight = height;
+        }
         super.render(stack, mouseX, mouseY, delta);
         UIHelper.setupScissor(x+scissorsX,y+scissorsY,width+scissorsWidth,height+scissorsHeight);
         currentScroll = Math.min(currentScroll, maxScroll);
@@ -88,7 +101,12 @@ public class DocsList extends AbstractList{
         UIHelper.disableScissor();
     }
     private void onSearchTextChanged(String searchString) {
-
+        for (DocsTreeElement treeElement :
+                contents) {
+            treeElement.filter(e ->
+                    e.getTitle().getString().toLowerCase().contains(searchString.toLowerCase())
+            );
+        }
     }
     private static Font getFont() {
         return Minecraft.getInstance().font;
@@ -126,7 +144,9 @@ public class DocsList extends AbstractList{
         public OnClick getCallback() {
             return callback;
         }
-
+        private boolean isSelected() {
+            return parentDoc != null && parentDoc == DocsScreen.getSelectedDoc();
+        }
         public void setCallback(OnClick callback) {
             this.callback = callback;
         }
@@ -139,9 +159,10 @@ public class DocsList extends AbstractList{
             boolean canBeExpanded = canBeExpanded();
             int textX = x + (canBeExpanded ? 12 : 4);
             int textWidth = width - (4 + (canBeExpanded ? 12 : 4));
-            UIHelper.renderSliced(matrices, x, y, width, height, UIHelper.OUTLINE_FILL);
+            UIHelper.renderSliced(matrices, x, y, width, height, isSelected() ? UIHelper.TOOLTIP : UIHelper.OUTLINE_FILL);
+            int textColor = isMouseOverElement(mouseX,mouseY) ? DocsScreen.ACCENT_COLOR.hex : 0xFFFFFF;
             if (title != null)
-                UIHelper.renderScrollingText(matrices, title, textX,y+4, textWidth, height-8, 0xFFFFFF);
+                UIHelper.renderScrollingText(matrices, title, textX,y+4, textWidth, height-8, textColor);
             if (canBeExpanded()) {
                 Component arrow = isExpanded() ? UIHelper.DOWN_ARROW : UIHelper.UP_ARROW;
                 int arrowColor = isMouseInExpander(mouseX,mouseY) ? ColorUtils.Colors.FRAN_PINK.hex : 0x404040;
@@ -168,9 +189,18 @@ public class DocsList extends AbstractList{
             }
             return super.mouseClicked(mouseX, mouseY, button);
         }
-
         public interface OnClick {
             void onClick(DocsTreeElement element);
+        }
+        public boolean filter(Function<DocsTreeElement, Boolean> predicate) {
+            boolean match = false;
+            for (DocsTreeElement e :
+                    getChildren()) {
+                match = match | e.filter(predicate);
+            }
+            match = match || predicate.apply(this);
+            setVisible(match);
+            return match;
         }
     }
 

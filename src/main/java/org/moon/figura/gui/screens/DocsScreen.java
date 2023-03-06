@@ -32,12 +32,16 @@ public class DocsScreen extends AbstractPanelScreen {
     public Component getTitle() {
         return TITLE;
     }
-    private DocsList docsList;
+    private static DocsList docsList = null;
     @Override
     protected void init() {
         super.init();
         int yOffset = panels.height;
-        docsList = new DocsList(4, yOffset,(width / 4)-8,height-yOffset-4);
+        if (docsList == null) docsList = new DocsList(4, yOffset,(width / 4)-8,height-yOffset-4);
+        else {
+            docsList.width = (width / 4) - 8;
+            docsList.height = height-yOffset-4;
+        }
         addRenderableWidget(docsList);
         currentInstance = this;
         update();
@@ -65,7 +69,9 @@ public class DocsScreen extends AbstractPanelScreen {
         selectedDoc = doc;
         currentInstance.update();
     }
-
+    public static FiguraDoc getSelectedDoc() {
+        return selectedDoc;
+    }
     private void update() {
         if (currentPage != null) {
             removeWidget(currentPage);
