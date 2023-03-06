@@ -3,11 +3,11 @@ package org.moon.figura.gui.widgets.lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import org.moon.figura.gui.screens.DocsScreen;
 import org.moon.figura.gui.widgets.AbstractTreeElement;
+import org.moon.figura.gui.widgets.ScrollBarWidget;
 import org.moon.figura.gui.widgets.TextField;
 import org.moon.figura.lua.docs.FiguraDoc;
 import org.moon.figura.utils.ColorUtils;
@@ -15,13 +15,14 @@ import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DocsList extends AbstractList{
     private static Map<String, List<FiguraDoc>> docs;
-    private int maxScrollAmount = 0;
+    private int currentScroll = 0;
+    private int maxScroll = 0;
+    private final ScrollBarWidget.OnPress onScrollAction;
     private final DocsScreen parent;
     private final List<DocsTreeElement> contents = new ArrayList<>();
     public DocsList(int x, int y, int width, int height, DocsScreen parent) {
@@ -30,8 +31,10 @@ public class DocsList extends AbstractList{
         children.add(new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, this::onSearchTextChanged));
         scrollBar.setY(y+26);
         scrollBar.setHeight(height-28);
+        onScrollAction = (s) -> currentScroll = (int)(maxScroll * s.getScrollProgress());
+        scrollBar.setAction(onScrollAction);
         scrollBar.visible = true;
-        updateScissors(4,4,-4,-4);
+        updateScissors(4,26,-4,-30);
 
         DocsTreeElement globalsTreeElement = new DocsTreeElement();
         globalsTreeElement.setTitle(FiguraText.of("gui.docs.globals"));
@@ -69,16 +72,23 @@ public class DocsList extends AbstractList{
         UIHelper.renderSliced(stack, x, y, width, height, UIHelper.OUTLINE_FILL);
         super.render(stack, mouseX, mouseY, delta);
         UIHelper.setupScissor(x+scissorsX,y+scissorsY,width+scissorsWidth,height+scissorsHeight);
-        int yOffset = y+26;
+        currentScroll = Math.min(currentScroll, maxScroll);
+        scrollBar.setAction(null);
+        scrollBar.setScrollProgress(maxScroll > 0 ? currentScroll / (float)(maxScroll) : 0);
+        scrollBar.setAction(onScrollAction);
+        int yOffset = y+26-currentScroll;
         int xOffset = x+4;
         int w = width-12-scrollBar.getWidth();
+        int treeHeight = 0;
         for (var e :
                 contents) {
             e.setPosition(xOffset,yOffset);
             e.setWidth(w);
             e.render(stack, mouseX, mouseY, delta);
             yOffset += e.getHeight() + e.getElementYOffset();
+            treeHeight += e.getHeight() + e.getElementYOffset();
         }
+        maxScroll = Math.max(0, treeHeight-(height - 28));
         UIHelper.disableScissor();
     }
     private void onSearchTextChanged(String searchString) {

@@ -69,28 +69,31 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!(visible && active)) return false;
-        for (var e :
-                children) {
-            if (e.isVisible() && e.isActive() && e.mouseClicked(mouseX, mouseY, button)) return true;
+        if (isVisible() && isActive() && isExpanded()) {
+            for (var e :
+                    children) {
+                if (e.isVisible() && e.isActive() && e.mouseClicked(mouseX, mouseY, button)) return true;
+            }
         }
         return false;
     }
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (!(visible && active)) return false;
-        for (var e :
-                children) {
-            if (e.isVisible() && e.isActive() && e.mouseReleased(mouseX, mouseY, button)) return true;
+        if (isVisible() && isActive() && isExpanded()) {
+            for (var e :
+                    children) {
+                if (e.isVisible() && e.isActive() && e.mouseReleased(mouseX, mouseY, button)) return true;
+            }
         }
         return false;
     }
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (!(visible && active)) return false;
-        for (var e :
-                children) {
-            if (e.isVisible() && e.isActive() && e.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+        if (isVisible() && isActive() && isExpanded()) {
+            for (var e :
+                    children) {
+                if (e.isVisible() && e.isActive() && e.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) return true;
+            }
         }
         return false;
     }
@@ -115,11 +118,9 @@ public abstract class AbstractTreeElement <T extends AbstractTreeElement<?>> ext
     public int getHeight() {
         int height = getElementHeight();
         if (getDrawnCount() > 0 && isExpanded()) {
-            int lastYOffset = 0;
             for (var e :
                     children) {
                 height += e.getHeight() + e.getElementYOffset();
-                lastYOffset = e.getElementYOffset();
             }
         }
         return height;

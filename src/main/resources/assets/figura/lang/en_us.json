@@ -266,6 +266,8 @@
   "figura.gui.avatar_wizard.empty_events": "Include dummy events",
 
   "figura.gui.docs.globals": "Globals",
+  "figura.gui.docs.contents.fields": "Fields",
+  "figura.gui.docs.contents.functions": "Functions",
 
   "figura.config.nameplate": "Nameplate",
   "figura.config.nameplate.tooltip": "Nameplate settings",
