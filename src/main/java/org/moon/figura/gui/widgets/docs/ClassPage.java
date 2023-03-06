@@ -317,6 +317,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
             classNameLabel.render(stack, mouseX, mouseY, delta);
             if (extendsLabel != null) {
                 extendsLabel.y = yOffset + yOffsets.get(extendsLabel);
+                extendsLabel.render(stack,mouseX,mouseY,delta);
             }
             descriptionLabel.y = yOffset + yOffsets.get(descriptionLabel);
             descriptionLabel.render(stack, mouseX, mouseY, delta);
