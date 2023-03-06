@@ -66,7 +66,7 @@ public abstract class FiguraDoc {
     }
 
     // -- Docs screen getters -- //
-    public abstract <T extends GuiEventListener & NarratableEntry & Renderable & DocsPage> T getDocsWidget(int x, int y, int width, int height);
+    public abstract <T extends DocsPage> T getDocsWidget(int x, int y, int width, int height);
 
     // -- Subtypes -- //
 

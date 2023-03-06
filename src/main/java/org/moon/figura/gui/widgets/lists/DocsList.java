@@ -42,7 +42,7 @@ public class DocsList extends AbstractList{
             for (FiguraDoc doc :
                     entry.getValue()) {
                 DocsTreeElement docElement = new DocsTreeElement();
-                docElement.setTitle(FiguraText.of(doc.name));
+                docElement.setTitle(Component.literal(doc.name));
                 docElement.setParentDoc(doc);
                 docElement.setCallback(this::onSelect);
                 globalSubElement.getChildren().add(docElement);
