@@ -23,11 +23,9 @@ public class DocsList extends AbstractList{
     private int currentScroll = 0;
     private int maxScroll = 0;
     private final ScrollBarWidget.OnPress onScrollAction;
-    private final DocsScreen parent;
     private final List<DocsTreeElement> contents = new ArrayList<>();
-    public DocsList(int x, int y, int width, int height, DocsScreen parent) {
+    public DocsList(int x, int y, int width, int height) {
         super(x, y, width, height);
-        this.parent = parent;
         children.add(new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, this::onSearchTextChanged));
         scrollBar.setY(y+26);
         scrollBar.setHeight(height-28);
@@ -56,17 +54,15 @@ public class DocsList extends AbstractList{
         children.add(globalsTreeElement);
     }
     private void onSelect(DocsTreeElement element) {
-        parent.onSelect(element.getParentDoc());
+        DocsScreen.onSelect(element.getParentDoc());
     }
     public static void init(Map<String, List<FiguraDoc>> docs) {
         DocsList.docs = docs;
     }
-
     @Override
     public List<? extends GuiEventListener> contents() {
         return contents;
     }
-
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
         UIHelper.renderSliced(stack, x, y, width, height, UIHelper.OUTLINE_FILL);
@@ -94,7 +90,6 @@ public class DocsList extends AbstractList{
     private void onSearchTextChanged(String searchString) {
 
     }
-
     private static Font getFont() {
         return Minecraft.getInstance().font;
     }
