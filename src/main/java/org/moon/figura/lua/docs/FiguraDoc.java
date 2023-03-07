@@ -5,10 +5,6 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -55,6 +51,8 @@ public abstract class FiguraDoc {
         return json;
     }
 
+    public abstract <T extends DocsPage> T toWidget(int x, int y, int width, int height);
+
     // -- Special prints :p -- //
 
     public static int printRoot() {
@@ -64,9 +62,6 @@ public abstract class FiguraDoc {
 
         return 1;
     }
-
-    // -- Docs screen getters -- //
-    public abstract <T extends DocsPage> T getDocsWidget(int x, int y, int width, int height);
 
     // -- Subtypes -- //
 
@@ -203,7 +198,7 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public ClassPage getDocsWidget(int x, int y, int width, int height) {
+        public ClassPage toWidget(int x, int y, int width, int height) {
             return new ClassPage(x, y, width, height, this);
         }
     }
@@ -372,7 +367,7 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public MethodPage getDocsWidget(int x, int y, int width, int height) {
+        public MethodPage toWidget(int x, int y, int width, int height) {
             return new MethodPage(x,y,width,height, this);
         }
     }
@@ -454,7 +449,7 @@ public abstract class FiguraDoc {
         }
 
         @Override
-        public FieldPage getDocsWidget(int x, int y, int width, int height) {
+        public FieldPage toWidget(int x, int y, int width, int height) {
             return new FieldPage(x,y,width,height,this);
         }
     }

@@ -13,7 +13,7 @@ import org.luaj.vm2.*;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.animation.Animation;
 import org.moon.figura.gui.screens.DocsScreen;
-import org.moon.figura.gui.widgets.lists.DocsList;
+import org.moon.figura.gui.widgets.docs.DocsPage;
 import org.moon.figura.lua.api.*;
 import org.moon.figura.lua.api.action_wheel.Action;
 import org.moon.figura.lua.api.action_wheel.ActionWheelAPI;
@@ -225,7 +225,7 @@ public class FiguraDocsManager {
         ));
     }};
     private static final Map<String, List<FiguraDoc>> GENERATED_CHILDREN = new HashMap<>();
-
+    private static final Map<Class<?>, FiguraDoc> CLASS_DOCS_MAP = new HashMap<>();
     private static FiguraDoc.ClassDoc global;
 
     private static final List<Class<?>> LUA_LIB_OVERRIDES = List.of(
@@ -238,8 +238,10 @@ public class FiguraDocsManager {
         for (Map.Entry<String, List<Class<?>>> packageEntry : GLOBAL_CHILDREN.entrySet()) {
             for (Class<?> documentedClass : packageEntry.getValue()) {
                 FiguraDoc.ClassDoc doc = generateDocFor(documentedClass, "globals " + packageEntry.getKey());
-                if (doc != null)
+                if (doc != null) {
                     GENERATED_CHILDREN.computeIfAbsent(packageEntry.getKey(), s -> new ArrayList<>()).add(doc);
+                    CLASS_DOCS_MAP.put(documentedClass, doc);
+                }
             }
         }
 
@@ -253,7 +255,27 @@ public class FiguraDocsManager {
         //generate globals
         Class<?> globalClass = FiguraGlobalsDocs.class;
         global = new FiguraDoc.ClassDoc(globalClass, globalClass.getAnnotation(LuaTypeDoc.class), GENERATED_CHILDREN);
-        DocsScreen.init(GENERATED_CHILDREN);
+    }
+
+    public static Iterable<String> getGlobalNames() {
+        return GLOBAL_CHILDREN.keySet();
+    }
+
+    public static Iterable<Class<?>> getGlobalClasses(String globalNames) {
+        return GLOBAL_CHILDREN.get(globalNames);
+    }
+    public static Iterable<FiguraDoc> getGlobalDocs(String globalNames) {
+        return GENERATED_CHILDREN.get(globalNames);
+    }
+
+    public static DocsPage getGlobalWidget(int x, int y, int width, int height, Class<?> clazz) {
+        FiguraDoc classDoc = getGlobalDoc(clazz);
+        if (classDoc != null) return classDoc.toWidget(x, y, width, height);
+        return null;
+    }
+
+    public static FiguraDoc getGlobalDoc(Class<?> clazz) {
+        return CLASS_DOCS_MAP.get(clazz);
     }
 
     private static FiguraDoc.ClassDoc generateDocFor(Class<?> documentedClass, String pack) {

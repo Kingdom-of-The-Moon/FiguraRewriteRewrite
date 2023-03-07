@@ -1,10 +1,7 @@
 package org.moon.figura.gui.widgets.docs;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.sun.jna.WString;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
@@ -228,7 +225,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
         }
 
         private void openClassPage(Class<?> clazz) {
-            FiguraDoc.ClassDoc cd = DocsScreen.getDocForClass(clazz);
+            FiguraDoc cd = FiguraDocsManager.getGlobalDoc(clazz);
             if (cd != null) {
                 DocsScreen.onSelect(cd);
             }
@@ -275,7 +272,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
                 for (FiguraDoc.FieldDoc fieldDoc :
                         doc.documentedFields) {
                     if (documentedFields.contains(fieldDoc.name)) continue;
-                    FieldPage page = fieldDoc.getDocsWidget(x+8, yOffset+relativeYOffset, width - 16 - w, 0);
+                    FieldPage page = fieldDoc.toWidget(x+8, yOffset+relativeYOffset, width - 16 - w, 0);
                     page.setCallback(this::openClassPage);
                     yOffsets.put(page, relativeYOffset);
                     relativeYOffset += page.getHeight() + Y_OFFSET;
@@ -297,7 +294,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
                 for (FiguraDoc.MethodDoc methodDoc :
                         doc.documentedMethods) {
                     if (documentedMethods.contains(methodDoc.name)) continue;
-                    MethodPage page = methodDoc.getDocsWidget(x+8, yOffset+relativeYOffset, width - 16 - w, 0);
+                    MethodPage page = methodDoc.toWidget(x+8, yOffset+relativeYOffset, width - 16 - w, 0);
                     page.setCallback(this::openClassPage);
                     yOffsets.put(page, relativeYOffset);
                     relativeYOffset += page.getHeight() + Y_OFFSET;

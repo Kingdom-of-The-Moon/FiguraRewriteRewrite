@@ -16,6 +16,7 @@ import org.moon.figura.gui.widgets.ScrollBarWidget;
 import org.moon.figura.gui.widgets.TextField;
 import org.moon.figura.gui.widgets.TexturedButton;
 import org.moon.figura.lua.docs.FiguraDoc;
+import org.moon.figura.lua.docs.FiguraDocsManager;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraIdentifier;
 import org.moon.figura.utils.FiguraText;
@@ -29,8 +30,6 @@ import java.util.function.Function;
 public class DocsList extends AbstractList{
 
     private static final ResourceLocation SELECTED_TEXTURE = new FiguraIdentifier("textures/gui/button.png");
-
-    private static Map<String, List<FiguraDoc>> docs;
     private int currentScroll = 0;
     private int maxScroll = 0;
     private int prevWidth, prevHeight;
@@ -51,12 +50,11 @@ public class DocsList extends AbstractList{
         int w = width-12-scrollBar.getWidth();
         DocsTreeElement globalsTreeElement = new DocsTreeElement(0,0,w);
         globalsTreeElement.setMessage(FiguraText.of("gui.docs.globals"));
-        for (Map.Entry<String, List<FiguraDoc>> entry :
-                docs.entrySet()) {
+        for (String global: FiguraDocsManager.getGlobalNames()) {
             DocsTreeElement globalSubElement = new DocsTreeElement(0,0,w);
-            globalSubElement.setMessage(Component.literal(entry.getKey()));
+            globalSubElement.setMessage(Component.literal(global));
             for (FiguraDoc doc :
-                    entry.getValue()) {
+                    FiguraDocsManager.getGlobalDocs(global)) {
                 DocsTreeElement docElement = new DocsTreeElement(0,0,w,(b) -> DocsScreen.onSelect(doc));
                 docElement.setCanBeSelected(true);
                 docElement.setMessage(Component.literal(doc.name));
@@ -69,9 +67,6 @@ public class DocsList extends AbstractList{
         children.add(globalsTreeElement);
         prevWidth = width;
         prevHeight = height;
-    }
-    public static void init(Map<String, List<FiguraDoc>> docs) {
-        DocsList.docs = docs;
     }
     @Override
     public List<? extends GuiEventListener> contents() {
