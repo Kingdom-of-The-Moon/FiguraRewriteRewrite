@@ -3,14 +3,21 @@ package org.moon.figura.gui.widgets.lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import org.moon.figura.gui.screens.DocsScreen;
 import org.moon.figura.gui.widgets.AbstractTreeElement;
 import org.moon.figura.gui.widgets.ScrollBarWidget;
 import org.moon.figura.gui.widgets.TextField;
+import org.moon.figura.gui.widgets.TexturedButton;
 import org.moon.figura.lua.docs.FiguraDoc;
 import org.moon.figura.utils.ColorUtils;
+import org.moon.figura.utils.FiguraIdentifier;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -20,6 +27,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class DocsList extends AbstractList{
+
+    private static final ResourceLocation SELECTED_TEXTURE = new FiguraIdentifier("textures/gui/button.png");
+
     private static Map<String, List<FiguraDoc>> docs;
     private int currentScroll = 0;
     private int maxScroll = 0;
@@ -29,7 +39,7 @@ public class DocsList extends AbstractList{
     private final TextField searchBar;
     public DocsList(int x, int y, int width, int height) {
         super(x, y, width, height);
-        searchBar = new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, this::onSearchTextChanged);
+        searchBar = new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, (s) -> onSearchTextChanged());
         children.add(searchBar);
         scrollBar.setY(y+26);
         scrollBar.setHeight(height-28);
@@ -38,18 +48,19 @@ public class DocsList extends AbstractList{
         scrollBar.visible = true;
         updateScissors(4,26,-4,-30);
 
-        DocsTreeElement globalsTreeElement = new DocsTreeElement();
-        globalsTreeElement.setTitle(FiguraText.of("gui.docs.globals"));
+        int w = width-12-scrollBar.getWidth();
+        DocsTreeElement globalsTreeElement = new DocsTreeElement(0,0,w);
+        globalsTreeElement.setMessage(FiguraText.of("gui.docs.globals"));
         for (Map.Entry<String, List<FiguraDoc>> entry :
                 docs.entrySet()) {
-            DocsTreeElement globalSubElement = new DocsTreeElement();
-            globalSubElement.setTitle(Component.literal(entry.getKey()));
+            DocsTreeElement globalSubElement = new DocsTreeElement(0,0,w);
+            globalSubElement.setMessage(Component.literal(entry.getKey()));
             for (FiguraDoc doc :
                     entry.getValue()) {
-                DocsTreeElement docElement = new DocsTreeElement();
-                docElement.setTitle(Component.literal(doc.name));
+                DocsTreeElement docElement = new DocsTreeElement(0,0,w,(b) -> DocsScreen.onSelect(doc));
+                docElement.setCanBeSelected(true);
+                docElement.setMessage(Component.literal(doc.name));
                 docElement.setParentDoc(doc);
-                docElement.setCallback(this::onSelect);
                 globalSubElement.getChildren().add(docElement);
             }
             globalsTreeElement.getChildren().add(globalSubElement);
@@ -58,9 +69,6 @@ public class DocsList extends AbstractList{
         children.add(globalsTreeElement);
         prevWidth = width;
         prevHeight = height;
-    }
-    private void onSelect(DocsTreeElement element) {
-        DocsScreen.onSelect(element.getParentDoc());
     }
     public static void init(Map<String, List<FiguraDoc>> docs) {
         DocsList.docs = docs;
@@ -87,12 +95,10 @@ public class DocsList extends AbstractList{
         scrollBar.setAction(onScrollAction);
         int yOffset = y+26-currentScroll;
         int xOffset = x+4;
-        int w = width-12-scrollBar.getWidth();
         int treeHeight = 0;
         for (var e :
                 contents) {
             e.setPosition(xOffset,yOffset);
-            e.setWidth(w);
             e.render(stack, mouseX, mouseY, delta);
             yOffset += e.getHeight() + e.getElementYOffset();
             treeHeight += e.getHeight() + e.getElementYOffset();
@@ -100,35 +106,40 @@ public class DocsList extends AbstractList{
         maxScroll = Math.max(0, treeHeight-(height - 28));
         UIHelper.disableScissor();
     }
-    private void onSearchTextChanged(String searchString) {
+    private boolean filterFunc(TexturedButton e) {
+        String searchString = searchBar.getField().getValue().toLowerCase();
+        if (e instanceof DocsTreeElement ) {
+            return ((DocsTreeElement) e).filter(this::filterFunc);
+        }
+        return e.getMessage().getString().toLowerCase().contains(searchString);
+    }
+    private void onSearchTextChanged() {
         for (DocsTreeElement treeElement :
                 contents) {
-            treeElement.filter(e ->
-                    e.getTitle().getString().toLowerCase().contains(searchString.toLowerCase())
-            );
+            treeElement.filter(this::filterFunc);
         }
     }
     private static Font getFont() {
         return Minecraft.getInstance().font;
     }
-    private static class DocsTreeElement extends AbstractTreeElement<DocsTreeElement> {
+    private static class DocsTreeElement extends AbstractTreeElement {
         private Component title = Component.empty();
         private FiguraDoc parentDoc;
-        private OnClick callback = null;
-
-        public DocsTreeElement() {
-            super(0,0,0);
+        private static final int HEIGHT = 17;
+        private boolean canBeSelected = false;
+        public DocsTreeElement(int x, int y, int width, Button.OnPress callback) {
+            super(x, y, width, HEIGHT, callback);
         }
         public DocsTreeElement(int x, int y, int width) {
-            super(x, y, width);
+            super(x, y, width, HEIGHT);
         }
-
-        public Component getTitle() {
+        @Override
+        public void setMessage(Component message) {
+            this.title = message;
+        }
+        @Override
+        public Component getMessage() {
             return title;
-        }
-
-        public void setTitle(Component title) {
-            this.title = title;
         }
 
         public FiguraDoc getParentDoc() {
@@ -139,19 +150,18 @@ public class DocsList extends AbstractList{
             this.parentDoc = parentDoc;
         }
         private boolean canBeSelected() {
-            return callback != null;
+            return canBeSelected;
         }
-        public OnClick getCallback() {
-            return callback;
+
+        public void setCanBeSelected(boolean canBeSelected) {
+            this.canBeSelected = canBeSelected;
         }
+
         private boolean isSelected() {
             return parentDoc != null && parentDoc == DocsScreen.getSelectedDoc();
         }
-        public void setCallback(OnClick callback) {
-            this.callback = callback;
-        }
         @Override
-        public void renderElement(PoseStack matrices, int mouseX, int mouseY, float delta) {
+        public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
             int x = getX();
             int y = getY();
             int width = getWidth();
@@ -159,7 +169,11 @@ public class DocsList extends AbstractList{
             boolean canBeExpanded = canBeExpanded();
             int textX = x + (canBeExpanded ? 12 : 4);
             int textWidth = width - (4 + (canBeExpanded ? 12 : 4));
-            UIHelper.renderSliced(matrices, x, y, width, height, isSelected() ? UIHelper.TOOLTIP : UIHelper.OUTLINE_FILL);
+
+            if (isSelected()) {
+                UIHelper.renderSliced(matrices,x,y,width,height,32,0,16,16,48,32,SELECTED_TEXTURE);
+            }
+            else UIHelper.renderSliced(matrices, x, y, width, height, UIHelper.OUTLINE_FILL);
             int textColor = isMouseOverElement(mouseX,mouseY) ? DocsScreen.ACCENT_COLOR.hex : 0xFFFFFF;
             if (title != null)
                 UIHelper.renderScrollingText(matrices, title, textX,y+4, textWidth, height-8, textColor);
@@ -181,26 +195,30 @@ public class DocsList extends AbstractList{
             if (isMouseOverElement(mouseX, mouseY)) {
                 if ((!canBeSelected() || isMouseInExpander(mouseX, mouseY)) && canBeExpanded()) {
                     setExpanded(!isExpanded());
-                    return true;
                 }
                 if (canBeSelected()) {
-                    callback.onClick(this);
+                    onPress.onPress(this);
                 }
+                playClickSound();
+                return true;
             }
             return super.mouseClicked(mouseX, mouseY, button);
         }
-        public interface OnClick {
-            void onClick(DocsTreeElement element);
-        }
-        public boolean filter(Function<DocsTreeElement, Boolean> predicate) {
+        public boolean filter(Function<TexturedButton, Boolean> predicate) {
             boolean match = false;
-            for (DocsTreeElement e :
+            for (TexturedButton e :
                     getChildren()) {
-                match = match | e.filter(predicate);
+                match = match | predicate.apply(e);
             }
             match = match || predicate.apply(this);
             setVisible(match);
             return match;
+        }
+
+        private void playClickSound() {
+            Minecraft client = Minecraft.getInstance();
+            SoundManager soundManager = client.getSoundManager();
+            soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
         }
     }
 

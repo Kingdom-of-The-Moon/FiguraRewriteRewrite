@@ -32,16 +32,12 @@ public class DocsScreen extends AbstractPanelScreen {
     public Component getTitle() {
         return TITLE;
     }
-    private static DocsList docsList = null;
+    private DocsList docsList = null;
     @Override
     protected void init() {
         super.init();
         int yOffset = panels.height;
-        if (docsList == null) docsList = new DocsList(4, yOffset,(width / 4)-8,height-yOffset-4);
-        else {
-            docsList.width = (width / 4) - 8;
-            docsList.height = height-yOffset-4;
-        }
+        docsList = new DocsList(4, yOffset,(width / 4)-8,height-yOffset-4);
         addRenderableWidget(docsList);
         currentInstance = this;
         update();

@@ -2,12 +2,16 @@ package org.moon.figura.gui.widgets.docs;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.sun.jna.WString;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.sounds.SoundEvents;
 import org.moon.figura.gui.screens.DocsScreen;
 import org.moon.figura.gui.widgets.AbstractContainerElement;
 import org.moon.figura.gui.widgets.Label;
@@ -39,7 +43,11 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
         //fill(stack, x,y,x+width,y+height, 0xBBFF72AD);
         super.render(stack, mouseX, mouseY, delta);
     }
-
+    private static void playClickSound() {
+        Minecraft client = Minecraft.getInstance();
+        SoundManager soundManager = client.getSoundManager();
+        soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    }
     private static class ClassContents extends AbstractList {
         private final Label classNameLabel;
         private final Label fieldsLabel;
