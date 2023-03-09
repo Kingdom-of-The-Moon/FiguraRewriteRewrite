@@ -38,27 +38,13 @@ public class MethodPage extends AbstractContainerElement implements DocsPage {
             overloadComponent.append("(");
             for (int j = 0; j < paramNames.length; j++) {
                 Class<?> type = paramTypes[j];
-                String className = FiguraDocsManager.getNameFor(type);
-                overloadComponent.append(Component.literal(className).withStyle(
-                        DocsScreen.ACCENT_COLOR.style.withClickEvent(
-                                new TextUtils.FiguraClickEvent(() -> {
-                                    if (callback != null) callback.onSwitch(type);
-                                })
-                        )
-                ));
+                overloadComponent.append(DocsScreen.getClassComponent(type).withStyle(DocsScreen.ACCENT_COLOR.style));
                 overloadComponent.append(" "+paramNames[j]);
                 if (j < paramNames.length - 1) overloadComponent.append(", ");
             }
             overloadComponent.append(") ");
             overloadComponent.append(FiguraText.of("docs.text.returns").append(" "));
-            String className = FiguraDocsManager.getNameFor(returnType);
-            overloadComponent.append(Component.literal(className).withStyle(
-                    DocsScreen.ACCENT_COLOR.style.withClickEvent(
-                            new TextUtils.FiguraClickEvent(() -> {
-                                if (callback != null) callback.onSwitch(returnType);
-                            })
-                    )
-            ));
+            overloadComponent.append(DocsScreen.getClassComponent(returnType).withStyle(DocsScreen.ACCENT_COLOR.style));
             Label overloadLabel = new Label(overloadComponent, x + 4, yOffset, width - 4, true);
             overloadLabels.add(overloadLabel);
             yOffset += overloadLabel.getHeight() + Y_OFFSET;

@@ -22,13 +22,7 @@ public class FieldPage extends AbstractContainerElement implements DocsPage {
         name = doc.name;
         MutableComponent component = Component.empty();
         component.append(
-                Component.literal(FiguraDocsManager.getNameFor(doc.type)).withStyle(
-                        DocsScreen.ACCENT_COLOR.style.withClickEvent(
-                                new TextUtils.FiguraClickEvent(() -> {
-                                    if (callback != null) callback.onSwitch(doc.type);
-                                })
-                        )
-                )
+                DocsScreen.getClassComponent(doc.type).withStyle(DocsScreen.ACCENT_COLOR.style)
         );
         component.append(" "+doc.name+" ");
         MutableComponent editableComponent = Component.literal("(");

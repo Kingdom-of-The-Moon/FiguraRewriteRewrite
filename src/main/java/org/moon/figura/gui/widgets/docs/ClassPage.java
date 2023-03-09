@@ -62,11 +62,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
 
         public ClassContents(int x, int y, int width, int height, FiguraDoc.ClassDoc doc) {
             super(x, y, width, height);
-            Component classLabelComponent = Component.literal(doc.name).withStyle(
-                    DocsScreen.ACCENT_COLOR.style.withClickEvent(new TextUtils.FiguraClickEvent(
-                            () -> goTo("c$")
-                    ))
-            );
+            Component classLabelComponent = Component.literal(doc.name).withStyle(DocsScreen.ACCENT_COLOR.style);
             // Class label
             classNameLabel = new Label(classLabelComponent,x+4,y+4, TextUtils.Alignment.LEFT);
             classNameLabel.maxWidth = width - 22;
@@ -206,8 +202,9 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
         }
     }
     private static class ClassPageList extends AbstractList {
-        private static final int TITLE_Y_OFFSET = 4;
-        private static final int Y_OFFSET = 2;
+        private static final int TITLE_Y_OFFSET = 16;
+        private static final int Y_OFFSET = 8;
+        private static final int HEADER_OFFSET = 2;
         private final List<GuiEventListener> contents = new ArrayList<>();
         private final int maxScroll;
         private final Label classNameLabel;
@@ -233,36 +230,34 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
         public ClassPageList(int x, int y, int width, int height, FiguraDoc.ClassDoc doc) {
             super(x, y, width, height);
             int yOffset = y+4;
-            int relativeYOffset = 0;
+
             int w = scrollBar.getWidth();
+            int scissorsYOffset = 0;
             classNameLabel = new Label(Component.literal(doc.name).withStyle(DocsScreen.ACCENT_COLOR.style),
-                            x+4,yOffset+relativeYOffset, width - 8 - w, true);
+                            x+4,yOffset, width - 8 - w, true);
             classNameLabel.setScale(3);
-            yOffsets.put(classNameLabel, relativeYOffset);
-            contents.add(classNameLabel);
-            relativeYOffset = classNameLabel.getHeight() + Y_OFFSET;
+            children.add(classNameLabel);
+            scissorsYOffset += classNameLabel.getHeight() + HEADER_OFFSET;
+            yOffset += classNameLabel.getHeight() + HEADER_OFFSET;
             if (doc.superclass != null) {
                 MutableComponent extendsComponent = FiguraText.of("docs.text.extends").append(" ").append(
-                        Component.literal(FiguraDocsManager.getNameFor(doc.superclass)).withStyle(
-                                DocsScreen.ACCENT_COLOR.style.withClickEvent(
-                                        new TextUtils.FiguraClickEvent(() -> openClassPage(doc.superclass)))
-                        )
+                        DocsScreen.getClassComponent(doc.superclass).withStyle(DocsScreen.ACCENT_COLOR.style)
                 );
-                extendsLabel = new Label(extendsComponent, x+4, yOffset+relativeYOffset, width - 8 - w, true);
-                contents.add(extendsLabel);
-                yOffsets.put(extendsLabel, relativeYOffset);
-                relativeYOffset += extendsLabel.getHeight() + Y_OFFSET;
+                extendsLabel = new Label(extendsComponent, x+4, yOffset, width - 8 - w, true);
+                children.add(extendsLabel);
+                yOffset += extendsLabel.getHeight() + HEADER_OFFSET;
+                scissorsYOffset += extendsLabel.getHeight() + HEADER_OFFSET;
             }
             else extendsLabel = null;
 
             descriptionLabel = new Label(FiguraText.of("docs."+doc.description),
-                    x+4, yOffset+relativeYOffset, width - 8 - w, true);
-            yOffsets.put(descriptionLabel, relativeYOffset);
-            relativeYOffset += descriptionLabel.getHeight();
-            contents.add(descriptionLabel);
+                    x+4, yOffset, width - 8 - w, true);
+            yOffset += descriptionLabel.getHeight() + HEADER_OFFSET;
+            scissorsYOffset += descriptionLabel.getHeight() + HEADER_OFFSET;
+            children.add(descriptionLabel);
+            int relativeYOffset = 0;
             if (doc.documentedFields.size() > 0) {
                 List<String> documentedFields = new ArrayList<>();
-                relativeYOffset += TITLE_Y_OFFSET;
                 fieldsLabel = new Label(FiguraText.of("gui.docs.fields").withStyle(DocsScreen.ACCENT_COLOR.style),
                         x+4, yOffset+relativeYOffset, width - 8- w, true);
                 fieldsLabel.setScale(2);
@@ -283,8 +278,8 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
             }
             else fieldsLabel = null;
             if (doc.documentedMethods.size() > 0) {
+                if (doc.documentedFields.size() > 0) relativeYOffset += TITLE_Y_OFFSET;
                 List<String> documentedMethods = new ArrayList<>();
-                relativeYOffset += TITLE_Y_OFFSET;
                 functionsLabel = new Label(FiguraText.of("gui.docs.functions").withStyle(DocsScreen.ACCENT_COLOR.style),
                         x+4, yOffset+relativeYOffset, width - 8 - w, true);
                 functionsLabel.setScale(2);
@@ -307,25 +302,20 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
 
             children.addAll(contents);
             scrollBar.visible = true;
-            maxScroll = Math.max(0, relativeYOffset-(height - 8));
-            updateScissors(4,4,-4,-4);
+            maxScroll = Math.max(0, relativeYOffset-(height - (8+scissorsYOffset)));
+            updateScissors(4,4 + (scissorsYOffset),-4,-(4+scissorsYOffset));
         }
 
         @Override
         public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
             UIHelper.renderSliced(stack, x,y,width,height, UIHelper.OUTLINE_FILL);
             super.render(stack, mouseX, mouseY, delta);
-            UIHelper.setupScissor(x+scissorsX, y+scissorsY, width+scissorsWidth, height+scissorsHeight);
             int scroll = (int)(scrollBar.getScrollProgress() * maxScroll);
-            int yOffset = y+4-scroll;
-            classNameLabel.y = yOffset + yOffsets.get(classNameLabel);
-            classNameLabel.render(stack, mouseX, mouseY, delta);
+            int yOffset = y+4-scroll + classNameLabel.getHeight() + descriptionLabel.getHeight() + (HEADER_OFFSET * 2);
             if (extendsLabel != null) {
-                extendsLabel.y = yOffset + yOffsets.get(extendsLabel);
-                extendsLabel.render(stack,mouseX,mouseY,delta);
+                yOffset += extendsLabel.getHeight() + HEADER_OFFSET;
             }
-            descriptionLabel.y = yOffset + yOffsets.get(descriptionLabel);
-            descriptionLabel.render(stack, mouseX, mouseY, delta);
+            UIHelper.setupScissor(x+scissorsX, y+scissorsY, width+scissorsWidth, height+scissorsHeight);
             if(fieldsLabel != null) {
                 fieldsLabel.y = yOffset + yOffsets.get(fieldsLabel);
                 fieldsLabel.render(stack, mouseX, mouseY, delta);
