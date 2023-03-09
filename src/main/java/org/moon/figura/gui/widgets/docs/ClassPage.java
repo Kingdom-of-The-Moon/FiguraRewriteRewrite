@@ -68,7 +68,7 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
             classNameLabel.maxWidth = width - 22;
             classNameLabel.wrap = true;
             classNameLabel.setScale(2f);
-            contents.add(classNameLabel);
+            children.add(classNameLabel);
             int yOffset = classNameLabel.y + classNameLabel.getHeight() + 2;
 
             // Fields labels
@@ -146,15 +146,13 @@ public class ClassPage extends AbstractContainerElement implements DocsPage {
             int h = yOffset - y;
             maxScroll = Math.max(0, h - height);
             scrollBar.visible = true;
-            updateScissors(4,4,-4,-4);
+            updateScissors(4,4+classNameLabel.getHeight() + 2,-4,-(4+classNameLabel.getHeight() + 2));
         }
 
         @Override
         public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
             int scroll = (int)(scrollBar.getScrollProgress() * maxScroll);
-            int yOffset = y + 4 - scroll;
-            classNameLabel.y = yOffset;
-            yOffset += classNameLabel.getHeight() + 2;
+            int yOffset = y + 4 - scroll + classNameLabel.getHeight() + 2;
             if (fieldsLabel != null) {
                 fieldsLabel.y = yOffset;
                 yOffset += fieldsLabel.getHeight() + 2;
