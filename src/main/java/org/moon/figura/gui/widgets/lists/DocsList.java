@@ -32,6 +32,7 @@ public class DocsList extends AbstractList{
     private static final ResourceLocation SELECTED_TEXTURE = new FiguraIdentifier("textures/gui/button.png");
     private int currentScroll = 0;
     private int maxScroll = 0;
+    private int prevMaxScroll = 0;
     private int prevWidth, prevHeight;
     private final ScrollBarWidget.OnPress onScrollAction;
     private final List<DocsTreeElement> contents = new ArrayList<>();
@@ -72,6 +73,13 @@ public class DocsList extends AbstractList{
     public List<? extends GuiEventListener> contents() {
         return contents;
     }
+    private int getMaxScroll() {
+        int h = 0;
+        for (var e : contents){
+            h += e.getHeight() + e.getElementYOffset();
+        }
+        return Math.max(0, h-(height - 28));
+    }
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
         UIHelper.renderSliced(stack, x, y, width, height, UIHelper.OUTLINE_FILL);
@@ -84,21 +92,20 @@ public class DocsList extends AbstractList{
         }
         super.render(stack, mouseX, mouseY, delta);
         UIHelper.setupScissor(x+scissorsX,y+scissorsY,width+scissorsWidth,height+scissorsHeight);
+        maxScroll = getMaxScroll();
+        if (maxScroll != prevMaxScroll) {
+            scrollBar.setScrollProgress(maxScroll > 0 ? currentScroll / (float)(maxScroll) : 0);
+            prevMaxScroll = maxScroll;
+        }
         currentScroll = Math.min(currentScroll, maxScroll);
-        scrollBar.setAction(null);
-        scrollBar.setScrollProgress(maxScroll > 0 ? currentScroll / (float)(maxScroll) : 0);
-        scrollBar.setAction(onScrollAction);
         int yOffset = y+26-currentScroll;
         int xOffset = x+4;
-        int treeHeight = 0;
         for (var e :
                 contents) {
             e.setPosition(xOffset,yOffset);
             e.render(stack, mouseX, mouseY, delta);
             yOffset += e.getHeight() + e.getElementYOffset();
-            treeHeight += e.getHeight() + e.getElementYOffset();
         }
-        maxScroll = Math.max(0, treeHeight-(height - 28));
         UIHelper.disableScissor();
     }
     private boolean filterFunc(TexturedButton e) {
