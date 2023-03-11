@@ -90,7 +90,7 @@ public class FiguraListDocs {
             add(value.name());
     }};
 
-    private enum ListDoc {
+    public enum ListDoc {
         KEYBINDS(() -> FiguraListDocs.KEYBINDS, "Keybinds", "keybinds", 2),
         PARENT_TYPES(() -> FiguraListDocs.PARENT_TYPES, "ParentTypes", "parent_types", 1),
         RENDER_TYPES(() -> FiguraListDocs.RENDER_TYPES, "RenderTypes", "render_types", 1),
@@ -117,7 +117,7 @@ public class FiguraListDocs {
             this.split = split;
         }
 
-        private Collection<?> get() {
+        public Collection<?> get() {
             Object obj = supplier.get();
             if (obj instanceof LinkedHashSet<?> set)
                 return set;
@@ -234,6 +234,9 @@ public class FiguraListDocs {
         }
     }
 
+    public static ListDoc[] getEnumValues() {
+        return ListDoc.values();
+    }
     // -- doc methods -- //
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> getCommand() {

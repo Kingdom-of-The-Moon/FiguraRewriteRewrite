@@ -15,14 +15,17 @@ import org.moon.figura.gui.widgets.AbstractTreeElement;
 import org.moon.figura.gui.widgets.ScrollBarWidget;
 import org.moon.figura.gui.widgets.TextField;
 import org.moon.figura.gui.widgets.TexturedButton;
+import org.moon.figura.gui.widgets.docs.EnumPage;
 import org.moon.figura.lua.docs.FiguraDoc;
 import org.moon.figura.lua.docs.FiguraDocsManager;
+import org.moon.figura.lua.docs.FiguraListDocs;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraIdentifier;
 import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -37,6 +40,7 @@ public class DocsList extends AbstractList{
     private final ScrollBarWidget.OnPress onScrollAction;
     private final List<DocsTreeElement> contents = new ArrayList<>();
     private final TextField searchBar;
+    private static DocsTreeElement selectedElement;
     public DocsList(int x, int y, int width, int height) {
         super(x, y, width, height);
         searchBar = new TextField(x + 4, y + 4, width - 8, 20, TextField.HintType.SEARCH, (s) -> onSearchTextChanged());
@@ -66,6 +70,19 @@ public class DocsList extends AbstractList{
         }
         contents.add(globalsTreeElement);
         children.add(globalsTreeElement);
+        DocsTreeElement enumsTreeElement = new DocsTreeElement(0,0,w);
+        enumsTreeElement.setMessage(FiguraText.of("gui.docs.enums"));
+        for (FiguraListDocs.ListDoc entry :
+                FiguraListDocs.getEnumValues()) {
+            DocsTreeElement enumElement = new DocsTreeElement(0,0,w, (b) ->
+                    DocsScreen.setCurrentPage((x1, y1, width1, height1) -> new EnumPage(x1,y1,width1,height1, entry.name(), entry.get()))
+                    );
+            enumElement.setCanBeSelected(true);
+            enumElement.setMessage(Component.literal(entry.name()));
+            enumsTreeElement.getChildren().add(enumElement);
+        }
+        contents.add(enumsTreeElement);
+        children.add(enumsTreeElement);
         prevWidth = width;
         prevHeight = height;
     }
@@ -160,7 +177,7 @@ public class DocsList extends AbstractList{
         }
 
         private boolean isSelected() {
-            return parentDoc != null && parentDoc == DocsScreen.getSelectedDoc();
+            return this == selectedElement;
         }
         @Override
         public void renderButton(PoseStack matrices, int mouseX, int mouseY, float delta) {
@@ -200,6 +217,7 @@ public class DocsList extends AbstractList{
                 }
                 if (canBeSelected()) {
                     onPress.onPress(this);
+                    selectedElement = this;
                 }
                 playClickSound();
                 return true;

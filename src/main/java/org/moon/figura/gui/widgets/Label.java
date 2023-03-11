@@ -180,6 +180,10 @@ public class Label implements FiguraWidget, GuiEventListener, NarratableEntry {
         return height;
     }
 
+    public float getScale() {
+        return scale;
+    }
+
     public void setScale(float scale) {
         this.scale = scale;
         updateText();
