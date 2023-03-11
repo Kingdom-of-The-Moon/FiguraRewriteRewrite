@@ -72,13 +72,13 @@ public class DocsList extends AbstractList{
         children.add(globalsTreeElement);
         DocsTreeElement enumsTreeElement = new DocsTreeElement(0,0,w);
         enumsTreeElement.setMessage(FiguraText.of("gui.docs.enums"));
-        for (FiguraListDocs.ListDoc entry :
+        for (FiguraListDocs.ListDoc doc :
                 FiguraListDocs.getEnumValues()) {
             DocsTreeElement enumElement = new DocsTreeElement(0,0,w, (b) ->
-                    DocsScreen.setCurrentPage((x1, y1, width1, height1) -> new EnumPage(x1,y1,width1,height1, entry.name(), entry.get()))
+                    DocsScreen.setCurrentPage((x1, y1, width1, height1) -> new EnumPage(x1,y1,width1,height1, doc))
                     );
             enumElement.setCanBeSelected(true);
-            enumElement.setMessage(Component.literal(entry.name()));
+            enumElement.setMessage(Component.literal(doc.name));
             enumsTreeElement.getChildren().add(enumElement);
         }
         contents.add(enumsTreeElement);

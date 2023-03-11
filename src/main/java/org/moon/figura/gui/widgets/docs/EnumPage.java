@@ -8,6 +8,8 @@ import org.moon.figura.gui.screens.DocsScreen;
 import org.moon.figura.gui.widgets.AbstractContainerElement;
 import org.moon.figura.gui.widgets.Label;
 import org.moon.figura.gui.widgets.lists.AbstractList;
+import org.moon.figura.lua.docs.FiguraListDocs;
+import org.moon.figura.utils.FiguraText;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
@@ -19,6 +21,7 @@ import java.util.Map;
 public class EnumPage extends AbstractList implements DocsPage {
     private final List<GuiEventListener> contents = new ArrayList<>();
     private final Label titleLabel;
+    private final Label descriptionLabel;
     private final LabelTable table;
     private final int maxScroll;
     @Override
@@ -26,18 +29,22 @@ public class EnumPage extends AbstractList implements DocsPage {
         return contents;
     }
 
-    public EnumPage(int x, int y, int width, int height, String name, Iterable<?> c) {
+    public EnumPage(int x, int y, int width, int height, FiguraListDocs.ListDoc doc) {
         super(x, y, width, height);
         int yOffset = 0;
-        titleLabel = new Label(Component.literal(name).withStyle(DocsScreen.ACCENT_COLOR.style),
+        titleLabel = new Label(Component.literal(doc.name).withStyle(DocsScreen.ACCENT_COLOR.style),
                 x+4,y+4, width-8-scrollBar.getWidth(), true);
         titleLabel.setScale(3);
+        descriptionLabel = new Label(FiguraText.of("docs.enum."+doc.id),
+                x+4,y+titleLabel.getHeight()+4, width-8-scrollBar.getWidth(), true);
         children.add(titleLabel);
-        table = new LabelTable(x+4,y+titleLabel.getHeight()+8,width-12-scrollBar.getWidth());
+        children.add(descriptionLabel);
+        table = new LabelTable(
+                x+4,y+titleLabel.getHeight()+descriptionLabel.getHeight()+8,width-12-scrollBar.getWidth());
         contents.add(table);
         int cY = 0;
         for (Object o :
-                c) {
+                doc.get()) {
             if (o instanceof Map.Entry<?,?> e) {
                 Label k = new Label(Component.literal(e.getKey().toString()).withStyle(DocsScreen.ACCENT_COLOR.style),
                         x,y+yOffset, TextUtils.Alignment.LEFT);
@@ -59,11 +66,11 @@ public class EnumPage extends AbstractList implements DocsPage {
             cY++;
         }
         scrollBar.visible = true;
-        scrollBar.setY(y+titleLabel.getHeight()+8);
-        scrollBar.setHeight(height-(titleLabel.getHeight()+12));
+        scrollBar.setY(y+titleLabel.getHeight()+descriptionLabel.getHeight()+8);
+        scrollBar.setHeight(height-(titleLabel.getHeight()+descriptionLabel.getHeight()+12));
         table.update();
-        maxScroll = Math.max(0, table.getHeight() - (height - 12 - titleLabel.getHeight()));
-        updateScissors(4,8+titleLabel.getHeight(),-8,-(12+titleLabel.getHeight()));
+        maxScroll = Math.max(0, table.getHeight() - (height - 12 - titleLabel.getHeight() - descriptionLabel.getHeight()));
+        updateScissors(4,8+titleLabel.getHeight()+descriptionLabel.getHeight(),-8,-(12+titleLabel.getHeight()+ descriptionLabel.getHeight()));
     }
 
     @Override
@@ -72,7 +79,7 @@ public class EnumPage extends AbstractList implements DocsPage {
         super.render(stack, mouseX, mouseY, delta);
         UIHelper.setupScissor(x+scissorsX,y+scissorsY,width+scissorsWidth, height+scissorsHeight);
         int scroll = (int)(scrollBar.getScrollProgress() * maxScroll);
-        table.y = y+titleLabel.getHeight()+8-scroll;
+        table.y = y+titleLabel.getHeight()+ descriptionLabel.getHeight()+8-scroll;
         table.render(stack, mouseX, mouseY, delta);
         UIHelper.disableScissor();
     }

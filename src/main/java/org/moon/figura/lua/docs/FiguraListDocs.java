@@ -107,7 +107,7 @@ public class FiguraListDocs {
         RENDER_MODES(() -> FiguraListDocs.RENDER_MODES, "RenderModes", "render_modes", 1);
 
         private final Supplier<Object> supplier;
-        private final String name, id;
+        public final String name, id;
         private final int split;
 
         ListDoc(Supplier<Object> supplier, String name, String id, int split) {
