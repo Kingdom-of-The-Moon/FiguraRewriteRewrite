@@ -127,10 +127,16 @@ public class DocsList extends AbstractList{
     }
     private boolean filterFunc(TexturedButton e) {
         String searchString = searchBar.getField().getValue().toLowerCase();
-        if (e instanceof DocsTreeElement ) {
-            return ((DocsTreeElement) e).filter(this::filterFunc);
+        boolean anyMatch = false;
+        if (e instanceof DocsTreeElement dte) {
+            for (TexturedButton b :
+                    dte.getChildren()) {
+                boolean r = filterFunc(b);
+                b.visible = r;
+                anyMatch = anyMatch | r;
+            }
         }
-        return e.getMessage().getString().toLowerCase().contains(searchString);
+        return anyMatch || e.getMessage().getString().toLowerCase().contains(searchString);
     }
     private void onSearchTextChanged() {
         for (DocsTreeElement treeElement :
@@ -225,12 +231,7 @@ public class DocsList extends AbstractList{
             return super.mouseClicked(mouseX, mouseY, button);
         }
         public boolean filter(Function<TexturedButton, Boolean> predicate) {
-            boolean match = false;
-            for (TexturedButton e :
-                    getChildren()) {
-                match = match | predicate.apply(e);
-            }
-            match = match || predicate.apply(this);
+            boolean match = predicate.apply(this);
             setVisible(match);
             return match;
         }
