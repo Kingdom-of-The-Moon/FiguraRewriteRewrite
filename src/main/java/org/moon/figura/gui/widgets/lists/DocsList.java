@@ -83,6 +83,19 @@ public class DocsList extends AbstractList{
         }
         contents.add(enumsTreeElement);
         children.add(enumsTreeElement);
+        DocsTreeElement libOverridesTreeElement = new DocsTreeElement(0,0,w);
+        libOverridesTreeElement.setMessage(FiguraText.of("gui.docs.lib_overrides"));
+        for (FiguraDoc doc :
+                FiguraDocsManager.getLibOverrides()) {
+            DocsTreeElement libElement = new DocsTreeElement(0,0,w, (b) ->
+                    DocsScreen.onSelect(doc)
+            );
+            libElement.setCanBeSelected(true);
+            libElement.setMessage(Component.literal(doc.name));
+            libOverridesTreeElement.getChildren().add(libElement);
+        }
+        contents.add(libOverridesTreeElement);
+        children.add(libOverridesTreeElement);
         prevWidth = width;
         prevHeight = height;
     }

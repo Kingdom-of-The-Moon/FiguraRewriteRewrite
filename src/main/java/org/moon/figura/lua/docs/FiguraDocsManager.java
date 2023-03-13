@@ -269,6 +269,9 @@ public class FiguraDocsManager {
     public static Iterable<FiguraDoc> getGlobalDocs(String globalNames) {
         return GENERATED_CHILDREN.get(globalNames);
     }
+    public static Iterable<FiguraDoc> getLibOverrides() {
+        return GENERATED_LIB_OVERRIDES;
+    }
 
     public static DocsPage getGlobalWidget(int x, int y, int width, int height, Class<?> clazz) {
         FiguraDoc classDoc = getGlobalDoc(clazz);

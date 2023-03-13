@@ -270,6 +270,7 @@
 
   "figura.gui.docs.globals": "Globals",
   "figura.gui.docs.enums": "Enums",
+  "figura.gui.docs.lib_overrides": "Library overrides",
   "figura.gui.docs.fields": "Fields",
   "figura.gui.docs.functions": "Functions",
 
