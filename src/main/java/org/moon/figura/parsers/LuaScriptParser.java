@@ -1,9 +1,12 @@
 package org.moon.figura.parsers;
 
 import net.minecraft.nbt.ByteArrayTag;
+import org.luaj.vm2.parser.LuaParser;
+import org.luaj.vm2.parser.ParseException;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.config.Configs;
 
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -13,7 +16,7 @@ public class LuaScriptParser {
 
     // regex minify constants
 
-    private static final Pattern string = Pattern.compile("([\"'])(?:\\\\(?:z\\s*|\\d{1,3}|x[\\w&&[^_]]{2}|[\\\\\"'\\n\\rabfnrtv])|(?:(?!\\1|[\\\\\\n\\r]).)*+)*?\\1", Pattern.MULTILINE);
+    private static final Pattern string = Pattern.compile("([\"'])(?:\\\\(?:z\\s*|\\d{1,3}|x[a-fA-F\\d]{2}|[\\\\\"'\\n\\rabfnrtv])|(?:(?!\\1|[\\\\\\n\\r]).)*+)*?\\1", Pattern.MULTILINE);
     private static final Pattern multilineString = Pattern.compile("\\[(?<s>=*)\\[.*?](\\k<s>)]", Pattern.MULTILINE | Pattern.DOTALL);
     private static final Pattern comments = Pattern.compile("--[^\n]*$", Pattern.MULTILINE);
     private static final Pattern multilineComment = Pattern.compile("--\\[(?<s>=*)\\[.*?](\\k<s>)]", Pattern.MULTILINE | Pattern.DOTALL);
@@ -37,6 +40,7 @@ public class LuaScriptParser {
             case 0 -> noMinifier(script);
             case 1 -> regexMinify(name, script);
             case 2 -> aggressiveMinify(name, script);
+            case 3 -> ASTMinify(name, script);
             default -> throw new IllegalStateException("Format_SCRIPT should not be %d, expecting 0 to %d".formatted(Configs.FORMAT_SCRIPT.value, Configs.FORMAT_SCRIPT.enumList.size() - 1));
         };
         ByteArrayTag out;
@@ -154,5 +158,19 @@ public class LuaScriptParser {
 
         FiguraMod.debug("Script \"{}\" minified from {} chars to {} chars using HEAVY mode", name, script.length(), builder.length());
         return builder.toString();
+    }
+    
+    private static String ASTMinify(String name, String script) {
+        try {
+            LuaParser parser = new LuaParser(new StringReader(script));
+            LuaScriptBuilderVisitor visitor = new LuaScriptBuilderVisitor();
+            parser.Chunk().accept(visitor);
+            error = false;
+            FiguraMod.debug("Script \"{}\" minified from {} chars to {} chars using AST mode", name, script.length(), visitor.length());
+
+            return visitor.getString();
+        } catch (ParseException e) {
+            return script;
+        }
     }
 }

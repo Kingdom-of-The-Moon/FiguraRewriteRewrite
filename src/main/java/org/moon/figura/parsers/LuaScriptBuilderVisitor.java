@@ -1,0 +1,379 @@
+package org.moon.figura.parsers;
+
+import org.luaj.vm2.Lua;
+import org.luaj.vm2.LuaString;
+import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.ast.*;
+import org.moon.figura.FiguraMod;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.List;
+
+public class LuaScriptBuilderVisitor extends Visitor {
+    private final StringBuilder builder;
+
+    public LuaScriptBuilderVisitor() {
+        this(new StringBuilder());
+    }
+
+    public LuaScriptBuilderVisitor(StringBuilder builder) {
+        this.builder = builder;
+    }
+
+    @Override
+    public void visit(Stat.Assign stat) {
+        visitVars(stat.vars);
+        builder.append('=');
+        visitExps(stat.exps);
+    }
+
+    @Override
+    public void visit(Stat.Break breakstat) {
+        newlineIfName("break");
+    }
+
+    @Override
+    public void visit(Stat.FuncDef stat) {
+        newlineIfName("function");
+        if (stat.name.name != null)
+            visit(stat.name.name);
+        if (stat.name.dots != null) {
+            for (String s : stat.name.dots) {
+                builder.append(".").append(s);
+            }
+        }
+        if (stat.name.method != null) {
+            builder.append(":").append(stat.name.method);
+        }
+        stat.body.accept(this);
+    }
+
+    @Override
+    public void visit(Stat.GenericFor stat) {
+        newlineIfName("for");
+        visitNames(stat.names);
+        spaceIfName("in");
+        visitExps(stat.exps);
+        spaceIfName("do");
+        stat.block.accept(this);
+        newlineIfName("end");
+    }
+
+    @Override
+    public void visit(Stat.IfThenElse stat) {
+        newlineIfName("if");
+        stat.ifexp.accept(this);
+        spaceIfName("then");
+        stat.ifblock.accept(this);
+        if (stat.elseifblocks != null) {
+            for (int i = 0, n = stat.elseifblocks.size(); i < n; i++) {
+                newlineIfName("elseif");
+                stat.elseifexps.get(i).accept(this);
+                spaceIfName("then");
+                stat.elseifblocks.get(i).accept(this);
+            }
+        }
+        if (stat.elseblock != null) {
+            newlineIfName("else");
+            stat.elseblock.accept(this);
+        }
+        newlineIfName("end");
+    }
+
+    @Override
+    public void visit(Stat.LocalAssign stat) {
+        newlineIfName("local");
+        visitNames(stat.names);
+        builder.append('=');
+        visitExps(stat.values);
+    }
+
+    @Override
+    public void visit(Stat.LocalFuncDef stat) {
+        newlineIfName("local function");
+        super.visit(stat);
+    }
+
+    @Override
+    public void visit(Stat.NumericFor stat) {
+        builder.append("for ").append(stat.name).append("=");
+        stat.initial.accept(this);
+        builder.append(",");
+        stat.limit.accept(this);
+        if (stat.step != null) {
+            builder.append(",");
+            stat.step.accept(this);
+        }
+        spaceIfName("do");
+        stat.block.accept(this);
+        newlineIfName("end");
+    }
+
+    @Override
+    public void visit(Stat.RepeatUntil stat) {
+        newlineIfName("repeat");
+        stat.block.accept(this);
+        newlineIfName("until");
+        stat.exp.accept(this);
+        spaceIfName("end");
+    }
+
+    @Override
+    public void visit(Stat.Return stat) {
+        newlineIfName("return");
+        super.visit(stat);
+    }
+
+    @Override
+    public void visit(Stat.WhileDo stat) {
+        newlineIfName("while");
+        stat.exp.accept(this);
+        spaceIfName("do");
+        stat.block.accept(this);
+        newlineIfName("end");
+    }
+
+    @Override
+    public void visit(FuncBody body) {
+        body.parlist.accept(this);
+        body.block.accept(this);
+        newlineIfName("end");
+    }
+
+    @Override
+    public void visit(FuncArgs args) {
+        List<Exp> exps = args.exps;
+        if(exps != null && exps.size() == 1 && exps.get(0) instanceof Exp.Constant constant && constant.value instanceof LuaString){
+            constant.accept(this);
+        } else {
+            builder.append("(");
+            super.visit(args);
+            builder.append(")");
+        }
+    }
+
+    @Override
+    public void visit(TableField field) {
+        if (field.name != null || field.index != null) {
+            if (field.name != null) {
+                visit(field.name);
+            } else {
+                builder.append("[");
+                field.index.accept(this);
+                builder.append("]");
+            }
+            builder.append('=');
+        }
+        field.rhs.accept(this);
+    }
+
+    @Override
+    public void visit(Exp.AnonFuncDef exp) {
+        newlineIfName("function");
+        super.visit(exp);
+    }
+
+    @Override
+    public void visit(Exp.BinopExp exp) {
+        exp.lhs.accept(this);
+        switch (exp.op) {
+            case Lua.OP_ADD    -> builder.append("+");
+            case Lua.OP_SUB    -> builder.append("-");
+            case Lua.OP_GT     -> builder.append(">");
+            case Lua.OP_GE     -> builder.append(">=");
+            case Lua.OP_LT     -> builder.append("<");
+            case Lua.OP_LE     -> builder.append("<=");
+            case Lua.OP_EQ     -> builder.append("==");
+            case Lua.OP_NEQ    -> builder.append("~=");
+            case Lua.OP_MUL    -> builder.append("*");
+            case Lua.OP_DIV    -> builder.append("/");
+            case Lua.OP_MOD    -> builder.append("%");
+            case Lua.OP_POW    -> builder.append("^");
+            case Lua.OP_AND    -> spaceIfName("and");
+            case Lua.OP_OR     -> spaceIfName("or");
+            case Lua.OP_CONCAT -> builder.append("..");
+            default -> throw new IllegalStateException("unhandled operator: " + exp.op);
+        }
+        exp.rhs.accept(this);
+    }
+
+    @Override
+    public void visit(Exp.Constant exp) {
+        LuaValue value = exp.value;
+        if (value instanceof LuaString str) {
+            String input = new String(str.m_bytes, StandardCharsets.UTF_8);
+            int sdq = 0;
+            for (char c : input.toCharArray()) {
+                if (c == '\'') sdq--;
+                if (c == '\"') sdq++;
+            }
+            char quote = sdq <= 0 ? '"' : '\'';
+//            input = input.replaceAll("(?<!\\\\)((?:\\\\{2})*+)\\\\([\"'])", "$1$2");
+            input = input.replaceAll("[" + quote + "\\\\\n]", "\\\\$0");
+            builder.append(quote).append(input).append(quote);
+        } else
+            spaceIfName(String.valueOf(value));
+    }
+
+    @Override
+    public void visit(Exp.FieldExp exp) {
+        exp.lhs.accept(this);
+        builder.append(".");
+        visit(exp.name);
+    }
+
+    @Override
+    public void visit(Exp.IndexExp exp) {
+        exp.lhs.accept(this);
+        builder.append("[");
+        exp.exp.accept(this);
+        builder.append("]");
+    }
+
+    @Override
+    public void visit(Exp.MethodCall exp) {
+        exp.lhs.accept(this);
+        builder.append(":").append(exp.name);
+        exp.args.accept(this);
+    }
+
+    @Override
+    public void visit(Exp.NameExp exp) {
+        visit(exp.name);
+    }
+
+    @Override
+    public void visit(Exp.ParensExp exp) {
+        builder.append("(");
+        super.visit(exp);
+        builder.append(")");
+    }
+
+    @Override
+    public void visit(Exp.UnopExp exp) {
+        switch (exp.op) {
+            case Lua.OP_UNM -> builder.append("-");
+            case Lua.OP_NOT -> newlineIfName("not");
+            case Lua.OP_LEN -> builder.append("#");
+            default -> throw new IllegalStateException("unhandled op " + exp.op);
+        }
+        super.visit(exp);
+    }
+
+    @Override
+    public void visit(Exp.VarargsExp exp) {
+        builder.append("{...}");
+    }
+
+    @Override
+    public void visit(ParList pars) {
+        builder.append("(");
+        super.visit(pars);
+        if (pars.isvararg) {
+            if (!(pars.names == null || pars.names.isEmpty()))
+                builder.append(',');
+            builder.append("...");
+        }
+        builder.append(")");
+    }
+
+    @Override
+    public void visit(TableConstructor table) {
+        builder.append("{");
+        if (table.fields != null) {
+            for (Iterator<TableField> iterator = table.fields.iterator(); iterator.hasNext(); ) {
+                iterator.next().accept(this);
+                if (iterator.hasNext()) builder.append(";");
+            }
+        }
+        builder.append("}");
+    }
+
+    @Override
+    public void visitVars(List<Exp.VarExp> vars) {
+        if (vars != null) {
+            for (Iterator<Exp.VarExp> iterator = vars.iterator(); iterator.hasNext(); ) {
+                iterator.next().accept(this);
+                if (iterator.hasNext()) builder.append(",");
+            }
+        }
+    }
+
+    @Override
+    public void visitExps(List<Exp> exps) {
+        if (exps != null) {
+            for (Iterator<Exp> iterator = exps.iterator(); iterator.hasNext(); ) {
+                iterator.next().accept(this);
+                if (iterator.hasNext()) builder.append(",");
+            }
+        }
+    }
+
+    @Override
+    public void visitNames(List<Name> names) {
+        if (names != null) {
+            spaceIfName();
+            for (Iterator<Name> iterator = names.iterator(); iterator.hasNext(); ) {
+                builder.append(iterator.next().name);
+                if (iterator.hasNext()) builder.append(",");
+            }
+        }
+    }
+
+    @Override
+    public void visit(Name name) {
+        visit(name.name);
+    }
+
+    @Override
+    public void visit(String name) {
+        spaceIfName(name);
+    }
+
+    @Override
+    public void visit(Stat.Goto gotostat) {
+        newlineIfName("goto ").append(gotostat.name);
+    }
+
+    @Override
+    public void visit(Stat.Label label) {
+        builder.append("::").append(label.name).append("::");
+    }
+
+    private StringBuilder newlineIfName(String next) {
+        return charIfName(next, '\n');
+    }
+
+    private void spaceIfName() {
+        spaceIfName("");
+    }
+
+    private void spaceIfName(String next) {
+        charIfName(next, ' ');
+    }
+
+    private StringBuilder charIfName(String next, char c) {
+        int length = builder.length();
+        char ch = length > 0 ? builder.charAt(length - 1) : '\0';
+        if (length > 0 && (ch == '_' || Character.isLetterOrDigit(ch)))
+            builder.append(c);
+        return builder.append(next);
+    }
+
+    public String getString() {
+//            int next = 0,
+//            line = 1;
+//            do {
+//                builder.insert(next, "--[[" + (line < 10 ? "   " : line < 100 ? "  " : line < 1000 ? " " : "") + line + "]] ");
+//                line++;
+//            } while ((next = builder.indexOf("\n", next) + 1) != 0);
+
+        FiguraMod.debug("\n-------------------\nreconstructed\n-------------------\n{}\n-------------------", builder);
+        return builder.toString();
+    }
+
+    public int length() {
+        return builder.length();
+    }
+}

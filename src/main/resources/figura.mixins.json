@@ -15,6 +15,7 @@
     "MinecraftMixin",
     "ReloadableResourceManagerMixin",
     "SkullBlockEntityAccessor",
+    "StrMixin",
 
     "gui.ChatComponentMixin",
     "gui.ChatScreenAccessor",
