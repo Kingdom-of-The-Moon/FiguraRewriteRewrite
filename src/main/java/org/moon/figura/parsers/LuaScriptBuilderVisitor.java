@@ -7,11 +7,24 @@ import org.luaj.vm2.ast.*;
 import org.moon.figura.FiguraMod;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class LuaScriptBuilderVisitor extends Visitor {
+    private static final char[] chars = new char[63];
+
+    static {
+        chars[0] = '_';
+        for (int i = 0; i < 26; i++)
+            chars[1 + i] = (char) ('a' + i);
+        for (int i = 0; i < 26; i++)
+            chars[27 + i] = (char) ('A' + i);
+        for (int i = 0; i < 10; i++)
+            chars[53 + i] = (char) ('0' + i);
+    }
+
     private final StringBuilder builder;
+    private final Map<Variable, String> vars = new HashMap<>();
+    private final Stack<NameScope> scopes = new Stack<>();
 
     public LuaScriptBuilderVisitor() {
         this(new StringBuilder());
@@ -19,6 +32,53 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     public LuaScriptBuilderVisitor(StringBuilder builder) {
         this.builder = builder;
+    }
+
+    private static String makeName(int count) {
+        StringBuilder res = new StringBuilder();
+        int pow = 52, i = 0;
+        if (count > pow) {
+            pow++;
+            while (count >= pow) {
+                count -= pow;
+                pow *= 63;
+                i++;
+            }
+        }
+        for (int j = 0; j < i; j++) {
+            res.insert(0, chars[count % 63]); //pretend I am indexing into the digit array here
+            count /= 63;
+        }
+        res.insert(0, chars[count]); // and here
+        return res.toString();
+    }
+
+    private void pushScope(NameScope scope) {
+        for (Variable variable : scope.namedVariables.values())
+            vars.put(variable, makeName(vars.size()));
+        scopes.push(scope);
+    }
+
+    private void popScope() {
+        NameScope scope = scopes.pop();
+        for (Variable variable : scope.namedVariables.values())
+            vars.remove(variable);
+        int[] a = {0};
+        vars.replaceAll(((variable, s) -> makeName(a[0]++)));
+    }
+
+    @Override
+    public void visit(NameScope scope) {
+        pushScope(scope);
+    }
+
+    @Override
+    public void visit(Block block) {
+        try (ScopedBody b = new ScopedBody(block.scope)) {
+            if (block.stats != null)
+                for (Stat element : block.stats)
+                    element.accept(this);
+        }
     }
 
     @Override
@@ -51,13 +111,15 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(Stat.GenericFor stat) {
-        newlineIfName("for");
-        visitNames(stat.names);
-        spaceIfName("in");
-        visitExps(stat.exps);
-        spaceIfName("do");
-        stat.block.accept(this);
-        newlineIfName("end");
+        try (ScopedBody b = new ScopedBody(stat.scope)) {
+            newlineIfName("for");
+            visitNames(stat.names);
+            spaceIfName("in");
+            visitExps(stat.exps);
+            spaceIfName("do");
+            stat.block.accept(this);
+            newlineIfName("end");
+        }
     }
 
     @Override
@@ -97,17 +159,19 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(Stat.NumericFor stat) {
-        builder.append("for ").append(stat.name).append("=");
-        stat.initial.accept(this);
-        builder.append(",");
-        stat.limit.accept(this);
-        if (stat.step != null) {
+        try (ScopedBody b = new ScopedBody(stat.scope)) {
+            builder.append("for ").append(stat.name).append("=");
+            stat.initial.accept(this);
             builder.append(",");
-            stat.step.accept(this);
+            stat.limit.accept(this);
+            if (stat.step != null) {
+                builder.append(",");
+                stat.step.accept(this);
+            }
+            spaceIfName("do");
+            stat.block.accept(this);
+            newlineIfName("end");
         }
-        spaceIfName("do");
-        stat.block.accept(this);
-        newlineIfName("end");
     }
 
     @Override
@@ -136,15 +200,17 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(FuncBody body) {
-        body.parlist.accept(this);
-        body.block.accept(this);
-        newlineIfName("end");
+        try (ScopedBody b = new ScopedBody(body.scope)) {
+            body.parlist.accept(this);
+            body.block.accept(this);
+            newlineIfName("end");
+        }
     }
 
     @Override
     public void visit(FuncArgs args) {
         List<Exp> exps = args.exps;
-        if(exps != null && exps.size() == 1 && exps.get(0) instanceof Exp.Constant constant && constant.value instanceof LuaString){
+        if (exps != null && exps.size() == 1 && exps.get(0) instanceof Exp.Constant constant && constant.value instanceof LuaString) {
             constant.accept(this);
         } else {
             builder.append("(");
@@ -209,7 +275,8 @@ public class LuaScriptBuilderVisitor extends Visitor {
                 if (c == '\"') sdq++;
             }
             char quote = sdq <= 0 ? '"' : '\'';
-//            input = input.replaceAll("(?<!\\\\)((?:\\\\{2})*+)\\\\([\"'])", "$1$2");
+            input = input.replaceAll("\\r(?=\\n)", "");
+            input = input.replaceAll("\\r", "\n");
             input = input.replaceAll("[" + quote + "\\\\\n]", "\\\\$0");
             builder.append(quote).append(input).append(quote);
         } else
@@ -315,7 +382,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
         if (names != null) {
             spaceIfName();
             for (Iterator<Name> iterator = names.iterator(); iterator.hasNext(); ) {
-                builder.append(iterator.next().name);
+                visit(iterator.next());
                 if (iterator.hasNext()) builder.append(",");
             }
         }
@@ -323,7 +390,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(Name name) {
-        visit(name.name);
+        visit(vars.getOrDefault(name.variable != null && name.variable.isLocal() ? name.variable : null, name.name));
     }
 
     @Override
@@ -342,7 +409,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
     }
 
     private StringBuilder newlineIfName(String next) {
-        return charIfName(next, '\n');
+        return charIfName(next, FiguraMod.DEBUG_MODE ? '\n' : ' ');
     }
 
     private void spaceIfName() {
@@ -375,5 +442,20 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     public int length() {
         return builder.length();
+    }
+
+    private class ScopedBody implements AutoCloseable {
+        private final boolean push;
+
+        ScopedBody(NameScope scope) {
+            push = scope != null;
+            if (push)
+                pushScope(scope);
+        }
+
+        public void close() {
+            if (push)
+                popScope();
+        }
     }
 }
