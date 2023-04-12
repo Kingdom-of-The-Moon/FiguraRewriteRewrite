@@ -46,25 +46,33 @@ public class LuaScriptBuilderVisitor extends Visitor {
             }
         }
         for (int j = 0; j < i; j++) {
-            res.insert(0, chars[count % 63]); //pretend I am indexing into the digit array here
+            res.insert(0, chars[count % 63]);
             count /= 63;
         }
-        res.insert(0, chars[count]); // and here
+        res.insert(0, chars[count]);
         return res.toString();
     }
 
     private void pushScope(NameScope scope) {
-        for (Variable variable : scope.namedVariables.values())
-            vars.put(variable, makeName(vars.size()));
+        a: for (Variable variable : scope.namedVariables.values())
+            if(variable.isLocal()) {
+                for (Variable var : vars.keySet().stream().sorted(Comparator.comparing(var -> var.name)).toList()) {
+                    if (var == variable) continue a;
+                    if (var.name.equals(variable.name)) {
+                        vars.put(variable, vars.get(var));
+                        continue a;
+                    }
+                }
+                vars.putIfAbsent(variable, makeName(vars.size()));
+            }
         scopes.push(scope);
     }
 
     private void popScope() {
         NameScope scope = scopes.pop();
         for (Variable variable : scope.namedVariables.values())
-            vars.remove(variable);
-        int[] a = {0};
-        vars.replaceAll(((variable, s) -> makeName(a[0]++)));
+            if (variable.definingScope == scope)
+                vars.remove(variable);
     }
 
     @Override
@@ -147,7 +155,8 @@ public class LuaScriptBuilderVisitor extends Visitor {
     public void visit(Stat.LocalAssign stat) {
         newlineIfName("local");
         visitNames(stat.names);
-        builder.append('=');
+        if(stat.values != null)
+            builder.append('=');
         visitExps(stat.values);
     }
 
@@ -160,7 +169,9 @@ public class LuaScriptBuilderVisitor extends Visitor {
     @Override
     public void visit(Stat.NumericFor stat) {
         try (ScopedBody b = new ScopedBody(stat.scope)) {
-            builder.append("for ").append(stat.name).append("=");
+            newlineIfName("for ");
+            visit(stat.name);
+            builder.append("=");
             stat.initial.accept(this);
             builder.append(",");
             stat.limit.accept(this);
@@ -435,8 +446,6 @@ public class LuaScriptBuilderVisitor extends Visitor {
 //                builder.insert(next, "--[[" + (line < 10 ? "   " : line < 100 ? "  " : line < 1000 ? " " : "") + line + "]] ");
 //                line++;
 //            } while ((next = builder.indexOf("\n", next) + 1) != 0);
-
-        FiguraMod.debug("\n-------------------\nreconstructed\n-------------------\n{}\n-------------------", builder);
         return builder.toString();
     }
 

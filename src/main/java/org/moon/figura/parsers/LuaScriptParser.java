@@ -1,6 +1,8 @@
 package org.moon.figura.parsers;
 
 import net.minecraft.nbt.ByteArrayTag;
+import org.luaj.vm2.ast.Chunk;
+import org.luaj.vm2.ast.NameResolver;
 import org.luaj.vm2.parser.LuaParser;
 import org.luaj.vm2.parser.ParseException;
 import org.moon.figura.FiguraMod;
@@ -162,9 +164,10 @@ public class LuaScriptParser {
     
     private static String ASTMinify(String name, String script) {
         try {
-            LuaParser parser = new LuaParser(new StringReader(script));
+            Chunk chunk = new LuaParser(new StringReader(script)).Chunk();
+            chunk.accept(new NameResolver());
             LuaScriptBuilderVisitor visitor = new LuaScriptBuilderVisitor();
-            parser.Chunk().accept(visitor);
+            chunk.accept(visitor);
             error = false;
             FiguraMod.debug("Script \"{}\" minified from {} chars to {} chars using AST mode", name, script.length(), visitor.length());
 
