@@ -341,7 +341,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(Exp.VarargsExp exp) {
-        builder.append("{...}");
+        builder.append("...");
     }
 
     @Override
