@@ -19,7 +19,7 @@ public class LuaScriptParser {
     // regex minify constants
 
     private static final Pattern string = Pattern.compile("([\"'])(?:\\\\(?:z\\s*|\\d{1,3}|x[a-fA-F\\d]{2}|[\\\\\"'\\n\\rabfnrtv])|(?:(?!\\1|[\\\\\\n\\r]).)*+)*?\\1", Pattern.MULTILINE);
-    private static final Pattern multilineString = Pattern.compile("\\[(?<s>=*)\\[.*?](\\k<s>)]", Pattern.MULTILINE | Pattern.DOTALL);
+    private static final Pattern multilineString = Pattern.compile("\\[(=*)\\[.*?]\\1]", Pattern.MULTILINE | Pattern.DOTALL);
     private static final Pattern comments = Pattern.compile("--[^\n]*$", Pattern.MULTILINE);
     private static final Pattern multilineComment = Pattern.compile("--\\[(?<s>=*)\\[.*?](\\k<s>)]", Pattern.MULTILINE | Pattern.DOTALL);
     private static final Pattern newlines = Pattern.compile("^[\t ]*((\n|\n\r|\r\n|\r)[\t ]*)?");
@@ -29,7 +29,7 @@ public class LuaScriptParser {
 
     // aggressive minify constants
 
-    private static final Pattern allStrings = Pattern.compile(string.pattern() + "|" + multilineString.pattern());
+    private static final Pattern allStrings = Pattern.compile(string.pattern() + "|" + multilineString.pattern().replace('1', '2'), Pattern.MULTILINE | Pattern.DOTALL);
     private static final Pattern whitespacePlus = Pattern.compile("[ \n]+");
     private static final Pattern nameOops = Pattern.compile("\\w{2}");
 
@@ -147,8 +147,15 @@ public class LuaScriptParser {
                 }
                 case ' ', '\n' -> {
                     Matcher matcher = whitespacePlus.matcher(builder);
-                    if (matcher.find(i) && matcher.start() == i)
-                        builder.delete(i, matcher.end()).insert(i, matcher.start() > 0 && matcher.start() + 1 < builder.length() && nameOops.matcher(builder.substring(matcher.start() - 1, matcher.start() + 1)).matches() ? " " : "");
+                    int matchStart;
+                    if (matcher.find(i) && (matchStart = matcher.start()) == i) {
+                        builder.delete(i, matcher.end());
+                        if (matchStart > 0 && matchStart + 1 < builder.length())
+                            if (nameOops.matcher(builder.substring(matchStart - 1, matchStart + 1)).matches())
+                                builder.insert(i, " ");
+                            else
+                                i --;
+                    }
                 }
                 default -> {
                     Matcher word = words.matcher(builder);

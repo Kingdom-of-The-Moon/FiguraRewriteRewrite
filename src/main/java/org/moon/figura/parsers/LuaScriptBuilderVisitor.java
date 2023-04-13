@@ -25,6 +25,8 @@ public class LuaScriptBuilderVisitor extends Visitor {
     private final StringBuilder builder;
     private final Map<Variable, String> vars = new HashMap<>();
     private final Stack<NameScope> scopes = new Stack<>();
+    private boolean blockStandalone = true;
+    public boolean secondPass;
 
     public LuaScriptBuilderVisitor() {
         this(new StringBuilder());
@@ -82,11 +84,17 @@ public class LuaScriptBuilderVisitor extends Visitor {
 
     @Override
     public void visit(Block block) {
+        boolean thisStandalone = blockStandalone;
+        blockStandalone = true;
+        if(thisStandalone)
+            newlineIfName("do");
         try (ScopedBody b = new ScopedBody(block.scope)) {
             if (block.stats != null)
                 for (Stat element : block.stats)
                     element.accept(this);
         }
+        if(thisStandalone)
+            newlineIfName("end");
     }
 
     @Override
@@ -125,6 +133,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
             spaceIfName("in");
             visitExps(stat.exps);
             spaceIfName("do");
+            blockStandalone = false;
             stat.block.accept(this);
             newlineIfName("end");
         }
@@ -135,17 +144,20 @@ public class LuaScriptBuilderVisitor extends Visitor {
         newlineIfName("if");
         stat.ifexp.accept(this);
         spaceIfName("then");
+        blockStandalone = false;
         stat.ifblock.accept(this);
         if (stat.elseifblocks != null) {
             for (int i = 0, n = stat.elseifblocks.size(); i < n; i++) {
                 newlineIfName("elseif");
                 stat.elseifexps.get(i).accept(this);
                 spaceIfName("then");
+                blockStandalone = false;
                 stat.elseifblocks.get(i).accept(this);
             }
         }
         if (stat.elseblock != null) {
             newlineIfName("else");
+            blockStandalone = false;
             stat.elseblock.accept(this);
         }
         newlineIfName("end");
@@ -180,6 +192,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
                 stat.step.accept(this);
             }
             spaceIfName("do");
+            blockStandalone = false;
             stat.block.accept(this);
             newlineIfName("end");
         }
@@ -188,6 +201,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
     @Override
     public void visit(Stat.RepeatUntil stat) {
         newlineIfName("repeat");
+        blockStandalone = false;
         stat.block.accept(this);
         newlineIfName("until");
         stat.exp.accept(this);
@@ -205,6 +219,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
         newlineIfName("while");
         stat.exp.accept(this);
         spaceIfName("do");
+        blockStandalone = false;
         stat.block.accept(this);
         newlineIfName("end");
     }
@@ -213,6 +228,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
     public void visit(FuncBody body) {
         try (ScopedBody b = new ScopedBody(body.scope)) {
             body.parlist.accept(this);
+            blockStandalone = false;
             body.block.accept(this);
             newlineIfName("end");
         }
@@ -288,7 +304,9 @@ public class LuaScriptBuilderVisitor extends Visitor {
             char quote = sdq <= 0 ? '"' : '\'';
             input = input.replaceAll("\\r(?=\\n)", "");
             input = input.replaceAll("\\r", "\n");
-            input = input.replaceAll("[" + quote + "\\\\\n]", "\\\\$0");
+            input = input.replaceAll("\\\\", "\\\\\\\\");
+            input = input.replaceAll("\\n", "\\\\n");
+            input = input.replaceAll(String.valueOf(quote), "\\\\" + quote);
             builder.append(quote).append(input).append(quote);
         } else
             spaceIfName(String.valueOf(value));
@@ -332,7 +350,7 @@ public class LuaScriptBuilderVisitor extends Visitor {
     public void visit(Exp.UnopExp exp) {
         switch (exp.op) {
             case Lua.OP_UNM -> builder.append("-");
-            case Lua.OP_NOT -> newlineIfName("not");
+            case Lua.OP_NOT -> spaceIfName("not");
             case Lua.OP_LEN -> builder.append("#");
             default -> throw new IllegalStateException("unhandled op " + exp.op);
         }
@@ -427,8 +445,8 @@ public class LuaScriptBuilderVisitor extends Visitor {
         spaceIfName("");
     }
 
-    private void spaceIfName(String next) {
-        charIfName(next, ' ');
+    private StringBuilder spaceIfName(String next) {
+        return charIfName(next, ' ');
     }
 
     private StringBuilder charIfName(String next, char c) {
