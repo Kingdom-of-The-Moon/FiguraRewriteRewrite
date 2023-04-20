@@ -52,12 +52,13 @@ public class SuggestionListMixin {
         return "";
     }
 
+    @SuppressWarnings("InvalidInjectorMethodSignature")  // the plugin doesn't know better
     @Inject(
             method = "render",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawShadow(Lcom/mojang/blaze3d/vertex/PoseStack;Ljava/lang/String;FFI)I"),
             locals = LocalCapture.CAPTURE_FAILHARD
     )
-    void figura_renderOwn(PoseStack matrices, int mouseX, int mouseY, CallbackInfo ci, int i, int j, boolean bl, boolean bl2, boolean bl3, boolean bl4, boolean bl5, int l) {
+    void figura_renderOwn(PoseStack matrices, int mouseX, int mouseY, CallbackInfo ci, int i, boolean bl, boolean bl2, boolean bl3, boolean bl4, boolean bl5, int l) {
         if (!((CommandSuggestionsAccessor) field_21615).figura$shouldShowFiguraBadges()) {
             return;
         }
