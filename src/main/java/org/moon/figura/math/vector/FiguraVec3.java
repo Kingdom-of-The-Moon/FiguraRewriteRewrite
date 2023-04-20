@@ -438,6 +438,21 @@ public class FiguraVec3 extends FiguraVector<FiguraVec3, FiguraMat3> {
         return this;
     }
 
+    @LuaWhitelist
+    @LuaMethodDoc(
+            overloads = {
+                    @LuaMethodOverload,
+                    @LuaMethodOverload(
+                            argumentTypes = Double.class,
+                            argumentNames = "value"
+                    )
+            },
+            value = "vector_n.augmented"
+    )
+    public FiguraVec4 augmented(Double d) {
+        return FiguraVec4.of(x, y, z, d == null ? 1 : d);
+    }
+
     @Override
     public int size() {
         return 3;
@@ -501,29 +516,11 @@ public class FiguraVec3 extends FiguraVector<FiguraVec3, FiguraMat3> {
             value = "vector3.crossed"
     )
     public FiguraVec3 crossed(@LuaNotNil FiguraVec3 other) {
-        double nx = y * other.z - z * other.y;
-        double ny = z * other.x - x * other.z;
-        double nz = x * other.y - y * other.x;
-        return FiguraVec3.of(nx, ny, nz);
-    }
-
-    @LuaWhitelist
-    @LuaMethodDoc(
-            overloads = {
-                    @LuaMethodOverload,
-                    @LuaMethodOverload(
-                            argumentTypes = Double.class,
-                            argumentNames = "value"
-                    )
-            },
-            value = "vector3.augmented"
-    )
-    public FiguraVec4 augmented(Double d) {
-        return FiguraVec4.of(x, y, z, d == null ? 1 : d);
+        return this.copy().cross(other);
     }
 
     public BlockPos asBlockPos() {
-        return new BlockPos((int) x, (int) y, (int) z);
+        return new BlockPos((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
     }
     public static FiguraVec3 fromBlockPos(BlockPos pos) {
         return of(pos.getX(), pos.getY(), pos.getZ());

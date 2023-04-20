@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.util.Mth;
+import org.moon.figura.FiguraMod;
 import org.moon.figura.config.ConfigManager;
 import org.moon.figura.config.ConfigType;
 import org.moon.figura.gui.screens.ConfigScreen;
@@ -32,6 +33,11 @@ public class ConfigList extends AbstractList {
 
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float delta) {
+        int x = getX();
+        int y = getY();
+        int width = getWidth();
+        int height = getHeight();
+
         //background and scissors
         UIHelper.renderSliced(stack, x, y, width, height, UIHelper.OUTLINE_FILL);
         UIHelper.setupScissor(x + scissorsX, y + scissorsY, width + scissorsWidth, height + scissorsHeight);
@@ -42,14 +48,15 @@ public class ConfigList extends AbstractList {
             totalHeight += config.getHeight() + 8;
         int entryHeight = configs.isEmpty() ? 0 : totalHeight / configs.size();
 
-        scrollBar.visible = totalHeight > height;
+        scrollBar.setVisible(totalHeight > height);
         scrollBar.setScrollRatio(entryHeight, totalHeight - height);
 
         //render list
-        int xOffset = scrollBar.visible ? 4 : 11;
-        int yOffset = scrollBar.visible ? (int) -(Mth.lerp(scrollBar.getScrollProgress(), -4, totalHeight - height)) : 4;
+        int xOffset = scrollBar.isVisible() ? 4 : 11;
+        int yOffset = scrollBar.isVisible() ? (int) -(Mth.lerp(scrollBar.getScrollProgress(), -4, totalHeight - height)) : 4;
         for (CategoryWidget config : configs) {
-            config.setPos(x + xOffset, y + yOffset);
+            config.setX(x + xOffset);
+            config.setY(y + yOffset);
             yOffset += config.getHeight() + 8;
         }
 
@@ -83,7 +90,7 @@ public class ConfigList extends AbstractList {
 
         //add configs
         for (ConfigType.Category category : ConfigManager.CATEGORIES_REGISTRY.values()) {
-            CategoryWidget widget = new CategoryWidget(width - 22, category, this);
+            CategoryWidget widget = new CategoryWidget(getWidth() - 22, category, this);
 
             for (ConfigType<?> config : category.children)
                 widget.addConfig(config);
@@ -99,7 +106,7 @@ public class ConfigList extends AbstractList {
 
     public void updateScroll() {
         //store old scroll pos
-        double pastScroll = (totalHeight - height) * scrollBar.getScrollProgress();
+        double pastScroll = (totalHeight - getHeight()) * scrollBar.getScrollProgress();
 
         //get new height
         totalHeight = -4;
@@ -107,7 +114,7 @@ public class ConfigList extends AbstractList {
             totalHeight += config.getHeight() + 8;
 
         //set new scroll percentage
-        scrollBar.setScrollProgress(pastScroll / (totalHeight - height));
+        scrollBar.setScrollProgress(pastScroll / (totalHeight - getHeight()));
     }
 
     public boolean hasChanges() {
@@ -123,6 +130,7 @@ public class ConfigList extends AbstractList {
 
         focusedBinding.setKey(key);
         focusedBinding = null;
+        FiguraMod.processingKeybind = false;
 
         updateKeybinds();
         return true;

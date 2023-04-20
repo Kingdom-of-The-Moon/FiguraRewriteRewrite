@@ -6,20 +6,21 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.avatar.AvatarManager;
+import org.moon.figura.gui.widgets.FiguraWidget;
 import org.moon.figura.gui.widgets.lists.PlayerList;
 import org.moon.figura.permissions.PermissionPack;
 import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.ui.UIHelper;
 
-public class AbstractPermPackElement extends AbstractButton implements Comparable<AbstractPermPackElement> {
+public class AbstractPermPackElement extends AbstractButton implements Comparable<AbstractPermPackElement>, FiguraWidget {
 
     protected final PlayerList parent;
     protected final PermissionPack pack;
 
     protected float scale = 1f;
 
-    protected AbstractPermPackElement(int height, PermissionPack pack, PlayerList parent) {
-        super(0, 0, 174, height, Component.empty());
+    protected AbstractPermPackElement(int width, int height, PermissionPack pack, PlayerList parent) {
+        super(0, 0, width, height, Component.empty());
         this.parent = parent;
         this.pack = pack;
     }
@@ -34,9 +35,11 @@ public class AbstractPermPackElement extends AbstractButton implements Comparabl
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
+        int width = getWidth();
+        int height = getHeight();
         int dw = (int) ((width * scale - width) / 2f);
         int dh = (int) ((height * scale - height) / 2f);
-        return parent.isInsideScissors(mouseX, mouseY) && active && visible && UIHelper.isMouseOver(getX() - dw, getY() - dh, width + dw, height + dh, mouseX, mouseY);
+        return parent.isInsideScissors(mouseX, mouseY) && isActive() && isVisible() && UIHelper.isMouseOver(getX() - dw, getY() - dh, width + dw, height + dh, mouseX, mouseY);
     }
 
     @Override
@@ -55,10 +58,6 @@ public class AbstractPermPackElement extends AbstractButton implements Comparabl
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput builder) {
-    }
-
-    public boolean isVisible() {
-        return pack.isVisible();
     }
 
     public PermissionPack getPack() {
@@ -109,5 +108,20 @@ public class AbstractPermPackElement extends AbstractButton implements Comparabl
 
         //return
         return comp;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        this.pack.setVisible(visible);
+    }
+
+    public boolean isVisible() {
+        return this.visible;
+    }
+
+    @Override
+    public void setHeight(int height) {
+        this.height = height;
     }
 }

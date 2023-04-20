@@ -252,6 +252,18 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("avatar.get_animation_count")
+    public int getAnimationCount() {
+        return avatar.animation.pre;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("avatar.get_max_animation_count")
+    public int getMaxAnimationCount() {
+        return avatar.permissions.get(Permissions.ANIMATION_INST);
+    }
+
+    @LuaWhitelist
     @LuaMethodDoc("avatar.get_max_texture_size")
     public int getMaxTextureSize() {
         return avatar.permissions.get(Permissions.TEXTURE_SIZE);
@@ -282,9 +294,9 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
-    @LuaMethodDoc("avatar.can_have_custom_heads")
-    public boolean canHaveCustomHeads() {
-        return bool(Permissions.CUSTOM_HEADS);
+    @LuaMethodDoc("avatar.can_have_custom_skull")
+    public boolean canHaveCustomSkull() {
+        return bool(Permissions.CUSTOM_SKULL);
     }
 
     @Override

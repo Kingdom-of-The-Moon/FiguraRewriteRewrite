@@ -2,10 +2,7 @@ package org.moon.figura.parsers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import org.moon.figura.FiguraMod;
 import org.moon.figura.config.Configs;
 import org.moon.figura.model.ParentType;
@@ -104,9 +101,13 @@ public class AvatarMetadataParser {
     }
 
     private static void injectCustomization(String path, Customization customization, CompoundTag models) throws IOException {
-        CompoundTag modelPart = getTag(models, path, false);
+        boolean remove = customization.remove != null && customization.remove;
+        CompoundTag modelPart = getTag(models, path, remove);
 
         //Add more of these later
+        if (remove) {
+            return;
+        }
         if (customization.primaryRenderType != null) {
             try {
                 modelPart.putString("primary", RenderTypes.valueOf(customization.primaryRenderType.toUpperCase()).name());
@@ -175,21 +176,15 @@ public class AvatarMetadataParser {
         if (metadata == null || metadata.ignoredTextures == null)
             return;
 
-        ListTag list = textures.getList("data", Tag.TAG_COMPOUND);
-        CompoundTag compound = textures.getCompound("src");
-
-        if (list == null || compound == null)
-            return;
+        CompoundTag src = textures.getCompound("src");
 
         for (String texture : metadata.ignoredTextures) {
-            compound.remove(texture);
-            for (Tag t : list) {
-                CompoundTag tag = (CompoundTag) t;
-                if (tag.getString("default").equals(texture))
-                    tag.remove("default");
-                if (tag.getString("emissive").equals(texture))
-                    tag.remove("emissive");
-            }
+            byte[] bytes = src.getByteArray(texture);
+            int[] size = BlockbenchModelParser.getTextureSize(bytes);
+            ListTag list = new ListTag();
+            list.add(IntTag.valueOf(size[0]));
+            list.add(IntTag.valueOf(size[1]));
+            src.put(texture, list);
         }
     }
 
@@ -209,6 +204,6 @@ public class AvatarMetadataParser {
         public String primaryRenderType, secondaryRenderType;
         public String parentType;
         public String moveTo;
-        public Boolean visible;
+        public Boolean visible, remove;
     }
 }

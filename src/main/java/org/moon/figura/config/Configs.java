@@ -64,39 +64,37 @@ public class Configs {
 
     public static final BoolConfig
             SELF_NAMEPLATE = new BoolConfig("self_nameplate", NAMEPLATE, false),
-            PREVIEW_NAMEPLATE = new BoolConfig("preview_nameplate", NAMEPLATE, false);
+            PREVIEW_NAMEPLATE = new BoolConfig("preview_nameplate", NAMEPLATE, false),
+            SOUND_BADGE = new BoolConfig("sound_badge", NAMEPLATE, true);
+    private static final String NAMEPLATE_PATH = "config.nameplate_level.";
+    private static final List<Component> NAMEPLATE_ENUM = List.of(
+            FiguraText.of(NAMEPLATE_PATH + "1"),
+            FiguraText.of(NAMEPLATE_PATH + "2"),
+            FiguraText.of(NAMEPLATE_PATH + "3")
+    );
+    private static final List<Component> NAMEPLATE_TOOLTIP = List.of(
+            FiguraText.of(NAMEPLATE_PATH + "1.tooltip"),
+            FiguraText.of(NAMEPLATE_PATH + "2.tooltip"),
+            FiguraText.of(NAMEPLATE_PATH + "3.tooltip")
+    );
     public static final EnumConfig
             NAMEPLATE_RENDER = new EnumConfig("nameplate_render", NAMEPLATE, 0, 3),
             CHAT_NAMEPLATE = new EnumConfig("chat_nameplate", NAMEPLATE, 2, 3) {{
-                String path = "config.nameplate_level";
-                this.enumTooltip = FiguraText.of(path + ".enum");
-                this.enumList = List.of(
-                        FiguraText.of(path + ".1"),
-                        FiguraText.of(path + ".2"),
-                        FiguraText.of(path + ".3")
-                );
+                this.enumList = NAMEPLATE_ENUM;
+                this.enumTooltip = NAMEPLATE_TOOLTIP;
             }},
             ENTITY_NAMEPLATE = new EnumConfig("entity_nameplate", NAMEPLATE, 2, 3) {{
-                String path = "config.nameplate_level";
-                this.enumTooltip = FiguraText.of(path + ".enum");
-                this.enumList = List.of(
-                        FiguraText.of(path + ".1"),
-                        FiguraText.of(path + ".2"),
-                        FiguraText.of(path + ".3")
-                );
+                this.enumList = NAMEPLATE_ENUM;
+                this.enumTooltip = NAMEPLATE_TOOLTIP;
             }},
             LIST_NAMEPLATE = new EnumConfig("list_nameplate", NAMEPLATE, 2, 3) {{
-                String path = "config.nameplate_level";
-                this.enumTooltip = FiguraText.of(path + ".enum");
-                this.enumList = List.of(
-                        FiguraText.of(path + ".1"),
-                        FiguraText.of(path + ".2"),
-                        FiguraText.of(path + ".3")
-                );
+                this.enumList = NAMEPLATE_ENUM;
+                this.enumTooltip = NAMEPLATE_TOOLTIP;
             }};
 
 
     // -- script -- //
+
 
     public static final EnumConfig
             LOG_LOCATION = new EnumConfig("log_location", SCRIPT, 0, 2),
@@ -164,9 +162,7 @@ public class Configs {
     public static final BoolConfig
             FIGURA_INVENTORY = new BoolConfig("figura_inventory", UI, true),
             PREVIEW_HEAD_ROTATION = new BoolConfig("preview_head_rotation", UI, false),
-            AVATAR_PORTRAITS = new BoolConfig("avatar_portraits", UI, false) {{
-                this.disabled = true;
-            }},
+            AVATAR_PORTRAIT = new BoolConfig("avatar_portrait", UI, true),
             WARDROBE_FILE_NAMES = new BoolConfig("wardrobe_file_names", UI, false);
     public static final FloatConfig
             BACKGROUND_SCROLL_SPEED = new FloatConfig("background_scroll_speed", UI, 1f);
@@ -237,7 +233,7 @@ public class Configs {
 
 
     public static final BoolConfig
-            CONNECTION_TOASTS = new BoolConfig("connection_toasts", DEV, true),
+            CONNECTION_TOASTS = new BoolConfig("connection_toasts", DEV, false),
             LOG_OTHERS = new BoolConfig("log_others", DEV, false);
     public static final EnumConfig
             LOG_PINGS = new EnumConfig("log_pings", DEV, 0, 3);
@@ -260,7 +256,7 @@ public class Configs {
     public static final FolderConfig
             MAIN_DIR = new FolderConfig("main_dir", DEV, "");
     public static final IPConfig
-            SERVER_IP = new IPConfig("server_ip", DEV, "figura.moonlight-devs.org:25565") {
+            SERVER_IP = new IPConfig("server_ip", DEV, "figura.moonlight-devs.org") {
                 @Override
                 public void onChange() {
                     super.onChange();

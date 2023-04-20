@@ -13,6 +13,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
+import org.joml.Matrix4d;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.math.matrix.FiguraMat3;
 import org.moon.figura.math.matrix.FiguraMat4;
@@ -49,9 +50,10 @@ public abstract class AvatarRenderer {
     public int overlay;
     public float alpha;
     public boolean translucent, glowing;
+    public FiguraMat4 posMat = FiguraMat4.of();
+    public FiguraMat3 normalMat = FiguraMat3.of();
 
     //matrices
-    public PoseStack matrices;
     public MultiBufferSource bufferSource;
     public VanillaModelData vanillaModelData = new VanillaModelData();
 
@@ -63,12 +65,12 @@ public abstract class AvatarRenderer {
     protected static int shouldRenderPivots;
     public boolean allowMatrixUpdate = false;
     public boolean allowHiddenTransforms = true;
-    public boolean allowRenderTasks = true;
     public boolean allowSkullRendering = true;
     public boolean allowPivotParts = true;
     public boolean updateLight = false;
     public boolean doIrisEmissiveFix = false;
     public boolean offsetRenderLayers = false;
+    public FiguraModelPart itemToRender;
 
     public AvatarRenderer(Avatar avatar) {
         this.avatar = avatar;
@@ -80,9 +82,13 @@ public abstract class AvatarRenderer {
 
         //src files
         for (String key : src.getAllKeys()) {
-            byte[] data = src.getByteArray(key);
-            if (data.length != 0)
-                textures.put(key, new FiguraTexture(avatar, key, data));
+            byte[] bytes = src.getByteArray(key);
+            if (bytes.length > 0) {
+                textures.put(key, new FiguraTexture(avatar, key, bytes));
+            } else {
+                ListTag size = src.getList(key, Tag.TAG_INT);
+                textures.put(key, new FiguraTexture(avatar, key, size.getInt(0), size.getInt(1)));
+            }
         }
 
         //data files
@@ -176,9 +182,51 @@ public abstract class AvatarRenderer {
         FiguraMat4 result = FiguraMat4.of();
         Vec3 cameraPos = camera.getPosition().scale(-1);
         result.translate(cameraPos.x, cameraPos.y, cameraPos.z);
-        FiguraMat3 cameraMat = FiguraMat3.fromMatrix3f(cameraMat3f);
+        FiguraMat3 cameraMat = FiguraMat3.of().set(cameraMat3f);
         result.multiply(cameraMat.augmented());
         result.scale(-1, 1, -1);
         return result;
+    }
+
+    public void setupRenderer(PartFilterScheme currentFilterScheme, MultiBufferSource bufferSource, PoseStack matrices, float tickDelta, int light, float alpha, int overlay, boolean translucent, boolean glowing) {
+        this.setupRenderer(currentFilterScheme, bufferSource, tickDelta, light, alpha, overlay, translucent, glowing);
+        this.setMatrices(matrices);
+    }
+
+    public void setupRenderer(PartFilterScheme currentFilterScheme, MultiBufferSource bufferSource, PoseStack matrices, float tickDelta, int light, float alpha, int overlay, boolean translucent, boolean glowing, double camX, double camY, double camZ) {
+        this.setupRenderer(currentFilterScheme, bufferSource, tickDelta, light, alpha, overlay, translucent, glowing);
+        this.setMatrices(camX, camY, camZ, matrices);
+    }
+
+    private void setupRenderer(PartFilterScheme currentFilterScheme, MultiBufferSource bufferSource, float tickDelta, int light, float alpha, int overlay, boolean translucent, boolean glowing) {
+        this.currentFilterScheme = currentFilterScheme;
+        this.bufferSource = bufferSource;
+        this.tickDelta = tickDelta;
+        this.light = light;
+        this.alpha = alpha;
+        this.overlay = overlay;
+        this.translucent = translucent;
+        this.glowing = glowing;
+    }
+
+    public void setMatrices(PoseStack matrices) {
+        PoseStack.Pose pose = matrices.last();
+        this.posMat.set(pose.pose());
+        this.normalMat.set(pose.normal());
+    }
+
+    public void setMatrices(double camX, double camY, double camZ, PoseStack matrices) {
+        PoseStack.Pose pose = matrices.last();
+
+        //pos
+        Matrix4d posMat = new Matrix4d(pose.pose());
+        posMat.translate(-camX, -camY, -camZ);
+        posMat.scale(-1, -1, 1);
+        this.posMat.set(posMat);
+
+        //normal
+        Matrix3f normalMat = new Matrix3f(pose.normal());
+        normalMat.scale(-1, -1, 1);
+        this.normalMat.set(normalMat);
     }
 }

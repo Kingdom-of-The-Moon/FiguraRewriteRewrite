@@ -26,13 +26,14 @@ public class Permissions {
                 }
             },
             BB_ANIMATIONS = new Permissions("BB_ANIMATIONS", 0, 511, 0, 32, 128, 256, Integer.MAX_VALUE),
+            ANIMATION_INST = new Permissions("ANIMATION_INST", 0, 32767, 0, 2048, 4096, 8192, Integer.MAX_VALUE),
             TEXTURE_SIZE = new Permissions("TEXTURE_SIZE", 0, 2048, 64, 0, 128, 512, 2048, 2048),
             VANILLA_MODEL_EDIT = new Permissions("VANILLA_MODEL_EDIT", 0, 0, 1, 1, 1),
             NAMEPLATE_EDIT = new Permissions("NAMEPLATE_EDIT", 0, 0, 0, 1, 1),
             OFFSCREEN_RENDERING = new Permissions("OFFSCREEN_RENDERING", 0, 0, 0, 1, 1),
-            //CUSTOM_RENDER_LAYER = new Permissions("CUSTOM_RENDER_LAYER", 0, 0, 1, 1, 1),
+            //CUSTOM_SHADERS = new Permissions("CUSTOM_SHADERS", 0, 0, 1, 1, 1),
             CUSTOM_SOUNDS = new Permissions("CUSTOM_SOUNDS", 0, 0, 1, 1, 1),
-            CUSTOM_HEADS = new Permissions("CUSTOM_HEADS", 0, 0, 0, 1, 1);
+            CUSTOM_SKULL = new Permissions("CUSTOM_SKULL", 0, 0, 1, 1, 1);
 
     public static final List<Permissions> DEFAULT = List.of(
             INIT_INST,
@@ -45,12 +46,13 @@ public class Permissions {
             SOUNDS,
             VOLUME,
             BB_ANIMATIONS,
+            ANIMATION_INST,
             TEXTURE_SIZE,
             VANILLA_MODEL_EDIT,
             NAMEPLATE_EDIT,
             OFFSCREEN_RENDERING,
             CUSTOM_SOUNDS,
-            CUSTOM_HEADS
+            CUSTOM_SKULL
     );
 
 

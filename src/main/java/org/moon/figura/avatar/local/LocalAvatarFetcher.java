@@ -1,5 +1,6 @@
 package org.moon.figura.avatar.local;
 
+import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -11,12 +12,13 @@ import org.moon.figura.utils.FileTexture;
 import org.moon.figura.utils.IOUtils;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Navigates through the file system, finding all folders
@@ -31,11 +33,13 @@ public class LocalAvatarFetcher {
     public static final List<AvatarPath> ALL_AVATARS = new ArrayList<>();
     private static final Map<String, Properties> SAVED_DATA = new HashMap<>();
 
+    private static final Map<Path, WatchKey> WATCHED_KEYS = new HashMap<>();
+
     /**
      * Clears out the root AvatarFolder, and regenerates it from the
      * file system.
      */
-    public static void load() {
+    public static void loadAvatars() {
         //clear loaded avatars
         ALL_AVATARS.clear();
 
@@ -45,13 +49,49 @@ public class LocalAvatarFetcher {
 
         //add new avatars
         ALL_AVATARS.addAll(root.getChildren());
+
+        FiguraMod.debug("Reloading Avatar List...");
+    }
+
+    public static void tick() {
+        boolean reload = false;
+
+        for (Map.Entry<Path, WatchKey> entry : WATCHED_KEYS.entrySet()) {
+            WatchKey key = entry.getValue();
+            if (!key.isValid())
+                continue;
+
+            for (WatchEvent<?> event : key.pollEvents()) {
+                WatchEvent.Kind<?> kind = event.kind();
+                if (kind == StandardWatchEventKinds.OVERFLOW)
+                    continue;
+
+                if (kind == StandardWatchEventKinds.ENTRY_CREATE && !LocalAvatarLoader.IS_WINDOWS) {
+                    Path child = entry.getKey().resolve(((WatchEvent<Path>) event).context());
+                    LocalAvatarLoader.addWatchKey(child, WATCHED_KEYS::put);
+                }
+
+                reload = true;
+            }
+
+            if (reload)
+                break;
+        }
+
+        if (reload)
+            loadAvatars();
+    }
+
+    public static void init() {
+        load();
+        LocalAvatarLoader.addWatchKey(getLocalAvatarDirectory(), WATCHED_KEYS::put);
     }
 
     /**
      * Loads the folder data from the disk
      * the folder data contains information about the avatar folders
      */
-    public static void init() {
+    public static void load() {
         IOUtils.readCacheFile("avatars", nbt -> {
             //loading
             ListTag list = nbt.getList("properties", Tag.TAG_COMPOUND);
@@ -104,6 +144,27 @@ public class LocalAvatarFetcher {
      */
     public static Path getLocalAvatarDirectory() {
         return IOUtils.getOrCreateDir(FiguraMod.getFiguraDirectory(), "avatars");
+    }
+
+    public static boolean isAvatar(Path path) {
+        if (!Files.exists(path))
+            return false;
+        if (FiguraMod.DEBUG_MODE && path.toString().toLowerCase().endsWith(".moon"))
+            return true;
+
+        Path metadata = path.resolve("avatar.json");
+        return Files.exists(metadata) && !Files.isDirectory(metadata);
+    }
+
+    public static void loadExternal(List<Path> paths) throws IOException {
+        for (Path path : paths) {
+            Path dest = getLocalAvatarDirectory();
+            try (Stream<Path> stream = Files.walk(path)) {
+                for (Path p : stream.toList()) {
+                    Util.copyBetweenDirs(path.getParent(), dest, p);
+                }
+            }
+        }
     }
 
     /**
@@ -239,17 +300,11 @@ public class LocalAvatarFetcher {
             //but skip non-folders and non-moon
             for (File file : files) {
                 Path path = file.toPath();
-                boolean moon = FiguraMod.DEBUG_MODE && path.toString().toLowerCase().endsWith(".moon");
-
-                if (!Files.isDirectory(path) && !moon)
-                    continue;
-
-                Path metadata = path.resolve("avatar.json");
-                if (moon || (Files.exists(metadata) && !Files.isDirectory(metadata))) {
+                if (isAvatar(path)) {
                     children.add(new AvatarPath(path));
                     found = true;
-                } else {
-                    FolderPath folder = new FolderPath(file.toPath());
+                } else if (Files.isDirectory(path)) {
+                    FolderPath folder = new FolderPath(path);
                     if (folder.fetch()) {
                         children.add(folder);
                         found = true;

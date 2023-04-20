@@ -32,6 +32,7 @@ import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.ui.UIHelper;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -134,6 +135,9 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
                 }
 
                 for (FiguraModelPart part : parts) {
+                    if (currentFilterScheme.parentType == ParentType.Item && part != itemToRender)
+                        continue;
+
                     if (part.savedCustomization != null)
                         customizationStack.push(part.savedCustomization);
 
@@ -188,9 +192,6 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         customization.positionMatrix.rotateZ(180);
         customization.positionMatrix.translate(0, vertOffset, 0);
         customization.normalMatrix.rotateZ(180);
-
-        FiguraMat4 posMat = FiguraMat4.fromMatrix4f(matrices.last().pose());
-        FiguraMat3 normalMat = FiguraMat3.fromMatrix3f(matrices.last().normal());
 
         customization.positionMatrix.multiply(posMat);
         customization.normalMatrix.multiply(normalMat);
@@ -308,7 +309,7 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
         if (thisPassedPredicate) {
             boolean render = customizationStack.peek().render;
             boolean renderPivot = shouldRenderPivots > 0 && (shouldRenderPivots % 2 == 0 || render);
-            boolean renderTasks = render && allowRenderTasks && !part.renderTasks.isEmpty();
+            boolean renderTasks = render && !part.renderTasks.isEmpty();
             boolean renderPivotParts = render && part.parentType.isPivot && allowPivotParts;
 
             if (renderPivot || renderTasks || renderPivotParts) {
@@ -335,22 +336,23 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
                     int overlay = peek.overlay;
                     allowSkullRendering = false;
                     for (RenderTask task : part.renderTasks.values()) {
+                        if (!task.shouldRender())
+                            continue;
                         int neededComplexity = task.getComplexity();
                         if (neededComplexity > remainingComplexity[0])
                             continue;
                         FiguraMod.pushProfiler(task.getName());
-                        if (task.render(customizationStack, bufferSource, light, overlay))
-                            remainingComplexity[0] -= neededComplexity;
+                        task.render(customizationStack, bufferSource, light, overlay);
+                        remainingComplexity[0] -= neededComplexity;
                         FiguraMod.popProfiler();
                     }
                     allowSkullRendering = true;
                 }
 
                 //render pivot parts
-                if (renderPivotParts) {
+                if (renderPivotParts && part.parentType.isPivot) {
                     FiguraMod.popPushProfiler("savePivotParts");
-                    if (part.parentType.isPivot && allowPivotParts)
-                        savePivotTransform(part.parentType, peek);
+                    savePivotTransform(part.parentType, peek);
                 }
 
                 customizationStack.pop();
@@ -584,8 +586,8 @@ public class ImmediateAvatarRenderer extends AvatarRenderer {
     }
 
     protected static class VertexBuffer {
-        private final HashMap<RenderType, FloatArrayList> primaryBuffers = new HashMap<>();
-        private final HashMap<RenderType, FloatArrayList> secondaryBuffers = new HashMap<>();
+        private final HashMap<RenderType, FloatArrayList> primaryBuffers = new LinkedHashMap<>();
+        private final HashMap<RenderType, FloatArrayList> secondaryBuffers = new LinkedHashMap<>();
 
         public FloatArrayList getBufferFor(RenderType renderType, boolean primary) {
             HashMap<RenderType, FloatArrayList> buffer = primary ? primaryBuffers : secondaryBuffers;

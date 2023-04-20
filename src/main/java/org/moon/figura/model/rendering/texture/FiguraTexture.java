@@ -22,6 +22,7 @@ import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec2;
 import org.moon.figura.math.vector.FiguraVec3;
 import org.moon.figura.math.vector.FiguraVec4;
+import org.moon.figura.mixin.render.TextureManagerAccessor;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.FiguraIdentifier;
 import org.moon.figura.utils.IOUtils;
@@ -76,6 +77,13 @@ public class FiguraTexture extends SimpleTexture {
         this.owner = owner;
     }
 
+    public FiguraTexture(Avatar owner, String name, int width, int height) {
+        super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/" + UUID.randomUUID()));
+        this.texture = new NativeImage(width, height, true);
+        this.name = name;
+        this.owner = owner;
+    }
+
     public FiguraTexture(Avatar owner, String name, NativeImage image) {
         super(new FiguraIdentifier("avatar_tex/" + owner.owner + "/custom/" + UUID.randomUUID()));
         this.texture = image;
@@ -99,6 +107,7 @@ public class FiguraTexture extends SimpleTexture {
             backup.close();
 
         this.releaseId();
+        ((TextureManagerAccessor) Minecraft.getInstance().getTextureManager()).getByPath().remove(this.location);
     }
 
     public void uploadIfDirty() {
