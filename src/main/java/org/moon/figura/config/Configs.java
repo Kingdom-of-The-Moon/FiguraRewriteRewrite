@@ -121,6 +121,8 @@ public class Configs {
                     FiguraLuaPrinter.updateDecimalFormatting();
                 }
             };
+    public static final EnumConfig
+            CHAT_AUTOCOMPLETE = new EnumConfig("chat_autocomplete", SCRIPT, 1, 3);
 
 
     // -- RENDERING -- //
