@@ -121,11 +121,11 @@ public class PingArg {
     }
 
     private static void writeMat(FiguraMatrix<?, ?> matrix, DataOutputStream dos) throws IOException {
-        dos.writeByte(matrix.cols()); //this assumes matrices will always be an x by x
+        dos.writeByte(matrix.cols());
 
         for (int i = 0; i < matrix.cols(); i++) {
             FiguraVector<?, ?> vec = matrix.getColumn(i + 1);
-            for (int o=0;o<matrix.rows();o++){
+            for (int o = 0; o < matrix.cols(); o++){
                 dos.writeDouble(vec.index(o));
             }
         }
