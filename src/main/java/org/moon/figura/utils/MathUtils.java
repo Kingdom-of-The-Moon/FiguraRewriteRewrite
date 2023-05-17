@@ -4,6 +4,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 import org.joml.*;
+import org.moon.figura.config.Configs;
 import org.moon.figura.ducks.GameRendererAccessor;
 import org.moon.figura.math.matrix.FiguraMat2;
 import org.moon.figura.math.matrix.FiguraMat3;
@@ -88,10 +89,8 @@ public class MathUtils {
         transformMatrix.invert();
 
         Vec3 camPos = camera.getPosition();
-        Vector3f camSpace = new Vector3f(
-                (float) (worldSpace.x - camPos.x),
-                (float) (worldSpace.y - camPos.y),
-                (float) (worldSpace.z - camPos.z));
+        FiguraVec3 posDiff = worldSpace.copy().subtract(camPos.x, camPos.y, camPos.z);
+        Vector3f camSpace = posDiff.asVec3f();
         transformMatrix.transform(camSpace);
 
         Vector4f projectiveCamSpace = new Vector4f(camSpace, 1f);
@@ -99,7 +98,7 @@ public class MathUtils {
         projMat.transform(projectiveCamSpace);
         float w = projectiveCamSpace.w();
 
-        return FiguraVec4.of(projectiveCamSpace.x() / w, projectiveCamSpace.y() / w, projectiveCamSpace.z() / w, Math.sqrt(camSpace.dot(camSpace)));
+        return FiguraVec4.of(projectiveCamSpace.x() / w, projectiveCamSpace.y() / w, projectiveCamSpace.z() / w, Math.sqrt(posDiff.dot(posDiff)));
     }
 
     private static final String[] SIZE_UNITS = {"b", "kb", "mb", "gb"};
@@ -115,6 +114,10 @@ public class MathUtils {
         DecimalFormat df = new DecimalFormat("0.00", new DecimalFormatSymbols(Locale.US));
         df.setRoundingMode(RoundingMode.HALF_UP);
         return df.format(size) + SIZE_UNITS[i];
+    }
+
+    public static float magicDelta(float force, float delta) {
+        return Configs.REDUCED_MOTION.value ? 1f : (float) (1f - Math.pow(force, delta));
     }
 
     public static FiguraVec3 min(FiguraVec3 val, double min) {
