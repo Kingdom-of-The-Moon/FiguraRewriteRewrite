@@ -121,11 +121,13 @@ public class PingArg {
     }
 
     private static void writeMat(FiguraMatrix<?, ?> matrix, DataOutputStream dos) throws IOException {
-        dos.writeByte(matrix.cols());
+        dos.writeByte(matrix.cols()); //this assumes matrices will always be an x by x
 
         for (int i = 0; i < matrix.cols(); i++) {
             FiguraVector<?, ?> vec = matrix.getColumn(i + 1);
-            writeVec(vec, dos);
+            for (int o=0;o<matrix.rows();o++){
+                dos.writeDouble(vec.index(o));
+            }
         }
     }
 
@@ -193,11 +195,15 @@ public class PingArg {
     }
 
     private static FiguraMatrix<?, ?> readMat(DataInputStream dis) throws IOException {
-        byte columns = dis.readByte();
+        byte size = dis.readByte();
 
-        FiguraVector<?, ?>[] vectors = new FiguraVector[columns];
-        for (int i = 0; i < columns; i++)
-            vectors[i] = readVec(dis);
+        FiguraVector<?, ?>[] vectors = new FiguraVector[size];
+        for (int i = 0; i < size; i++){
+            double[] array = new double[size];
+            for (int o = 0; o < size; o++)
+                array[o] = dis.readDouble();
+            vectors[i] = MathUtils.sizedVector(array);
+        }
 
         return MathUtils.sizedMat(vectors);
     }
