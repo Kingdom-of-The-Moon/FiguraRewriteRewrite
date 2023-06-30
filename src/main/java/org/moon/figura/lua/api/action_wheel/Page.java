@@ -1,6 +1,8 @@
 package org.moon.figura.lua.api.action_wheel;
 
 import org.luaj.vm2.LuaError;
+import org.luaj.vm2.LuaFunction;
+import org.luaj.vm2.LuaValue;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.docs.LuaFieldDoc;
@@ -24,6 +26,16 @@ public class Page {
     private final HashMap<Integer, Action> actionsMap = new HashMap<>();
 
     private int slotsShift = 0;
+
+    @LuaWhitelist
+    @LuaFieldDoc("action_wheel.left_click")
+    public LuaFunction leftClick;
+    @LuaWhitelist
+    @LuaFieldDoc("action_wheel.right_click")
+    public LuaFunction rightClick;
+    @LuaWhitelist
+    @LuaFieldDoc("action_wheel.scroll")
+    public LuaFunction scroll;
 
     @LuaWhitelist
     @LuaFieldDoc("wheel_page.keep_slots")
@@ -220,14 +232,26 @@ public class Page {
 
     @LuaWhitelist
     public Object __index(String arg) {
-        return "keepSlots".equals(arg) ? keepSlots : null;
+        if (arg == null) return null;
+        return switch (arg) {
+            case "keepSlots" -> keepSlots;
+            case "leftClick" -> leftClick;
+            case "rightClick" -> rightClick;
+            case "scroll" -> scroll;
+            default -> null;
+        };
     }
 
     @LuaWhitelist
-    public void __newindex(@LuaNotNil String key, boolean value) {
-        if ("keepSlots".equals(key))
-            keepSlots = value;
-        else throw new LuaError("Cannot assign value on key \"" + key + "\"");
+    public void __newindex(@LuaNotNil String key, Object value) {
+        LuaFunction val = value instanceof LuaFunction f ? f : null;
+        switch (key) {
+            case "keepSlots" -> keepSlots = value instanceof LuaValue v && v.checkboolean();
+            case "leftClick" -> leftClick = val;
+            case "rightClick" -> rightClick = val;
+            case "scroll" -> scroll = val;
+            default -> throw new LuaError("Cannot assign value on key \"" + key + "\"");
+        }
     }
 
     @Override
