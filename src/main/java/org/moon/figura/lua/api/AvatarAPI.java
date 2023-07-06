@@ -1,15 +1,21 @@
 package org.moon.figura.lua.api;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import org.luaj.vm2.Lua;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.moon.figura.avatar.Avatar;
 import org.moon.figura.lua.LuaNotNil;
+import org.moon.figura.lua.LuaToNBT;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
+import org.moon.figura.lua.api.entity.EntityAPI;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.math.vector.FiguraVec3;
+import org.moon.figura.model.FiguraModelPart;
 import org.moon.figura.permissions.Permissions;
 import org.moon.figura.utils.ColorUtils;
 import org.moon.figura.utils.LuaUtils;
@@ -39,6 +45,29 @@ public class AvatarAPI {
     }
 
     @LuaWhitelist
+    @LuaMethodDoc("avatar.set_nbt")
+    public AvatarAPI setNBT(LuaTable nbt) {
+        avatar.nbt = LuaToNBT.convert(nbt);
+        return this;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("avatar.get_models")
+    public FiguraModelPart getModels() {
+        if (avatar.renderer != null)
+            return avatar.renderer.root;
+        return null;
+    }
+
+    /*
+    @LuaWhitelist
+    @LuaMethodDoc("avatar.get_globals")
+    public FiguraModelPart getGlobals() {
+        return avatar.renderer.root;
+    }
+    */
+
+    @LuaWhitelist
     @LuaMethodDoc(
             overloads = @LuaMethodOverload(
                     argumentTypes = {String.class, Object.class},
@@ -46,6 +75,7 @@ public class AvatarAPI {
             ),
             value = "avatar.store"
     )
+
     public AvatarAPI store(@LuaNotNil String key, LuaValue value) {
         storedStuff.set(key, value == null ? LuaValue.NIL : value);
         return this;

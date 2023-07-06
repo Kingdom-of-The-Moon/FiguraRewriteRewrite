@@ -869,6 +869,8 @@
   "figura.docs.avatar.can_use_custom_sounds": "Gets whether or not the viewer allows your avatar to play custom sounds",
   "figura.docs.avatar.can_have_custom_skull": "Gets whether or not your avatar is allowed to have custom player skull",
   "figura.docs.avatar.get_nbt": "Gets the NBT data this avatar is stored as",
+  "figura.docs.avatar.set_nbt": "sets the NBT data of this avatar. The avatar does not reload, so this doesn't do much",
+  "figura.docs.avatar.get_models": "returns the ModelPart of all models in this avatar, similarly to how the \"models\" global works",
 
 
   "figura.docs.biome": "A proxy for a Minecraft biome\nInstances are obtained through the WorldAPI\nThis proxy also contains a saved position for the Biome",
@@ -1079,6 +1081,7 @@
   "figura.docs.player.get_shoulder_entity": "Returns a table of the nbt of this entity left or right shoulder entity",
   "figura.docs.player.get_team_info": "Returns a table with information about the team of this player\nReturns nil if the player doesnt have a team",
   "figura.docs.player.get_ip_address": "Returns this player's IP address",
+  "figura.docs.player.get_avatar": "Gets the avatar this player is using\n\"allowGetAvatar\" in avatar.json can prevent this from obtaining the avatar",
 
   "figura.docs.viewer": "An extension of the Player, used for the viewer only, meant as proxy to allow access to some host only functions",
 

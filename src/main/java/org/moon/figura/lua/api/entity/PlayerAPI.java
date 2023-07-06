@@ -2,20 +2,24 @@ package org.moon.figura.lua.api.entity;
 
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.scores.PlayerTeam;
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
+import org.moon.figura.avatar.AvatarManager;
 import org.moon.figura.lua.LuaNotNil;
 import org.moon.figura.lua.LuaWhitelist;
 import org.moon.figura.lua.NbtToLua;
 import org.moon.figura.lua.ReadOnlyLuaTable;
+import org.moon.figura.lua.api.AvatarAPI;
 import org.moon.figura.lua.docs.LuaMethodDoc;
 import org.moon.figura.lua.docs.LuaMethodOverload;
 import org.moon.figura.lua.docs.LuaTypeDoc;
 import org.moon.figura.utils.EntityUtils;
+import org.moon.figura.avatar.Avatar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +47,16 @@ public class PlayerAPI extends LivingEntityAPI<Player> {
 
         playerInfo = info;
         return true;
+    }
+
+    @LuaWhitelist
+    @LuaMethodDoc("player.get_avatar")
+    public AvatarAPI getAvatar() {
+        Avatar avatar = AvatarManager.getAvatarForPlayer(this.entity.getUUID());
+        if (avatar != null && avatar.allowGetAvatar) {
+            return new AvatarAPI(avatar);
+        }
+        return null;
     }
 
     @LuaWhitelist

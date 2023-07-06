@@ -95,6 +95,8 @@ public class Avatar {
     public String color;
     public boolean minify;
 
+    public boolean allowGetAvatar = true;
+
     //Runtime data
     private final Queue<Runnable> events = new ConcurrentLinkedQueue<>();
 
@@ -178,6 +180,8 @@ public class Avatar {
                     color = metadata.getString("color");
                 if (metadata.contains("minify"))
                     minify = metadata.getBoolean("minify");
+                if (metadata.contains("allowGetAvatar"))
+                    allowGetAvatar = metadata.getBoolean("allowGetAvatar");
                 fileSize = getFileSize();
                 versionStatus = getVersionStatus();
                 if (entityName.isBlank())

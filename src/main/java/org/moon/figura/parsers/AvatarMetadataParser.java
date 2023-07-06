@@ -43,6 +43,8 @@ public class AvatarMetadataParser {
         if (metadata.background != null) nbt.putString("bg", metadata.background);
         if (metadata.id != null) nbt.putString("id", metadata.id);
 
+        nbt.putBoolean("allowGetAvatar", metadata.allowGetAvatar);
+
         if (metadata.authors != null) {
             StringBuilder authors = new StringBuilder();
 
@@ -197,6 +199,7 @@ public class AvatarMetadataParser {
     //json object class
     public static class Metadata {
         public String name, description, author, version, color, background, id;
+        public boolean allowGetAvatar = true;
         public String[] authors, autoScripts, autoAnims, ignoredTextures;
         public HashMap<String, Customization> customizations;
     }
