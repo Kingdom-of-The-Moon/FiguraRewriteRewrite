@@ -1,6 +1,6 @@
 # Figura
 
-## A fully clientside Minecraft Java mod that allows you to customize your player model!
+## A Minecraft Java client mod that allows you to customize your player model and have other players see your Avatar without any server mods!
 ![image](https://user-images.githubusercontent.com/40085587/232265398-f193b7c2-428f-41df-bc65-7c6b5a02e31b.png)
 
 ## Utilizing the full potential of [Blockbench](https://www.blockbench.net/), including:
@@ -9,21 +9,21 @@
 
 ![image](https://user-images.githubusercontent.com/40085587/232266641-0ef9d180-4190-46f5-a4a6-7e01e06fe6a1.png)
 
-## But not only that, Figura also have a whole optional [Lua](https://www.lua.org/) API to make your own scripts!
+## But not only that, Figura also has an optional [Lua](https://www.lua.org/) API to make your own scripts!
 
 ![image](https://user-images.githubusercontent.com/40085587/232266708-9d6d9da6-a454-4ca0-83f2-a58c229ab03b.png)
 
-## But hold on, thats too good, what if someone is invisible, or very small?
+## But hold on, that's too good. What if someone is invisible, or very small?
 
 ![image](https://user-images.githubusercontent.com/40085587/232266726-9d31c171-b16f-4246-adbe-30a337d7f15b.png)
 
-*\*Figura do not take responsability of cheaty Avatars, all Avatars are responsibility of their creators*
+*\*Figura is not responsible for cheaty Avatars, all creators assume responsibility of their Avatars*
 
 ## We also have some extras, like:
 
 ![image](https://user-images.githubusercontent.com/40085587/232266831-5266010b-28c8-4fa1-987c-daad23657bac.png)
 
-Meet us on Discord for more info and help :)
+Meet us on the [Moonlight Discord Server](https://discord.gg/ekHGHcH8Af) for more info and help :)
 
 # Links
 [discord]: https://discord.com/api/guilds/125227483518861312/widget.png
@@ -31,15 +31,11 @@ Meet us on Discord for more info and help :)
 [curseforge]: https://img.shields.io/badge/CurseForge-f16436?logo=curseforge&logoColor=ffffff&labelColor=f16436
 [kofi]: https://img.shields.io/badge/Ko--fi-00b9fe?logo=kofi&logoColor=ffffff&labelColor=00b9fe
 
-## Social:
-[ ![discord][] ](https://discord.gg/ekHGHcH8Af)
+## Social: [ ![discord][] ](https://discord.gg/ekHGHcH8Af)
 
-## Download:
-[ ![modrinth] ](https://modrinth.com/mod/figura)
-[ ![curseforge][] ](https://curseforge.com/minecraft/mc-mods/figura)
+## Download: [ ![modrinth] ](https://modrinth.com/mod/figura) [ ![curseforge][] ](https://curseforge.com/minecraft/mc-mods/figura)
 
-## Donate:
-[ ![kofi][] ](https://ko-fi.com/francy_chan)
+## Donate: [ ![kofi][] ](https://ko-fi.com/francy_chan)
 
 # FAQ
 
@@ -116,13 +112,14 @@ Meet us on Discord for more info and help :)
 ### • Forge port?
 > No
 
-### • Where can I find avatars to download?
-> For now you can find avatars in the showcase channel in the official Discord server
+### • Where can I find Avatars to download?
+> For now you can find Avatars in the showcase channel in the official Discord server
 
-### • My Minecraft is cracked (non-premium/non-original), why can't I use Figura?
+### • My Minecraft is cracked (non-premium/non-original) or I'm trying to join a cracked offline mode server, why can't I use Figura?
 > Figura uses your account's UUID and your Mojang authentication as a way to prove you own that account, avoiding unwanted / malicious uploads
 > 
-> Non-premium Minecraft accounts don't authenticate with Mojang, and as such can neither upload nor download Figura avatars
+> Non-premium Minecraft accounts don't authenticate with Mojang, and Offline mode servers don't report working UUID's, as such can neither upload nor download Figura avatars
+
 
 ## Community Resources
 
