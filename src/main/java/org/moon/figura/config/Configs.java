@@ -64,10 +64,10 @@ public class Configs {
 
 
     public static final BoolConfig
-            SELF_NAMEPLATE = new BoolConfig("self_nameplate", NAMEPLATE, false),
-            PREVIEW_NAMEPLATE = new BoolConfig("preview_nameplate", NAMEPLATE, false),
+            SELF_NAMEPLATE = new BoolConfig("self", NAMEPLATE, false),
+            PREVIEW_NAMEPLATE = new BoolConfig("preview", NAMEPLATE, false),
             SOUND_BADGE = new BoolConfig("sound_badge", NAMEPLATE, true);
-    private static final String NAMEPLATE_PATH = "config.nameplate_level.";
+    private static final String NAMEPLATE_PATH = "config.nameplate.level.";
     private static final List<Component> NAMEPLATE_ENUM = List.of(
             FiguraText.of(NAMEPLATE_PATH + "1"),
             FiguraText.of(NAMEPLATE_PATH + "2"),
@@ -79,16 +79,16 @@ public class Configs {
             FiguraText.of(NAMEPLATE_PATH + "3.tooltip")
     );
     public static final EnumConfig
-            NAMEPLATE_RENDER = new EnumConfig("nameplate_render", NAMEPLATE, 0, 3),
-            CHAT_NAMEPLATE = new EnumConfig("chat_nameplate", NAMEPLATE, 2, 3) {{
+            NAMEPLATE_RENDER = new EnumConfig("render", NAMEPLATE, 0, 3),
+            CHAT_NAMEPLATE = new EnumConfig("chat", NAMEPLATE, 2, 3) {{
                 this.enumList = NAMEPLATE_ENUM;
                 this.enumTooltip = NAMEPLATE_TOOLTIP;
             }},
-            ENTITY_NAMEPLATE = new EnumConfig("entity_nameplate", NAMEPLATE, 2, 3) {{
+            ENTITY_NAMEPLATE = new EnumConfig("entity", NAMEPLATE, 2, 3) {{
                 this.enumList = NAMEPLATE_ENUM;
                 this.enumTooltip = NAMEPLATE_TOOLTIP;
             }},
-            LIST_NAMEPLATE = new EnumConfig("list_nameplate", NAMEPLATE, 2, 3) {{
+            LIST_NAMEPLATE = new EnumConfig("list", NAMEPLATE, 2, 3) {{
                 this.enumList = NAMEPLATE_ENUM;
                 this.enumTooltip = NAMEPLATE_TOOLTIP;
             }};
@@ -99,9 +99,9 @@ public class Configs {
 
     public static final EnumConfig
             LOG_LOCATION = new EnumConfig("log_location", SCRIPT, 0, 2),
-            FORMAT_SCRIPT = new EnumConfig("format_script", SCRIPT, 1, 4) {
+            FORMAT_SCRIPT = new EnumConfig("format", SCRIPT, 1, 4) {
                 {
-                    String tooltip = "config.format_script.tooltip.";
+                    String tooltip = "config.script.format.tooltip.";
                     this.tooltip = FiguraText.of(tooltip + "1")
                             .append("\n")
                             .append(FiguraText.of(tooltip + "2").withStyle(ChatFormatting.RED));
@@ -128,8 +128,8 @@ public class Configs {
 
     public static final EnumConfig
             IRIS_COMPATIBILITY_FIX = new EnumConfig("iris_compatibility_fix", RENDERING, 1, 3),
-            RENDER_DEBUG_PARTS_PIVOT = new EnumConfig("render_debug_parts_pivot", RENDERING, 1, 3) {{
-                    String tooltip = "config.render_debug_parts_pivot.tooltip";
+            RENDER_DEBUG_PARTS_PIVOT = new EnumConfig("debug_parts_pivot", RENDERING, 1, 3) {{
+                    String tooltip = "config.rendering.debug_parts_pivot.tooltip";
                     this.tooltip = FiguraText.of(tooltip,
                             FiguraText.of(tooltip + ".cubes").setStyle(ColorUtils.Colors.FRAN_PINK.style),
                             FiguraText.of(tooltip + ".groups").setStyle(ColorUtils.Colors.MAYA_BLUE.style));
@@ -143,16 +143,16 @@ public class Configs {
 
 
     public static final KeybindConfig
-            ACTION_WHEEL_BUTTON = new KeybindConfig("action_wheel_button", ACTION_WHEEL, "key.keyboard.b");
+            ACTION_WHEEL_BUTTON = new KeybindConfig("button", ACTION_WHEEL, "key.keyboard.b");
     public static final EnumConfig
-            ACTION_WHEEL_MODE = new EnumConfig("action_wheel_mode", ACTION_WHEEL, 0, 4);
+            ACTION_WHEEL_MODE = new EnumConfig("mode", ACTION_WHEEL, 0, 4);
     public static final PositiveFloatConfig
-            ACTION_WHEEL_SCALE = new PositiveFloatConfig("action_wheel_scale", ACTION_WHEEL, 1f);
+            ACTION_WHEEL_SCALE = new PositiveFloatConfig("scale", ACTION_WHEEL, 1f);
     public static final EnumConfig
-            ACTION_WHEEL_TITLE = new EnumConfig("action_wheel_title", ACTION_WHEEL, 0, 7),
-            ACTION_WHEEL_SLOTS_INDICATOR = new EnumConfig("action_wheel_slots_indicator", ACTION_WHEEL, 0, 3);
+            ACTION_WHEEL_TITLE = new EnumConfig("title", ACTION_WHEEL, 0, 7),
+            ACTION_WHEEL_SLOTS_INDICATOR = new EnumConfig("slots_indicator", ACTION_WHEEL, 0, 3);
     public static final BoolConfig
-            ACTION_WHEEL_DECORATIONS = new BoolConfig("action_wheel_decorations", ACTION_WHEEL, true);
+            ACTION_WHEEL_DECORATIONS = new BoolConfig("decorations", ACTION_WHEEL, true);
 
 
     // -- UI -- //
@@ -182,16 +182,16 @@ public class Configs {
 
 
     public static final BoolConfig
-            HAS_PAPERDOLL = new BoolConfig("has_paperdoll", PAPERDOLL, false),
-            PAPERDOLL_ALWAYS_ON = new BoolConfig("paperdoll_always_on", PAPERDOLL, false),
-            FIRST_PERSON_PAPERDOLL = new BoolConfig("first_person_paperdoll", PAPERDOLL, true),
-            PAPERDOLL_INVISIBLE = new BoolConfig("paperdoll_invisible", PAPERDOLL, false);
+            HAS_PAPERDOLL = new BoolConfig("enabled", PAPERDOLL, false),
+            PAPERDOLL_ALWAYS_ON = new BoolConfig("always_on", PAPERDOLL, false),
+            FIRST_PERSON_PAPERDOLL = new BoolConfig("first_person", PAPERDOLL, true),
+            PAPERDOLL_INVISIBLE = new BoolConfig("invisible", PAPERDOLL, false);
     public static final FloatConfig
-            PAPERDOLL_SCALE = new FloatConfig("paperdoll_scale", PAPERDOLL, 1f),
-            PAPERDOLL_X = new FloatConfig("paperdoll_x", PAPERDOLL, 0f),
-            PAPERDOLL_Y = new FloatConfig("paperdoll_y", PAPERDOLL, 0f),
-            PAPERDOLL_PITCH = new FloatConfig("paperdoll_pitch", PAPERDOLL, 0f),
-            PAPERDOLL_YAW = new FloatConfig("paperdoll_yaw", PAPERDOLL, 20);
+            PAPERDOLL_SCALE = new FloatConfig("scale", PAPERDOLL, 1f),
+            PAPERDOLL_X = new FloatConfig("x", PAPERDOLL, 0f),
+            PAPERDOLL_Y = new FloatConfig("y", PAPERDOLL, 0f),
+            PAPERDOLL_PITCH = new FloatConfig("pitch", PAPERDOLL, 0f),
+            PAPERDOLL_YAW = new FloatConfig("yaw", PAPERDOLL, 20);
 
 
     // -- MISC -- //
