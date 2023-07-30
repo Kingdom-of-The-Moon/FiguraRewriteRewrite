@@ -24,6 +24,7 @@ dependencies {
 		officialMojangMappings()
 	}
 	modImplementation "net.fabricmc:fabric-loader:$loader_version"
+	modCompileOnly    "org.quiltmc:quilt-loader:0.19.2-beta.6"
 
 	// Libraries
 	include(implementation("com.github.Kingdom-of-The-Moon.LuaJ:luaj-core:$luaj-figura"))

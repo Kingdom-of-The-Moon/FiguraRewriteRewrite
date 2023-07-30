@@ -2,6 +2,12 @@ package org.moon.figura.lua.api;
 
 import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.ModContainer;
+import net.fabricmc.loader.api.metadata.CustomValue;
+import net.fabricmc.loader.api.metadata.ModDependency;
+import net.fabricmc.loader.api.metadata.ModMetadata;
+import net.fabricmc.loader.api.metadata.Person;
+import net.fabricmc.loader.api.metadata.version.VersionInterval;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
@@ -35,6 +41,7 @@ import org.moon.figura.utils.LuaUtils;
 import org.moon.figura.utils.TextUtils;
 import org.moon.figura.utils.Version;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -47,7 +54,9 @@ public class ClientAPI {
 
     public static final ClientAPI INSTANCE = new ClientAPI();
     private static final HashMap<String, Boolean> LOADED_MODS = new HashMap<>();
+    private static final HashMap<String, Map<String, Object>> MOD_METADATA = new HashMap<>();
     private static final boolean HAS_IRIS = FabricLoader.getInstance().isModLoaded("iris"); //separated to avoid indexing the list every frame
+    private static final boolean HAS_QUILT = FabricLoader.getInstance().isModLoaded("quilt_loader"); //separated to avoid indexing the list every frame
 
     @LuaWhitelist
     @LuaMethodDoc("client.get_fps")
@@ -312,10 +321,82 @@ public class ClientAPI {
             value = "client.is_mod_loaded"
     )
     public static boolean isModLoaded(String id) {
-        LOADED_MODS.putIfAbsent(id, FabricLoader.getInstance().isModLoaded(id));
-        return LOADED_MODS.get(id);
+        return LOADED_MODS.computeIfAbsent(id, d -> FabricLoader.getInstance().isModLoaded(d));
     }
 
+    @LuaWhitelist
+    @LuaMethodDoc(
+            overloads = @LuaMethodOverload(
+                    argumentTypes = String.class,
+                    argumentNames = "modID"
+            ),
+            value = "client.get_mod_metadata"
+    )
+    public static Object getModMetadata(String id) {
+        return MOD_METADATA.computeIfAbsent(id, d -> {
+            if (!isModLoaded(d)) return null;
+            Map<String, Object> map = new HashMap<>();
+            if (HAS_QUILT) {
+                org.moon.figura.lua.api.QuiltModMetaGetter.fill(map, d);
+                if(!map.isEmpty())
+                    return map;
+            }
+            Optional<ModContainer> modContainer = FabricLoader.getInstance().getModContainer(d);
+            if (modContainer.isEmpty()) return null;
+            ModMetadata metadata = modContainer.get().getMetadata();
+            map.put("id", metadata.getId());
+            map.put("name", metadata.getName());
+            map.put("description", metadata.getDescription());
+            map.put("contact_info", metadata.getContact().asMap());
+            map.put("version", metadata.getVersion().getFriendlyString());
+            map.put("icon", metadata.getIconPath(512).orElse(null));
+            map.put("type", metadata.getType());
+            map.put("licenses", metadata.getLicense());
+            map.put("provides", metadata.getProvides());
+            map.put("environment", metadata.getEnvironment().name().toLowerCase());
+            {
+                Map<String, Object> authors = new HashMap<>();
+                for (Person author : metadata.getAuthors()) {
+                    authors.put(author.getName(), author.getContact().asMap());
+                }
+                map.put("authors", authors);
+            } {
+                Map<String, Object> contributors = new HashMap<>();
+                for (Person author : metadata.getContributors()) {
+                    contributors.put(author.getName(), author.getContact().asMap());
+                }
+                map.put("contributors", contributors);
+            } {
+                Map<String, Object> values = new HashMap<>();
+                for (Map.Entry<String, CustomValue> entry : metadata.getCustomValues().entrySet()) {
+                    switch (entry.getValue().getType()) {
+                        case BOOLEAN -> values.put(entry.getKey(), entry.getValue().getAsBoolean());
+                        case STRING -> values.put(entry.getKey(), entry.getValue().getAsString());
+                        case NUMBER -> values.put(entry.getKey(), entry.getValue().getAsNumber().doubleValue());
+                    }
+                }
+                map.put("values", values);
+            } {
+                List<Map<String, Object>> dependencies = new ArrayList<>();
+                for (ModDependency dependency : metadata.getDependencies()) {
+                    Map<String, Object> dependencyData = new HashMap<>();
+                    dependencyData.put("id", dependency.getModId());
+                    dependencyData.put("kind", dependency.getKind().getKey());
+                    {
+                        List<String> versions = new ArrayList<>();
+                        for(VersionInterval interval : dependency.getVersionIntervals()) {
+                            versions.add(interval.toString());
+                        }
+                        dependencyData.put("versions", versions);
+                    }
+                    dependencies.add(dependencyData);
+                }
+                map.put("dependencies", dependencies);
+            }
+            return map;
+        });
+    }
+    
     @LuaWhitelist
     @LuaMethodDoc("client.has_iris")
     public static boolean hasIris() {
@@ -468,8 +549,12 @@ public class ClientAPI {
         map.put("year_day", calendar.get(Calendar.DAY_OF_YEAR));
         map.put("week_day", calendar.get(Calendar.DAY_OF_WEEK));
         map.put("daylight_saving", calendar.getTimeZone().inDaylightTime(date));
+        map.put("timestamp", calendar.getTimeInMillis());
 
-        SimpleDateFormat format = new SimpleDateFormat("Z|zzzz|G|MMMM|EEEE", Locale.US);
+        DateFormat format = SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.LONG);
+        map.put("time", format.format(date));
+
+        format = new SimpleDateFormat("Z|zzzz|G|MMMM|EEEE", Locale.US);
         String[] f = format.format(date).split("\\|");
 
         map.put("timezone", f[0]);
